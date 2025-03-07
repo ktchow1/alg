@@ -1,0 +1,5 @@
+[Lesson learnt from FIlpBlotter for ILP algo]
+
+construction of std::string with char*
+assignment of std::string with char*
+beware that if char* is null, then it will crash.

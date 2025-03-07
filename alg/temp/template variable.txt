@@ -1,0 +1,31 @@
+How about template member-function-pointer?
+
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+struct A
+{
+    void f0(const std::string& str) { std::cout << "\nf0 " << str; }
+    void f1(const std::string& str) { std::cout << "\nf1 " << str; }
+    void f2(const std::string& str) { std::cout << "\nf2 " << str; }
+    void f3(const std::string& str) { std::cout << "\nf3 " << str; }
+
+};
+
+template<typename T> void (A::*ptr)             (const std::string&) = &A::f0;
+template<>           void (A::*ptr<int>)        (const std::string&) = &A::f1;
+template<>           void (A::*ptr<double>)     (const std::string&) = &A::f2;
+template<>           void (A::*ptr<std::string>)(const std::string&) = &A::f3;
+
+int main()
+{
+    A a;
+    (a.*ptr<int>)("temp");
+    (a.*ptr<double>)("temp");
+    (a.*ptr<std::string>)("temp");
+    (a.*ptr<std::vector<int>>)("temp");
+
+    return 0;
+}

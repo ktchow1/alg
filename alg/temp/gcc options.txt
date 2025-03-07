@@ -1,0 +1,15 @@
+-g1 = minimal debug info
+-g2 = average debug info (typical option)
+-g3 = detailed debug info
+
+-O0 = no optimization
+-O2 =    optimization in performance, try to balance compilation time (typical option)
+-O3 = maximum optimization
+
+-O2 includes :
+* loop unrolling
+* function inlining
+* dead code elimination (code without effect or never executed)
+* common subexpression elimination (eliminate redundant calculation)
+* instruction reordering
+* branch prediction optimization
