@@ -6,6 +6,7 @@ void test_arithmetic();
 void test_bisection();
 void test_stack();
 void test_list();
+void test_lru_map();
 void test_tree();
 void test_tree_variant();
 void test_sorting();
@@ -95,11 +96,12 @@ inline void banner(const std::string str)
 
 int main()
 {
-//  banner("01_algorithm");
+    banner("01_algorithm");
 //  test_arithmetic();
 //  test_bisection();
 //  test_stack();
 //  test_list();
+    test_lru_map();
 //  test_tree();
 //  test_tree_variant();
 //  test_sorting();
@@ -153,13 +155,13 @@ int main()
 //  test_variant_basic();  
 //  test_variant_overloading_lambda();  
 //  test_variant_visit(); 
-      
+//    
 //  banner("06_threading");
 //  test_thread_create();
 //  test_thread_stop_source();
 //  test_thread_timing();
 //  test_spinlock_mutex();
-    test_shared_mutex();
+//  test_shared_mutex();
 //  test_semaphore();
 //  test_singleton();
 //  test_synchronization();
