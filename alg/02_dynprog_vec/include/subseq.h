@@ -353,10 +353,13 @@ namespace alg
     // ************************************* //
     // *** Longest increasing subseq LIS *** //
     // ************************************* //
-    // There are 2 approaches :
-    // * dynprog with O(N^2)
-    // * dynprog with O(Nlog(N))
+    // There are 2 approaches, maintaining different subproblems :
+    // * dynprog with O(N^2)     <--- sub[n] = LIS for subproblem vec[0]:vec[n]
+    // * dynprog with O(Nlog(N)) <--- sub[n] = minimum index m, so that LIS of vec[0]:vec[m] is n, hence sub is sorted
     //
+    // As the subproblem in approach 2 is sorted, it can be maintained by bisection, hence giving O(NlogN) 
+    //
+      
     std::uint32_t longest_non_contiguous_increasing_subseq(const std::vector<std::uint32_t>& vec)
     {
         std::vector<std::uint32_t> sub(vec.size(), 0); // sub[n] means the subproblem that must end with vec[n]
@@ -371,7 +374,6 @@ namespace alg
                 }
             }
         }
-
         return *std::max_element(sub.begin(), sub.end());
     //  return sub[sub.size()-1]; // <--- BUG
     }
