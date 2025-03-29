@@ -384,35 +384,45 @@ namespace alg
     // 2. How is sub maintained in case 2?
     // 3. How is sub maintained in case 1?
     // ************************************************************************************ //
-    // It is easier to understand why method 2 work if we define sub as : 
-    // sub[n] = whole subset with min last-value vec[m], s.t. LIS{vec[0]:vec[m]} = n+1
-    //          instead of storing last-value vec[m] only
+    // To understand why method 2 work if we define backtrace "bt" as : 
+    //  bt[n] = whole subset with min last-value vec[m], s.t. LIS{vec[0]:vec[m]} = n+1
+    // sub[n] =                   min last-value vec[m] only
     //
+    // If we are updating sub[m] and bt[m] for value vec[n],
+    // for case 1, bt[m] = bt[m-1].append(vec[n])
+    // for case 2, bt[m] = bt[m-1].append(vec[n]) 
+    // yes ... the same update equation for bt[m] in both cases
     //
-    // consider [1,3,6,4,2],
+    // Consider example [1,3,6,4,2]
     // * sub becomes [1,2,4]
     // * subseq with size 2 will be [1,2],                 instead of [1,3]
     // * subseq with size 3 will be [1,3,4] (not [1,2,4]), instead of [1,3,6] 
-    // * but why do we try to minimize the values in sub? that is because ... 
-    // * we can get subseq with size 4 in [1,3,6,4,2,5], which is [1,3,4,5]
+    // * because ...
+    //   bt[0]  = {1}
+    //   bt[1]  = {1,3}   ---> {1,2}
+    //   bt[2]  = {1,3,6} ---> {1,3,4} 
+    //   bt[m] != {sub[0], sub[1], ... sub[m]} (very important, source of confusion)
+    //
+    // But why do we try to minimize the values in sub? that is because ... 
+    // * if we are given [1,3,6,4,2,5], we can get subseq with size 4 as [1,3,4,5]
     // ************************************************************************************ //
     std::uint32_t longest_non_contiguous_increasing_subseq_bisect(const std::vector<std::uint32_t>& vec)
     {
         std::vector<std::uint32_t> sub; // unlike prev method, we don't know its size yet 
-        for(const auto& x:vec)
+        for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
             // Uses bisection in std::lower_bound, hence O(logN)
-            auto iter = std::lower_bound(sub.begin(), sub.end(), x);
+            auto iter = std::lower_bound(sub.begin(), sub.end(), vec[n]);
 
             // case 1
             if (iter == sub.end())
             {
-                sub.push_back(x);
+                sub.push_back(vec[n]);
             }
             // case 2
-            else if (x < *iter)
+            else if (*iter > vec[n])
             {
-                *iter = x;
+                *iter = vec[n];
             }
         }
         return sub.size();
