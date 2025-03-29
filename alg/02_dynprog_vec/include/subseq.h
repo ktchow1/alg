@@ -356,8 +356,8 @@ namespace alg
     // The subseq is strictly increasing.
     //
     // There are 2 approaches :
-    // * dynprog with O(N^2)     <--- sub[n] = subproblem LIS{vec[0]:vec[n]}
-    // * dynprog with O(Nlog(N)) <--- sub[n] = min vec[m], s.t. LIS{vec[0]:vec[m]} = n (note, it is min vec[m], not min m)
+    // * dynprog with O(N^2)     <--- sub[n] = LIS{vec[0]:vec[n]}
+    // * dynprog with O(Nlog(N)) <--- sub[n] = min vec[m], s.t. LIS{vec[0]:vec[m]} = n+1 (note, it is min vec[m], not min m)
     //
     std::uint32_t longest_non_contiguous_increasing_subseq(const std::vector<std::uint32_t>& vec)
     {
@@ -379,6 +379,23 @@ namespace alg
         return *std::max_element(sub.begin(), sub.end());
     }
 
+    // ************************************************************************************ //
+    // 1. How is sub kept sorted?          
+    // 2. How is sub maintained in case 2?
+    // 3. How is sub maintained in case 1?
+    // ************************************************************************************ //
+    // It is easier to understand why method 2 work if we define sub as : 
+    // sub[n] = whole subset with min last-value vec[m], s.t. LIS{vec[0]:vec[m]} = n+1
+    //          instead of storing last-value vec[m] only
+    //
+    //
+    // consider [1,3,6,4,2],
+    // * sub becomes [1,2,4]
+    // * subseq with size 2 will be [1,2],                 instead of [1,3]
+    // * subseq with size 3 will be [1,3,4] (not [1,2,4]), instead of [1,3,6] 
+    // * but why do we try to minimize the values in sub? that is because ... 
+    // * we can get subseq with size 4 in [1,3,6,4,2,5], which is [1,3,4,5]
+    // ************************************************************************************ //
     std::uint32_t longest_non_contiguous_increasing_subseq_bisect(const std::vector<std::uint32_t>& vec)
     {
         std::vector<std::uint32_t> sub; // unlike prev method, we don't know its size yet 
@@ -387,10 +404,12 @@ namespace alg
             // Uses bisection in std::lower_bound, hence O(logN)
             auto iter = std::lower_bound(sub.begin(), sub.end(), x);
 
+            // case 1
             if (iter == sub.end())
             {
                 sub.push_back(x);
             }
+            // case 2
             else if (x < *iter)
             {
                 *iter = x;
