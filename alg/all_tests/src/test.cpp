@@ -101,7 +101,7 @@ int main()
 //  test_bisection();
 //  test_stack();
 //  test_list();
-    test_lru_map();
+//  test_lru_map();
 //  test_tree();
 //  test_tree_variant();
 //  test_sorting();
@@ -109,7 +109,7 @@ int main()
 //  banner("02_dynprog_vec");
 //  test_two_point_sum();
 //  test_two_point_diff();
-//  test_subseq_sum();
+    test_subseq_sum();
 //  test_string_problem();
 //  test_stack_problem();
 //  test_sorting_problem();

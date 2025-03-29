@@ -353,21 +353,22 @@ namespace alg
     // ************************************* //
     // *** Longest increasing subseq LIS *** //
     // ************************************* //
-    // There are 2 approaches, maintaining different subproblems :
-    // * dynprog with O(N^2)     <--- sub[n] = LIS for subproblem vec[0]:vec[n]
-    // * dynprog with O(Nlog(N)) <--- sub[n] = minimum value vec[m], so that LIS of vec[0]:vec[m] is n
+    // There are 2 approaches :
+    // * dynprog with O(N^2)     <--- sub[n] = subproblem LIS{vec[0]:vec[n]}
+    // * dynprog with O(Nlog(N)) <--- sub[n] = min vec[m], s.t. LIS{vec[0]:vec[m]} = n (note, it is min vec[m], not min m)
     //
     std::uint32_t longest_non_contiguous_increasing_subseq(const std::vector<std::uint32_t>& vec)
     {
         std::vector<std::uint32_t> sub(vec.size(), 0); // sub[n] means the subproblem that must end with vec[n]
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            sub[n] = 1; // using vec[n] only as subseq
-            for(std::uint32_t m=0; m!=n; ++m)
+            sub[n] = 1; 
+            for(std::uint32_t m=0; m!=n; ++m) // consider all previous subprob m for next subprob n, where m < n
             {
-                if (vec[m] <= vec[n] && sub[n] < sub[m]+1)
+                if (vec[m] <= vec[n])
                 {
-                    sub[n] = sub[m] + 1;
+                   if (sub[n] < sub[m]+1)
+                       sub[n] = sub[m]+1;
                 }
             }
         }
@@ -377,7 +378,25 @@ namespace alg
 
     std::uint32_t longest_non_contiguous_increasing_subseq_bisect(const std::vector<std::uint32_t>& vec)
     {
-        return 0;
+        std::vector<std::uint32_t> sub; // unlike prev method, we don't know its size yet 
+        for(const auto& x:vec)
+        {
+            // Uses bisection in std::lower_bound, hence O(logN)
+            auto iter = std::lower_bound(sub.begin(), sub.end(), x);
+
+            // case 1 : when x is greater than all values in sub
+            //
+            if (iter == sub.end())
+            {
+                sub.push_back(x);
+            }
+            // case 2 : when x is 
+            else if (x < *iter)
+            {
+                *iter = x;
+            }
+        }
+        return sub.size();
     }
 }
 
