@@ -353,6 +353,8 @@ namespace alg
     // ************************************* //
     // *** Longest increasing subseq LIS *** //
     // ************************************* //
+    // The subseq is strictly increasing.
+    //
     // There are 2 approaches :
     // * dynprog with O(N^2)     <--- sub[n] = subproblem LIS{vec[0]:vec[n]}
     // * dynprog with O(Nlog(N)) <--- sub[n] = min vec[m], s.t. LIS{vec[0]:vec[m]} = n (note, it is min vec[m], not min m)
@@ -365,15 +367,16 @@ namespace alg
             sub[n] = 1; 
             for(std::uint32_t m=0; m!=n; ++m) // consider all previous subprob m for next subprob n, where m < n
             {
-                if (vec[m] <= vec[n])
+            //  if (vec[m] <= vec[n]) // <--- BUG1
+                if (vec[m] <  vec[n])
                 {
                    if (sub[n] < sub[m]+1)
                        sub[n] = sub[m]+1;
                 }
             }
         }
+    //  return sub[sub.size()-1]; // <--- BUG2
         return *std::max_element(sub.begin(), sub.end());
-    //  return sub[sub.size()-1]; // <--- BUG
     }
 
     std::uint32_t longest_non_contiguous_increasing_subseq_bisect(const std::vector<std::uint32_t>& vec)
@@ -384,13 +387,10 @@ namespace alg
             // Uses bisection in std::lower_bound, hence O(logN)
             auto iter = std::lower_bound(sub.begin(), sub.end(), x);
 
-            // case 1 : when x is greater than all values in sub
-            //
             if (iter == sub.end())
             {
                 sub.push_back(x);
             }
-            // case 2 : when x is 
             else if (x < *iter)
             {
                 *iter = x;
