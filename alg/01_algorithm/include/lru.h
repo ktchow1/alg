@@ -6,7 +6,7 @@
 #include<optional>
 
 
-// ******************************************************************* //
+// ********************************************************************************* //
 // Approach 1 
 // * std::unordered_map<K, std::pair<V, std::list<K>::iterator> 
 // * std::list<K>
@@ -20,10 +20,24 @@
 // * given an iter in list, we can get its  map position in O(1) 
 // * approach 1 is implemented in the below
 //
-// If lru_map supports delete, then lru_list will be more complicated,
-// as it needs to store the whole history as well.
-// ******************************************************************* //
-
+// ********************************************************************************* //
+// Remark 1 
+// * There is no function for modifying KEY in std::map or std::set.
+// * Do not include recent_used_timestamp or version in KEY.
+//
+// Remark 2 
+// * Can we use priority_queue instead of list for tracking recent-used-item? 
+// * No, because :
+//   (a) sorting in LRU is simple, always erase in middle and insert at the front
+//   (b) we cannot change an item in the middle of priority_queue and keep it sorted 
+//   (c) we cannot erase  an item in the middle of priority_queue and re-insert
+//       popping is possile from top only
+//        
+// Remark 3 
+// * Can we use std::map instead of list for tracking recent-used-item? 
+// * No, because of (a) above
+//
+// ********************************************************************************* //
 namespace alg
 {
     template<typename K, std::uint32_t N>
@@ -53,8 +67,11 @@ namespace alg
             m_list.splice(m_list.begin(), m_list, iter); // move "iter" of "m_list" to the front
         }
 
-    public: // For testing, peek without changing lru list
-        std::list<K> peek() const 
+    public: 
+        // ************************************************ //
+        // *** For testing only, peeking without change *** //
+        // ************************************************ //
+        const auto& peek() const 
         {
             return m_list;
         }
@@ -105,7 +122,131 @@ namespace alg
             }
         }
 
-    public: // For testing, peek without changing lru list
+    public: 
+        // ************************************************ //
+        // *** For testing only, peeking without change *** //
+        // ************************************************ //
+        auto peek() const 
+        {
+            std::vector<std::pair<K,V>> ans;
+            for(const auto& key : m_list.peek())
+            {
+                auto map_iter = m_map.find(key);
+                if (map_iter != m_map.end())
+                {
+                    ans.push_back(std::make_pair(key, map_iter->second.first));
+                }
+                else
+                {
+                    const V value{};
+                    ans.push_back(std::make_pair(key, value));
+                }
+            }
+            return ans;
+        }
+
+    private:
+        std::map<K, std::pair<V, typename std::list<K>::iterator>> m_map;
+        mutable lru_list<K,N> m_list;
+    };
+}
+
+
+
+// ******************************************************* //
+// *** Highest volumn stock problem (provided by Ilia) *** //
+// ******************************************************* //
+// Implement highest_vol_stock, which has function :
+// * void add(const K& symbol, const V& delta_value) 
+// * auto get(std::uint32_t top_N)
+// 
+namespace alg
+{
+    // ********************************* //
+    // *** Method 1 : similar to LRU *** //
+    // ********************************* //
+/*    template<typename K, typename V>
+    class indexer
+    {
+    public:
+        std::pair<typename std::list<K>::iterator, std::optional<K>> add(const K& key) 
+        {
+            auto add_iter = m_list.insert(m_list.begin(), key);
+
+            std::optional<K> del_key;
+            if (m_list.size() > N)
+            {
+                auto del_iter = --m_list.end();
+                del_key = *del_iter;
+                m_list.erase(del_iter);
+            }
+            return std::make_pair(add_iter, del_key);
+        }
+
+        void update(const typename std::list<K>::iterator& iter)
+        {
+            m_list.splice(m_list.begin(), m_list, iter); // move "iter" of "m_list" to the front
+        }
+
+    public: 
+        // ************************************************ //
+        // *** For testing only, peeking without change *** //
+        // ************************************************ //
+        auto peek() const 
+        {
+            return m_list;
+        }
+
+    private:
+        std::multi_map<V,K> m_impl;
+    };
+
+
+    template<typename K, typename V> // K = stock symbol, V = transaction volume
+    class highest_vol_stock
+    {
+    public:
+        void add(const K& key, const V& value)
+        {
+            auto map_iter = m_map.find(key);
+            if (map_iter != m_map.end())
+            {
+                m_list.update(map_iter->second.second);
+                map_iter->second.first = value;
+            }
+            else
+            {
+                auto [add_iter, del_key] = m_list.add(key);
+                m_map[key] = std::make_pair(value, add_iter);
+                
+                // ************************ //
+                // *** Delete stale key *** //
+                // ************************ //
+                if (del_key)
+                {
+                    m_map.erase(*del_key);
+                }
+            }
+        }
+
+        std::optional<V> get(const K& key) const
+        {
+            auto map_iter = m_map.find(key);
+            if (map_iter != m_map.end())
+            {
+                m_list.update(map_iter->second.second);
+                return std::make_optional(map_iter->second.first);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+    public: 
+        // ************************************************ //
+        // *** For testing only, peeking without change *** //
+        // ************************************************ //
         std::vector<std::pair<K,V>> peek() const 
         {
             std::vector<std::pair<K,V>> ans;
@@ -129,4 +270,5 @@ namespace alg
         std::map<K, std::pair<V, typename std::list<K>::iterator>> m_map;
         mutable lru_list<K,N> m_list;
     };
+*/
 }
