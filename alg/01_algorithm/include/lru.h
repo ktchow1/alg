@@ -18,15 +18,17 @@
 // That is, we can put V in either container. Both approaches are ok :
 // * given an iter in  map, we can get its list position instantly
 // * given an iter in list, we can get its  map position in O(1) 
-// * approach 1 is implemented in the below
+// * approach 2 is implemented in the below, to be consistent with value_indexed_map
 //
 // ********************************************************************************* //
+// Consideration about selecting STL container :
+//
 // Remark 1 
 // * There is no function for modifying KEY in std::map or std::set.
 // * Do not include recent_used_timestamp or version in KEY.
 //
 // Remark 2 
-// * Can we use priority_queue instead of list for tracking recent-used-item? 
+// * Can we use std::priority_queue instead of list for tracking recent-used-item? 
 // * No, because :
 //   (a) sorting in LRU is simple, always erase in middle and insert at the front
 //   (b) we cannot change an item in the middle of priority_queue and keep it sorted 
@@ -153,57 +155,29 @@ namespace alg
 
 
 
-// ******************************************************* //
-// *** Highest volumn stock problem (provided by Ilia) *** //
-// ******************************************************* //
-// Implement highest_vol_stock, which has function :
-// * void add(const K& symbol, const V& delta_value) 
-// * auto get(std::uint32_t top_N)
+// *************************************************************************************** //
+// Value indexed map 
+//
+// * this is a map<K,V> that allows
+//   O(logN) search of key
+//   O(logN) search of value
+//   iteratible in key 
+//   iteratible in value
+// * K to V is one to many mapping
+//   V to K is many to one mapping
+// * this container is generalized from "Highest volumn stock problem" provided by Ilia
 // 
+// *************************************************************************************** //
+// 1. Unlike LRU, which maintains sorted simply by putting latest item at the front,
+//    value_indexed_map maintains sorted by std::multi_map, hence dual map implementation.
+// 2. Unlike LRU, which needs to delete existing items when overflow, 
+//    value_indexed_map does not delete existing items, hence simpler.
+//
+// *************************************************************************************** //
 namespace alg
 {
-    // ********************************* //
-    // *** Method 1 : similar to LRU *** //
-    // ********************************* //
-/*    template<typename K, typename V>
-    class indexer
-    {
-    public:
-        std::pair<typename std::list<K>::iterator, std::optional<K>> add(const K& key) 
-        {
-            auto add_iter = m_list.insert(m_list.begin(), key);
-
-            std::optional<K> del_key;
-            if (m_list.size() > N)
-            {
-                auto del_iter = --m_list.end();
-                del_key = *del_iter;
-                m_list.erase(del_iter);
-            }
-            return std::make_pair(add_iter, del_key);
-        }
-
-        void update(const typename std::list<K>::iterator& iter)
-        {
-            m_list.splice(m_list.begin(), m_list, iter); // move "iter" of "m_list" to the front
-        }
-
-    public: 
-        // ************************************************ //
-        // *** For testing only, peeking without change *** //
-        // ************************************************ //
-        auto peek() const 
-        {
-            return m_list;
-        }
-
-    private:
-        std::multi_map<V,K> m_impl;
-    };
-
-
-    template<typename K, typename V> // K = stock symbol, V = transaction volume
-    class highest_vol_stock
+/*  template<typename K, typename V> 
+    class value_indexed_map
     {
     public:
         void add(const K& key, const V& value)
@@ -229,7 +203,7 @@ namespace alg
             }
         }
 
-        std::optional<V> get(const K& key) const
+        std::optional<V> get_with_key(const K& key) const
         {
             auto map_iter = m_map.find(key);
             if (map_iter != m_map.end())
@@ -241,6 +215,10 @@ namespace alg
             {
                 return std::nullopt;
             }
+        }
+
+        std::optional<K> get_with_value(const K& key) const
+        {
         }
 
     public: 
@@ -267,8 +245,7 @@ namespace alg
         }
 
     private:
-        std::map<K, std::pair<V, typename std::list<K>::iterator>> m_map;
-        mutable lru_list<K,N> m_list;
-    };
-*/
+        std::multi_map<V,K> m_sec_map;                                 // secondary map : V to K
+        std::map<K, typename decltyp(m_sec_map)::iterator>> m_pri_map; //   primary map : K to V
+    }; */
 }
