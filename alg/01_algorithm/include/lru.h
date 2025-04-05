@@ -193,17 +193,16 @@ namespace alg
         }
 
         // Todo : return all keys with same value
-        std::optional<K> get_with_value(const V& value) const
+        auto get_with_value(const V& value) const
         {
-            auto map1_iter = m_map1.find(value);
-            if (map1_iter != m_map1.end())
+            std::vector<K> ans;
+
+            auto range = m_map1.equal_range(value);
+            for (auto iter=range.first; iter!=range.second; ++iter)
             {
-                return std::make_optional(map1_iter->second);
+                ans.push_back(iter->second);
             }
-            else
-            {
-                return std::nullopt;
-            }
+            return ans;
         }
         
         /*
