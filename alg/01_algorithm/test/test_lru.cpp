@@ -4,14 +4,18 @@
 #include<lru.h>
 #include<utility.h>
 
-void compare(const std::vector<std::pair<std::string, std::uint32_t>>& v0, 
-             const std::vector<std::pair<std::string, std::uint32_t>>& v1)
+void compare(const std::list<std::pair<std::string, std::uint32_t>>& list0, 
+             const std::list<std::pair<std::string, std::uint32_t>>& list1)
 {
-    assert(v0.size() == v1.size());
-    for(std::uint32_t n=0; n!=v0.size(); ++n)
+    assert(list0.size() == list1.size());
+    auto iter0 = list0.begin();
+    auto iter1 = list1.begin();
+    while(iter0 != list0.end() && iter1 != list1.end())
     {
-        assert(v0[n].first  == v1[n].first);
-        assert(v0[n].second == v1[n].second);
+        assert(iter0->first  == iter1->first);
+        assert(iter0->second == iter1->second);
+        ++iter0;
+        ++iter1;
     }
 }
 

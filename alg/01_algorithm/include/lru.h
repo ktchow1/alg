@@ -42,44 +42,44 @@
 // ********************************************************************************* //
 namespace alg
 {
-    template<typename K, std::uint32_t N>
+    template<typename K, typename V, std::uint32_t N>
     class lru_list
     {
     public:
-        // *****************************************************//
-        // Create node whenever we add,   return by iterator
-        // Delete node whenever its full, return by optional<K>
-        // *****************************************************//
-        std::pair<typename std::list<K>::iterator, std::optional<K>> add(const K& key) 
+        // **************************************************************** //
+        // Create node whenever we add,   return insert-node by iterator
+        // Delete node whenever its full, return delete-node by optional<K>
+        // **************************************************************** //
+        std::pair<typename std::list<std::pair<K,V>>::iterator, std::optional<K>> add(const K& key, const V& value) 
         {
-            auto add_iter = m_list.insert(m_list.begin(), key);
+            auto add_iter = m_list.emplace(m_list.begin(), key, value);
 
             std::optional<K> del_key;
             if (m_list.size() > N)
             {
                 auto del_iter = --m_list.end();
-                del_key = *del_iter;
+                del_key = del_iter->first;
                 m_list.erase(del_iter);
             }
             return std::make_pair(add_iter, del_key);
         }
 
-        void update(const typename std::list<K>::iterator& iter)
+        void update(const typename std::list<std::pair<K,V>>::iterator& iter)
         {
-            m_list.splice(m_list.begin(), m_list, iter); // move "iter" of "m_list" to the front
+            m_list.splice(m_list.begin(), m_list, iter); // move "iter" to the front
         }
 
     public: 
-        // ************************************************ //
-        // *** For testing only, peeking without change *** //
-        // ************************************************ //
+        // ************************ //
+        // *** For testing only *** //
+        // ************************ //
         const auto& peek() const 
         {
             return m_list;
         }
 
     private:
-        std::list<K> m_list;
+        std::list<std::pair<K,V>> m_list;
     };
 
 
@@ -92,13 +92,13 @@ namespace alg
             auto map_iter = m_map.find(key);
             if (map_iter != m_map.end())
             {
-                m_list.update(map_iter->second.second);
-                map_iter->second.first = value;
+                m_list.update(map_iter->second);
+                map_iter->second->second = value;
             }
             else
             {
-                auto [add_iter, del_key] = m_list.add(key);
-                m_map[key] = std::make_pair(value, add_iter);
+                auto [add_iter, del_key] = m_list.add(key, value);
+                m_map[key] = add_iter;
                 
                 // ************************ //
                 // *** Delete stale key *** //
@@ -115,8 +115,8 @@ namespace alg
             auto map_iter = m_map.find(key);
             if (map_iter != m_map.end())
             {
-                m_list.update(map_iter->second.second);
-                return std::make_optional(map_iter->second.first);
+                m_list.update(map_iter->second);
+                return std::make_optional(map_iter->second->second);
             }
             else
             {
@@ -125,31 +125,17 @@ namespace alg
         }
 
     public: 
-        // ************************************************ //
-        // *** For testing only, peeking without change *** //
-        // ************************************************ //
+        // ************************ //
+        // *** For testing only *** //
+        // ************************ //
         auto peek() const 
         {
-            std::vector<std::pair<K,V>> ans;
-            for(const auto& key : m_list.peek())
-            {
-                auto map_iter = m_map.find(key);
-                if (map_iter != m_map.end())
-                {
-                    ans.push_back(std::make_pair(key, map_iter->second.first));
-                }
-                else
-                {
-                    const V value{};
-                    ans.push_back(std::make_pair(key, value));
-                }
-            }
-            return ans;
+            return m_list.peek();
         }
 
     private:
-        std::map<K, std::pair<V, typename std::list<K>::iterator>> m_map;
-        mutable lru_list<K,N> m_list;
+        std::map<K, typename std::list<std::pair<K,V>>::iterator> m_map;
+        mutable lru_list<K,V,N> m_list;
     };
 }
 
