@@ -192,7 +192,6 @@ namespace alg
             }
         }
 
-        // Todo : return all keys with same value
         auto get_with_value(const V& value) const
         {
             std::vector<K> ans;
@@ -205,14 +204,17 @@ namespace alg
             return ans;
         }
         
-        /*
     public:
-        // Todo
-        std::optional<std::pair<K.V>> get_top() const
+        std::optional<std::pair<K,V>> get_top() const
         {
+            if (!m_map1.empty())
+            {
+                auto iter = m_map1.begin();
+                return std::make_optional(std::make_pair(iter->second, iter->first));
+            }
+            return std::nullopt;
         }
-
-        // Apply range-lib here
+/*
         std::vector<std::pair<K.V>> get_top_N(std::uint32_t N) const
         {
         } */
