@@ -153,6 +153,9 @@ namespace alg
 // 2. Unlike LRU, which needs to delete existing items when overflow, 
 //    value_indexed_map does not delete existing items, hence simpler.
 //
+// Therefore :
+// * least recent used map = map + list
+// * value indexed map     = map + multimap
 // *************************************************************************************** //
 namespace alg
 {
@@ -165,15 +168,17 @@ namespace alg
             auto map0_iter = m_map0.find(key);
             if (map0_iter != m_map0.end())
             {
-            //  map0_iter->first = value; // BUG : KEY cannot be modified, need to erase and re-insert
-
+            //  map0_iter->second->first = value; // BUG : KEY cannot be modified, need to erase and re-insert
+                
+                m_map1.erase(map0_iter->second);
+                map0_iter->second = m_map1.emplace(value, key);
             }
             else
             {
                 m_map0[key] = m_map1.emplace(value, key);
             } 
         }
-/*
+  
         std::optional<V> get_with_key(const K& key) const
         {
             auto map0_iter = m_map0.find(key);
@@ -187,12 +192,34 @@ namespace alg
             }
         }
 
+        // Todo : return all keys with same value
         std::optional<K> get_with_value(const V& value) const
         {
+            auto map1_iter = m_map1.find(value);
+            if (map1_iter != m_map1.end())
+            {
+                return std::make_optional(map1_iter->second);
+            }
+            else
+            {
+                return std::nullopt;
+            }
         }
-*/
+        
+        /*
+    public:
+        // Todo
+        std::optional<std::pair<K.V>> get_top() const
+        {
+        }
+
+        // Apply range-lib here
+        std::vector<std::pair<K.V>> get_top_N(std::uint32_t N) const
+        {
+        } */
+  
     private:
-        std::multimap<V,K, std::greater<>> m_map1;               // secondary map : V to K (note : use comparator)
+        std::multimap<V,K,std::greater<>> m_map1;                // secondary map : V to K (note : use comparator)
         std::map<K, typename decltype(m_map1)::iterator> m_map0; //   primary map : K to V (note : use decltype to reduce code)
     }; 
 }
