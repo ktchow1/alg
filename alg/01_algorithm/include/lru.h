@@ -47,10 +47,10 @@ namespace alg
     {
     public:
         // **************************************************************** //
-        // Create node whenever we add,   return insert-node by iterator
+        // Create node whenever we set,   return insert-node by iterator
         // Delete node whenever its full, return delete-node by optional<K>
         // **************************************************************** //
-        std::pair<typename std::list<std::pair<K,V>>::iterator, std::optional<K>> add(const K& key, const V& value) 
+        std::pair<typename std::list<std::pair<K,V>>::iterator, std::optional<K>> set(const K& key, const V& value) 
         {
             auto add_iter = m_list.emplace(m_list.begin(), key, value);
 
@@ -70,10 +70,7 @@ namespace alg
         }
 
     public: 
-        // ************************ //
-        // *** For testing only *** //
-        // ************************ //
-        const auto& peek() const 
+        const auto& peek() const // for testing only
         {
             return m_list;
         }
@@ -87,7 +84,7 @@ namespace alg
     class lru_map
     {
     public:
-        void add(const K& key, const V& value)
+        void set(const K& key, const V& value)
         {
             auto map_iter = m_map.find(key);
             if (map_iter != m_map.end())
@@ -97,7 +94,7 @@ namespace alg
             }
             else
             {
-                auto [add_iter, del_key] = m_list.add(key, value);
+                auto [add_iter, del_key] = m_list.set(key, value);
                 m_map[key] = add_iter;
                 
                 // ************************ //
@@ -125,10 +122,7 @@ namespace alg
         }
 
     public: 
-        // ************************ //
-        // *** For testing only *** //
-        // ************************ //
-        auto peek() const 
+        auto peek() const // for testing only
         {
             return m_list.peek();
         }
@@ -147,8 +141,8 @@ namespace alg
 // * this is a map<K,V> that allows
 //   O(logN) search of key
 //   O(logN) search of value
-//   iteratible in key 
-//   iteratible in value
+//   iteratible in key   (sorted in increasing order)
+//   iteratible in value (sorted in decreasing order)
 // * K to V is one to many mapping
 //   V to K is many to one mapping
 // * this container is generalized from "Highest volumn stock problem" provided by Ilia
@@ -162,40 +156,30 @@ namespace alg
 // *************************************************************************************** //
 namespace alg
 {
-/*  template<typename K, typename V> 
+    template<typename K, typename V> 
     class value_indexed_map
     {
     public:
-        void add(const K& key, const V& value)
+        void set(const K& key, const V& value)
         {
-            auto map_iter = m_map.find(key);
-            if (map_iter != m_map.end())
+            auto map0_iter = m_map0.find(key);
+            if (map0_iter != m_map0.end())
             {
-                m_list.update(map_iter->second.second);
-                map_iter->second.first = value;
+            //  map0_iter->first = value; // BUG : KEY cannot be modified, need to erase and re-insert
+
             }
             else
             {
-                auto [add_iter, del_key] = m_list.add(key);
-                m_map[key] = std::make_pair(value, add_iter);
-                
-                // ************************ //
-                // *** Delete stale key *** //
-                // ************************ //
-                if (del_key)
-                {
-                    m_map.erase(*del_key);
-                }
-            }
+                m_map0[key] = m_map1.emplace(value, key);
+            } 
         }
-
+/*
         std::optional<V> get_with_key(const K& key) const
         {
-            auto map_iter = m_map.find(key);
-            if (map_iter != m_map.end())
+            auto map0_iter = m_map0.find(key);
+            if (map0_iter != m_map0.end())
             {
-                m_list.update(map_iter->second.second);
-                return std::make_optional(map_iter->second.first);
+                return std::make_optional(map0_iter->second.first);
             }
             else
             {
@@ -203,35 +187,12 @@ namespace alg
             }
         }
 
-        std::optional<K> get_with_value(const K& key) const
+        std::optional<K> get_with_value(const V& value) const
         {
         }
-
-    public: 
-        // ************************************************ //
-        // *** For testing only, peeking without change *** //
-        // ************************************************ //
-        std::vector<std::pair<K,V>> peek() const 
-        {
-            std::vector<std::pair<K,V>> ans;
-            for(const auto& key : m_list.peek())
-            {
-                auto map_iter = m_map.find(key);
-                if (map_iter != m_map.end())
-                {
-                    ans.push_back(std::make_pair(key, map_iter->second.first));
-                }
-                else
-                {
-                    const V value{};
-                    ans.push_back(std::make_pair(key, value));
-                }
-            }
-            return ans;
-        }
-
+*/
     private:
-        std::multi_map<V,K> m_sec_map;                                 // secondary map : V to K
-        std::map<K, typename decltyp(m_sec_map)::iterator>> m_pri_map; //   primary map : K to V
-    }; */
+        std::multimap<V,K, std::greater<>> m_map1;               // secondary map : V to K (note : use comparator)
+        std::map<K, typename decltype(m_map1)::iterator> m_map0; //   primary map : K to V (note : use decltype to reduce code)
+    }; 
 }

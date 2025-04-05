@@ -23,11 +23,11 @@ void test_lru_map()
 {
     alg::lru_map<std::string, std::uint32_t, 5> lru;
 
-    lru.add("abc_100", 100);
-    lru.add("abc_101", 101);
-    lru.add("abc_102", 102);
-    lru.add("abc_103", 103);
-    lru.add("abc_104", 104);
+    lru.set("abc_100", 100);
+    lru.set("abc_101", 101);
+    lru.set("abc_102", 102);
+    lru.set("abc_103", 103);
+    lru.set("abc_104", 104);
     compare(lru.peek(), 
     {    
         {"abc_104", 104},
@@ -37,8 +37,8 @@ void test_lru_map()
         {"abc_100", 100}
     });
 
-    lru.add("abc_105", 105);
-    lru.add("abc_106", 106);
+    lru.set("abc_105", 105);
+    lru.set("abc_106", 106);
     compare(lru.peek(), 
     {    
         {"abc_106", 106},
@@ -48,8 +48,8 @@ void test_lru_map()
         {"abc_102", 102}
     });
 
-    lru.add("abc_102", 202);
-    lru.add("abc_103", 203);
+    lru.set("abc_102", 202);
+    lru.set("abc_103", 203);
     compare(lru.peek(), 
     {    
         {"abc_103", 203},
@@ -59,8 +59,8 @@ void test_lru_map()
         {"abc_104", 104}
     });
 
-    lru.add("abc_107", 107);
-    lru.add("abc_108", 108);
+    lru.set("abc_107", 107);
+    lru.set("abc_108", 108);
     compare(lru.peek(), 
     {    
         {"abc_108", 108},
@@ -72,8 +72,8 @@ void test_lru_map()
 
     lru.get("abc_107");
     lru.get("abc_106");
-    lru.add("abc_109", 109);
-    lru.add("abc_110", 110);
+    lru.set("abc_109", 109);
+    lru.set("abc_110", 110);
     compare(lru.peek(), 
     {    
         {"abc_110", 110},
