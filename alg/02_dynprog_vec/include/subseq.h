@@ -86,7 +86,17 @@ namespace alg
         return ans;
     }
 
-    std::int32_t max_puzzle_game(const std::vector<std::int32_t>& vec)
+
+    // ************************************************************************** //
+    // Puzzle game (from SMarket)
+    //
+    // Given a vector of unsorted numbers :
+    // * 2 player in turn pick a number
+    // * all elements equal that number     are removed, add to player's score
+    // * all elements equal that number+/-1 are removed
+    // * repeat until vector becomes empty, player with higher score win.
+    // ************************************************************************** //
+    std::int32_t max_puzzle_game(const std::vector<std::int32_t>& vec) 
     {
         // step 1 : build histogram
         std::unordered_map<std::int32_t, std::uint32_t> hist;    
@@ -302,12 +312,24 @@ namespace alg
         return ans;
     }
 
-    // ******************************************************** //
+    // *************************************************************** //
     // 1. Only count less-than-target (use upper_bound)
     //    Don't count equal-to-target (not lower_bound)
     // 2. Input numbers are strictly positive (cannot be zero).
     //    We set cum = 1, unlike max_subseq_prd_bmk.
-    // ******************************************************** //
+    // *************************************************************** //
+    // Remark : Consider target = 10
+    //
+    // cum  | cum / target | min n in hist, such that cum / n < target 
+    // -----+--------------+-------------------------------------------
+    // 28   | 2.8          | 3     as 28 / 3 < 10
+    // 29   | 2.9          | 3     as 29 / 3 < 10
+    // 30   | 3.0          | 4     as 30 / 4 < 10
+    // 31   | 3.1          | 4     as 31 / 4 < 10
+    // 32   | 3.2          | 4     as 32 / 4 < 10
+    //
+    // hence we have : n = upper_bound(cum/target)
+    // *************************************************************** //
     std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target)
     {
         std::map<std::uint64_t, std::int32_t> index;
@@ -338,17 +360,83 @@ namespace alg
         return ans;
     }
 
-    // Remark : Consider target = 10
+    // ************************************* //
+    // *** Longest increasing subseq LIS *** //
+    // ************************************* //
+    // The subseq is strictly increasing.
     //
-    // cum  | cum / target | min n in hist, such that cum / n < target 
-    // -----+--------------+-------------------------------------------
-    // 28   | 2.8          | 3     as 28 / 3 < 10
-    // 29   | 2.9          | 3     as 29 / 3 < 10
-    // 30   | 3.0          | 4     as 30 / 4 < 10
-    // 31   | 3.1          | 4     as 31 / 4 < 10
-    // 32   | 3.2          | 4     as 32 / 4 < 10
+    // There are 2 approaches :
+    // * dynprog with O(N^2)     <--- sub[n] = LIS{vec[0]:vec[n]}
+    // * dynprog with O(Nlog(N)) <--- sub[n] = min vec[m], s.t. LIS{vec[0]:vec[m]} = n+1 (note, it is min vec[m], not min m)
     //
-    // hence we have : n = upper_bound(cum/target)
+    std::uint32_t longest_non_contiguous_increasing_subseq(const std::vector<std::uint32_t>& vec)
+    {
+        std::vector<std::uint32_t> sub(vec.size(), 0); // sub[n] means the subproblem that must end with vec[n]
+        for(std::uint32_t n=0; n!=vec.size(); ++n)
+        {
+            sub[n] = 1; 
+            for(std::uint32_t m=0; m!=n; ++m) // consider all previous subprob m for next subprob n, where m < n
+            {
+            //  if (vec[m] <= vec[n]) // <--- BUG1
+                if (vec[m] <  vec[n])
+                {
+                   if (sub[n] < sub[m]+1)
+                       sub[n] = sub[m]+1;
+                }
+            }
+        }
+    //  return sub[sub.size()-1]; // <--- BUG2
+        return *std::max_element(sub.begin(), sub.end());
+    }
+
+    // ************************************************************************************ //
+    // 1. How is sub kept sorted?          
+    // 2. How is sub maintained in case 2?
+    // 3. How is sub maintained in case 1?
+    // ************************************************************************************ //
+    // To understand why method 2 work if we define backtrace "bt" as : 
+    //  bt[n] = whole subset with min last-value vec[m], s.t. LIS{vec[0]:vec[m]} = n+1
+    // sub[n] =                   min last-value vec[m] only
+    //
+    // If we are updating sub[m] and bt[m] for value vec[n],
+    // for case 1, bt[m] = bt[m-1].append(vec[n])
+    // for case 2, bt[m] = bt[m-1].append(vec[n]) 
+    // yes ... the same update equation for bt[m] in both cases
+    //
+    // Consider example [1,3,6,4,2]
+    // * sub becomes [1,2,4]
+    // * subseq with size 2 will be [1,2],                 instead of [1,3]
+    // * subseq with size 3 will be [1,3,4] (not [1,2,4]), instead of [1,3,6] 
+    // * because ...
+    //   bt[0]  = {1}
+    //   bt[1]  = {1,3}   ---> {1,2}
+    //   bt[2]  = {1,3,6} ---> {1,3,4} 
+    //   bt[m] != {sub[0], sub[1], ... sub[m]} (very important, source of confusion)
+    //
+    // But why do we try to minimize the values in sub? that is because ... 
+    // * if we are given [1,3,6,4,2,5], we can get subseq with size 4 as [1,3,4,5]
+    // ************************************************************************************ //
+    std::uint32_t longest_non_contiguous_increasing_subseq_bisect(const std::vector<std::uint32_t>& vec)
+    {
+        std::vector<std::uint32_t> sub; // unlike prev method, we don't know its size yet 
+        for(std::uint32_t n=0; n!=vec.size(); ++n)
+        {
+            // Uses bisection in std::lower_bound, hence O(logN)
+            auto iter = std::lower_bound(sub.begin(), sub.end(), vec[n]);
+
+            // case 1
+            if (iter == sub.end())
+            {
+                sub.push_back(vec[n]);
+            }
+            // case 2
+            else if (*iter > vec[n])
+            {
+                *iter = vec[n];
+            }
+        }
+        return sub.size();
+    }
 }
 
 

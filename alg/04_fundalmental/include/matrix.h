@@ -1,5 +1,6 @@
 #pragma once
 #include<iostream>
+#include<iomanip>
 #include<cstdint>
 #include<vector>
 
@@ -64,6 +65,18 @@ namespace alg
             return m_size_x;
         }
         
+        bool set_row(std::uint32_t y, const std::vector<T>& vec)
+        {
+            if (y          >= m_size_y) return false;
+            if (vec.size() != m_size_x) return false;
+
+            for(std::uint32_t x=0; x!=vec.size(); ++x)
+            {
+                operator()(y,x) = vec[x];
+            }
+            return true;
+        }
+
         void debug(const std::string& name, bool print_half = false) const noexcept
         {
             std::cout << "\nmatrix " << name;

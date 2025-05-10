@@ -5,6 +5,8 @@
 #include<vector>
 #include<algorithm>
 #include<functional>
+
+#include<matrix.h>
 #include<statistics.h>
 #include<timer.h>
 
@@ -58,6 +60,16 @@ inline std::string gen_random_palindrome(std::uint32_t size, std::uint32_t alpha
     return str;
 }
 
+inline std::vector<bool> gen_random_bool_vec(std::uint32_t size)
+{
+    std::vector<bool> ans;
+    for(std::uint32_t n=0; n!=size; ++n)
+    {
+        ans.push_back(std::rand()%2==0? true : false);
+    }
+    return ans;
+}
+
 template<typename T>
 std::vector<T> gen_random_vec(std::uint32_t size, T min, T max)
 {
@@ -90,6 +102,33 @@ std::vector<T> gen_random_partial_sorted_vec(std::uint32_t size, T min, T max)
         std::uint32_t n0 = rand() & (N1-N0) + N0; 
         std::uint32_t n1 = rand() & (N1-N0) + N0; 
         std::swap(ans[n0], ans[n1]);
+    }
+    return ans;
+}
+
+inline std::vector<std::uint32_t> gen_random_mono_increase_vec(std::uint32_t size, std::uint32_t min_delta, std::uint32_t max_delta)
+{
+    std::vector<std::uint32_t> ans;
+
+    std::uint32_t x = 0;
+    for(std::uint32_t n=0; n!=size; ++n)
+    {
+        x += min_delta + rand() % (max_delta - min_delta);
+        ans.push_back(x);
+    }
+    return ans;
+}
+
+template<typename T>
+alg::matrix<T> gen_random_mat(std::uint32_t size_y, std::uint32_t size_x, T min, T max)
+{
+    alg::matrix<T> ans(size_y, size_x);
+    for(std::uint32_t y=0; y!=size_y; ++y)
+    {
+        for(std::uint32_t x=0; x!=size_x; ++x)
+        {
+            ans(y,x) = min + std::rand() % (max-min);
+        }
     }
     return ans;
 }
@@ -395,14 +434,15 @@ void benchmark(const std::string&  test_name,
     {
         if constexpr (GEN_NUM == 1)
         {
-            auto data = gen_function();
+            auto data0 = gen_function();
+            auto data1 = data0;
 
             timer0.click();
-            auto ans0 = alg_function(data);
+            auto ans0 = alg_function(data0);
             timer0.click();
 
             timer1.click();
-            auto ans1 = bmk_function(data); 
+            auto ans1 = bmk_function(data1); 
             timer1.click();
 
             if (ans0 != ans1) ++error;
@@ -417,15 +457,17 @@ void benchmark(const std::string&  test_name,
         }
         else
         {
-            auto data0 = gen_function();
-            auto data1 = gen_function();
+            auto dataA0 = gen_function();
+            auto dataB0 = gen_function();
+            auto dataA1 = dataA0;
+            auto dataB1 = dataB0;
 
             timer0.click();
-            auto ans0 = alg_function(data0, data1);
+            auto ans0 = alg_function(dataA0, dataB0);
             timer0.click();
 
             timer1.click();
-            auto ans1 = bmk_function(data0, data1); 
+            auto ans1 = bmk_function(dataA1, dataB1); 
             timer1.click();
 
             if (ans0 != ans1) ++error;

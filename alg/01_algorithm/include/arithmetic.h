@@ -7,127 +7,108 @@
 
 namespace alg 
 {
-    class bignum
+    inline char itoc(std::uint32_t i) // i = [0,9]
     {
-    public:
-        bignum() = default;
+        return (char)('0'+i);
+    }
 
-        explicit bignum(const std::string& str)
-        {
-            for(std::uint32_t n=str.size(); n!=0; --n)
-            {
-                if (str[n-1] >= '0' &&
-                    str[n-1] <= '9') { m_digits.push_back((std::uint32_t)str[n-1] - '0'); }
-                else                 { m_digits.clear();   break;                         }
-            }
-            trim_zeros();
-        }
-
-        auto to_string() const noexcept
-        {
-            std::string str;
-            for(std::uint32_t n=m_digits.size(); n!=0; --n)
-            {
-                str.push_back((char)(m_digits[n-1] + '0'));
-            }
-            return str;
-        }   
-
-    public:
-        void push_back(std::uint32_t n) 
-        {
-            m_digits.push_back(n);
-        }
-
-        std::uint32_t size() const noexcept
-        {
-            return m_digits.size();
-        }
-
-        std::uint32_t operator[](std::uint32_t n) const noexcept
-        {
-            return m_digits[n];
-        }
-
-    private:
-        void trim_zeros()
-        {
-            while(m_digits.size() > 1 && m_digits.back() == 0) m_digits.pop_back();
-        }
-
-    private:
-        std::vector<std::uint32_t> m_digits; // from LSB to MSB
-    };
-
-
-    inline bignum operator+(const bignum& x, const bignum& y)
+    inline std::uint32_t ctoi(char c)
     {
-        bignum ans;
+        return (std::uint32_t)(c-'0');
+    }
+
+    inline std::uint32_t get_n_LSD(const std::string& x, std::uint32_t n) // n_lsd = n-th least significant digit
+    {
+        return ctoi(x[x.size()-1-n]);
+    }
+
+    inline void add_before_MSD(std::string& x, std::uint32_t i) // msd = most significant digit
+    {
+        x.insert(x.begin(), itoc(i));
+    }
+
+    inline bool is_zero(const std::string& x)
+    {
+        return x.size() == 1 && x[0] == '0'; // BUG : compare to '0', NOT to 0
+    }
+
+
+    // *********** //
+    // *** ADD *** //
+    // *********** //
+    inline std::string bignum_add(const std::string& x, const std::string& y)
+    {
+        std::string ans;
 
         std::uint32_t n = 0;
         std::uint32_t c = 0; // carry
         while(n < x.size() && n < y.size())
         {
-            std::uint32_t s = x[n] + y[n] + c;
+            std::uint32_t s = get_n_LSD(x,n) + get_n_LSD(y,n) + c;
             c = s / 10;
             s = s % 10;
-            ans.push_back(s);
+            add_before_MSD(ans,s);
             ++n;
         }
         while(n < x.size())
         {
-            std::uint32_t s = x[n] + c;
+            std::uint32_t s = get_n_LSD(x,n) + c;
             c = s / 10;
             s = s % 10;
-            ans.push_back(s);
+            add_before_MSD(ans,s);
             ++n;
         }
         while(n < y.size())
         {
-            std::uint32_t s = y[n] + c;
+            std::uint32_t s = get_n_LSD(y,n) + c;
             c = s / 10;
             s = s % 10;
-            ans.push_back(s);
+            add_before_MSD(ans,s);
             ++n;
         }
-        if (c > 0) ans.push_back(c);
+        if (c > 0) add_before_MSD(ans,c);
         return ans;
     }
 
-    inline bignum operator<<(const bignum& x, std::uint32_t num_of_digits) 
-    {
-        if (x.size() == 1 && x[0] == 0) return x;
-        bignum ans;
 
-        for(std::uint32_t n=0; n!=num_of_digits; ++n) ans.push_back(0);
-        for(std::uint32_t n=0; n!=x.size();      ++n) ans.push_back(x[n]);
+    // **************** //
+    // *** MULTIPLY *** //
+    // **************** //
+    inline std::string bignum_scale(const std::string& x, std::uint32_t num_of_digits) 
+    {
+        auto ans = x;
+        if (!is_zero(x))
+        {
+            ans.append(std::string(num_of_digits, '0'));
+        }
         return ans;
     }
 
-    inline bignum operator*(const bignum& x, const bignum& y)
+    inline std::string bignum_multiply(const std::string& x, const std::string& y)
     {
-        if (x.size() == 1 && x[0] == 0) return x;
-        if (y.size() == 1 && y[0] == 0) return y;
-        bignum ans{"0"};
+        std::string ans{"0"};
+        if (is_zero(x)) return ans;
+        if (is_zero(y)) return ans;
 
         for(std::uint32_t n=0; n!=y.size(); ++n)
         {
-            bignum tmp;
+            std::string tmp; // tmp = (whole x) * (n-th LSD of y)
 
             std::uint32_t c = 0;
             for(std::uint32_t m=0; m!=x.size(); ++m)
             {
-                std::uint32_t p = y[n] * x[m] + c;
+                std::uint32_t p = get_n_LSD(y,n) * get_n_LSD(x,m) + c;
                 c = p / 10;
                 p = p % 10;
-                tmp.push_back(p);
+                add_before_MSD(tmp,p);
             }
             if (c > 0) 
             {
-                tmp.push_back(c);
+                add_before_MSD(tmp,c);
             }
-            tmp = tmp << n;
-            ans = ans + tmp;
+
+            tmp = bignum_scale(tmp, n);
+            ans = bignum_add(ans, tmp);
         }
         return ans;
     }

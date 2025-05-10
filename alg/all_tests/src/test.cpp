@@ -5,6 +5,7 @@
 void test_arithmetic();
 void test_bisection();
 void test_stack();
+void test_dual();
 void test_list();
 void test_tree();
 void test_tree_variant();
@@ -25,6 +26,7 @@ void test_dp_matrix_only();
 // *** 04_fundalmental *** //
 void test_cast();
 void test_constexpr();
+void test_constexpr_array();
 void test_constexpr_map();
 void test_exception();
 void test_memory_allocator();
@@ -82,6 +84,13 @@ void test_concepts_apply();
 void test_concepts_define();
 void test_concepts_define_examples();
 
+// *** 08_interview *** //
+void test_alphagrep();
+void test_apt_research();
+void test_archax();
+void test_citadel();
+void test_optiver();
+
 
 
 inline void banner(const std::string str)
@@ -99,6 +108,7 @@ int main()
 //  test_arithmetic();
 //  test_bisection();
 //  test_stack();
+//  test_dual();
 //  test_list();
 //  test_tree();
 //  test_tree_variant();
@@ -111,14 +121,15 @@ int main()
 //  test_string_problem();
 //  test_stack_problem();
 //  test_sorting_problem();
-//    
+//
 //  banner("03_dynprog");
 //  test_dp_matrix_and_graph();
 //  test_dp_matrix_only();  
-//  
+//
 //  banner("04_fundalmental");
 //  test_cast();
 //  test_constexpr();
+//  test_constexpr_array();
 //  test_constexpr_map();
 //  test_exception();
 //  test_memory_allocator();
@@ -153,22 +164,22 @@ int main()
 //  test_variant_basic();  
 //  test_variant_overloading_lambda();  
 //  test_variant_visit(); 
-      
+//
 //  banner("06_threading");
 //  test_thread_create();
 //  test_thread_stop_source();
 //  test_thread_timing();
 //  test_spinlock_mutex();
-    test_shared_mutex();
+//  test_shared_mutex();
 //  test_semaphore();
 //  test_singleton();
 //  test_synchronization();
 //  test_promise_future();
-
+//
 //  banner("06_threading - mpmcq & threadpool");
 //  test_mpmcq();
 //  test_threadpool();
-
+//
 //  banner("07_cpp20");  
 //  test_spaceship();
 //  test_range();
@@ -176,22 +187,12 @@ int main()
 //  test_concepts_define();
 //  test_concepts_define_examples();
 
-//  banner("08_interview");
-//  interview::test_alphagrep_max_min_diff_in_subset();
-//  interview::test_alphagrep_count_k_odd_subseq(); 
-//  interview::test_alphagrep_count_decreasing_triplet();
-//  interview::test_alphagrep_count_step_function();
-//  interview::test_apt3();
-//  interview::test_apt4();
-//  interview::test_apt5();
-//  interview::test_archax_min_missing_pos_num();
-//  interview::test_citadel_matrix_spiral();
-//  interview::test_citadel_K_merge();
-//  interview::test_citadel_max_rook_sum();
-//  interview::test_epoch_state();
-//  interview::test_optiver_tree_checker();
-//  interview::test_smarket_subseq_product();
-//  interview::test_smarket_point_puzzle();
+    banner("08_interview");
+    test_alphagrep();
+    test_apt_research();
+    test_archax();
+    test_citadel();
+    test_optiver();
   
     std::cout << "\n\n\n";
     return 0;

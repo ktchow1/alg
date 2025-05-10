@@ -61,6 +61,11 @@ void test_subseq_sum()
                  std::bind(alg::count_less_than_target_subseq_prd_bmk, _1, 1234), 
                  num_trial); 
     
+    benchmark<1>("longest_non_contiguous_increasing_subseq", 
+                 std::bind(gen_random_vec<std::uint32_t>, 30, 1, 100), 
+                 std::bind(alg::longest_non_contiguous_increasing_subseq,        _1),
+                 std::bind(alg::longest_non_contiguous_increasing_subseq_bisect, _1), 
+                 num_trial); 
 }
 
 
