@@ -118,11 +118,30 @@ void test_coroutine_generator()
 // *************** //
 void test_coroutine_awaitor()
 {
-    std::cout << "\n";
-    std::cout << "\n";
-    std::cout << "\n";
+    std::cout << "\n--------------------";
+    future2<pod_T,pod_U> fut = coroutine2<pod_T,pod_U>();
+    auto& t = fut.get_product_T_ref();
+    auto& u = fut.get_product_U_ref();
+    std::cout << "\n--------------------";
+    for(int i=0; i<8; ++i) 
+    {
+        // produce here
+        t.a = static_cast<char>('A' + i);
+        t.n = i;
 
+        std::cout << "\ncaller produces t = " << t;
+        fut.push_product();
+        std::cout << "\ncaller produces u = " << u;
+        fut.push_product();
+    }
+    std::cout << "\n\n";
+    std::cout << "\n";
+    std::cout << "\n";
+    std::cout << "\n";
+}
 
+void test_coroutine_awaitor2()
+{
     // *** Experiment 0 *** //
     std::coroutine_handle<> h0;
     std::cout << "\nExperiment 0";
@@ -148,32 +167,9 @@ void test_coroutine_awaitor()
 //      h1();
 //  }
 //  std::cout << "\n\n";
-
-
-    // *** Experiment 2 *** //
-    std::cout << "\nExperiment 2";
-    std::cout << "\n--------------------";
-    future2<pod_T,pod_U> fut = coroutine2<pod_T,pod_U>();
-    auto& t = fut.get_product_T_ref();
-    auto& u = fut.get_product_U_ref();
-    std::cout << "\n--------------------";
-    for(int i=0; i<8; ++i) 
-    {
-        // produce here
-        t.a = static_cast<char>('A' + i);
-        t.n = i;
-
-        std::cout << "\ncaller produces t = " << t;
-        fut.push_product();
-        std::cout << "\ncaller produces u = " << u;
-        fut.push_product();
-    }
-    std::cout << "\n\n";
-
-  
     
     // *** Explicit destroy handle in heap *** //
-    h0.destroy();
+//  h0.destroy();
 //  h1.destroy();
 }
 
