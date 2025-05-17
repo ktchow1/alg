@@ -84,20 +84,20 @@ namespace alg
     {
         awaitable() : data_T_ptr(nullptr), data_U_ptr(nullptr)
         {
-            std::cout << "\nawait::construct"; 
+            std::cout << "\nawaitable::awaitable"; 
         }
 
         bool await_ready() const noexcept { return false; }
         bool await_suspend(std::coroutine_handle<typename task<T,U>::promise_type> handle) // <--- need to add promise_type inside handle
         {
-            std::cout << "\nawait::suspend";
+            std::cout << "\nawaitable::await_suspend";
             data_T_ptr = &(handle.promise().data_T);   
             data_U_ptr = &(handle.promise().data_U);   
             return true; 
         }
         std::pair<T*,U*> await_resume() const noexcept
         { 
-            std::cout << "\nawait::resumr";
+            std::cout << "\nawaitable::await_resume";
             return std::make_pair(data_T_ptr, data_U_ptr);
         }
 
