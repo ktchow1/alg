@@ -46,10 +46,19 @@ Producer consumer model
 
 
 
-Constructor called sequence : 
+Call sequence for generator : 
 1. generator::promise_type::promise_type()
 2. generator::promise_type::get_return_object()
 3. generator::generator()
+4. generator::promise_type::initial_suspend()
+
+Call sequence for task : 
+1. task::promise_type::promise_type()
+2. task::promise_type::get_return_object()
+3. task::generator()
+4. task::promise_type::initial_suspend()
+5. awaitable::awaitable()
+6. awaitable::initial_suspend()
 
 
 

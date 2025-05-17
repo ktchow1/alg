@@ -116,10 +116,55 @@ void test_coroutine_generator()
 // *************** //
 // *** Awaitor *** //
 // *************** //
+
+template<typename T, typename U>
+[[nodiscard]] alg::task<T,U> coroutine2()
+{
+
+    for(std::uint32_t n=0;; ++n) 
+    {
+        // Read t from caller to coroutine
+        // Send u from coroutine to caller
+        auto [T_ptr,U_ptr] = co_await alg::awaitable<T,U>{}; // wait for caller until t is ready
+        U_ptr->a = T_ptr->a;
+        U_ptr->b = T_ptr->a + T_ptr->n;
+        U_ptr->c = T_ptr->a + T_ptr->n * 2;
+        co_await std::suspend_always{}; // u is ready and wait for caller
+
+        std::cout << "\ncoroutine::iteration " << n << ", " << *T_ptr << ", " << *U_ptr;
+    }
+}
+
+// Sample POD
+struct pod_T 
+{
+    char a;
+    std::uint16_t n;
+};
+
+struct pod_U 
+{
+    char a;
+    char b;
+    char c;
+};
+
+inline std::ostream& operator<<(std::ostream& os, const pod_T& t)
+{
+    os << "T = " << t.a << "_" << t.n;
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const pod_U& u)
+{
+    os << "U = " << u.a << u.b << u.c;
+    return os;
+}
+
 void test_coroutine_awaitor()
 {
     std::cout << "\n--------------------";
-    future2<pod_T,pod_U> fut = coroutine2<pod_T,pod_U>();
+    alg::task<pod_T,pod_U> fut = coroutine2<pod_T,pod_U>();
     auto& t = fut.get_product_T_ref();
     auto& u = fut.get_product_U_ref();
     std::cout << "\n--------------------";
@@ -139,6 +184,19 @@ void test_coroutine_awaitor()
     std::cout << "\n";
     std::cout << "\n";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void test_coroutine_awaitor2()
 {
@@ -211,7 +269,7 @@ inline std::ostream& operator<<(std::ostream& os, const pod_Y& u)
     // Two suspensions in each loop
     while(true) 
     {
-        const pod_X& t = co_await alg::awaitable<pod_X, pod_Y>{};
+        const pod_X& t = co_await alg::awaitable_pc<pod_X, pod_Y>{};
 
         pod_Y u;
         u.a = t.a;

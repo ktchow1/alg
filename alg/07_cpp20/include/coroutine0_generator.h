@@ -53,7 +53,6 @@ namespace alg
         // *** STL coroutine requirement *** //
         // ********************************* //
     public:
-        // Define the config of coroutine
         struct promise_type 
         {
             promise_type() : m_num_yields(0)
@@ -103,10 +102,7 @@ namespace alg
         // RAII of coroutine frame
        ~generator() 
         {
-            if (m_handle)
-            {
-                m_handle.destroy(); 
-            }
+            if (m_handle) m_handle.destroy(); 
         }
 
 

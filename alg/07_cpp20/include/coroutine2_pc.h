@@ -60,9 +60,9 @@ namespace alg
     };
 
     template<typename T, typename U>
-    struct awaitable
+    struct awaitable_pc
     {
-        awaitable() : data_T_ptr(nullptr) {}
+        awaitable_pc() : data_T_ptr(nullptr) {}
         bool await_ready() const noexcept { return false; }
         bool await_suspend(std::coroutine_handle<typename future<T,U>::promise_type> h) 
         {
