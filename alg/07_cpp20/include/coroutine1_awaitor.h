@@ -7,7 +7,7 @@
 
 namespace alg
 {
-    template<typename T, typename U, bool DEBUG = true>
+    template<typename T, bool DEBUG>
     class task 
     {
         // ********************************* //
@@ -22,10 +22,10 @@ namespace alg
             }
 
             // Factory of task (construct task from coroutine frame handle)
-            task<T,U> get_return_object()  
+            task<T,DEBUG> get_return_object()  
             {
                 debug<DEBUG>("promise_type::get_return_object");
-                return task<T,U>
+                return task<T,DEBUG>
                 { 
                     std::coroutine_handle<promise_type>::from_promise(*this) 
                 };
@@ -37,13 +37,14 @@ namespace alg
             void unhandled_exception()                    { }
 
             // The product
-            T data_T; 
-            U data_U;
+            T m_product; 
         };
+
 
     private:
         // Pointer to coroutine frame
         std::coroutine_handle<promise_type> m_handle;
+
 
     public:
         explicit task(std::coroutine_handle<promise_type> handle) : m_handle(handle) 
@@ -58,19 +59,14 @@ namespace alg
             if (m_handle) m_handle.destroy();
         }
 
+
         // ********************************************* //
         // *** Custom functions for coroutine caller *** //
         // ********************************************* //
-        T& get_product_T_ref()
+        T& get_product_by_ref()
         {
             debug<DEBUG>("task::get_product_by_ref");
-            return m_handle.promise().data_T;
-        }
-
-        U& get_product_U_ref()
-        {
-            debug<DEBUG>("task::get_product_by_ref");
-            return m_handle.promise().data_U;
+            return m_handle.promise().m_product;
         }
 
         void push_product()
@@ -79,32 +75,35 @@ namespace alg
         }
     };
 
-    template<typename T, typename U>
+    template<typename T, bool DEBUG>
     struct awaitable
     {
-        awaitable() : data_T_ptr(nullptr), data_U_ptr(nullptr)
+        awaitable() : m_product_ptr(nullptr)
         {
             std::cout << "\nawaitable::awaitable"; 
         }
 
-        bool await_ready() const noexcept { return false; }
-        bool await_suspend(std::coroutine_handle<typename task<T,U>::promise_type> handle) // <--- need to add promise_type inside handle
+        bool await_ready() const noexcept 
+        { 
+            return false; 
+        }
+
+        bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
             std::cout << "\nawaitable::await_suspend";
-            data_T_ptr = &(handle.promise().data_T);   
-            data_U_ptr = &(handle.promise().data_U);   
+            m_product_ptr = &(handle.promise().m_product);   
             return true; 
         }
-        std::pair<T*,U*> await_resume() const noexcept
+
+        // Return product produced by coroutiner caller to coroutine on co_await
+        T* await_resume() const noexcept
         { 
             std::cout << "\nawaitable::await_resume";
-            return std::make_pair(data_T_ptr, data_U_ptr);
+            return m_product_ptr;
         }
 
     private:
-        // Keep data-pointer instead of handle-pointer
-        T* data_T_ptr;
-        U* data_U_ptr;
+        T* m_product_ptr;
     }; 
 }
 

@@ -118,24 +118,6 @@ void test_coroutine_generator()
 // *** Awaitor *** //
 // *************** //
 
-template<typename T, typename U>
-[[nodiscard]] alg::task<T,U> coroutine2()
-{
-
-    for(std::uint32_t n=0;; ++n) 
-    {
-        // Read t from caller to coroutine
-        // Send u from coroutine to caller
-        auto [T_ptr,U_ptr] = co_await alg::awaitable<T,U>{}; // wait for caller until t is ready
-        U_ptr->a = T_ptr->a;
-        U_ptr->b = T_ptr->a + T_ptr->n;
-        U_ptr->c = T_ptr->a + T_ptr->n * 2;
-        co_await std::suspend_always{}; // u is ready and wait for caller
-
-        std::cout << "\ncoroutine::iteration " << n << ", " << *T_ptr << ", " << *U_ptr;
-    }
-}
-
 // Sample POD
 struct pod_T 
 {
@@ -143,12 +125,6 @@ struct pod_T
     std::uint16_t n;
 };
 
-struct pod_U 
-{
-    char a;
-    char b;
-    char c;
-};
 
 inline std::ostream& operator<<(std::ostream& os, const pod_T& t)
 {
@@ -156,19 +132,26 @@ inline std::ostream& operator<<(std::ostream& os, const pod_T& t)
     return os;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const pod_U& u)
+// Consumer : bi-monthly meeting date generator
+template<bool DEBUG>
+[[nodiscard]] alg::task<pod_T,DEBUG> coroutine_to_consume()
 {
-    os << "U = " << u.a << u.b << u.c;
-    return os;
+
+    for(std::uint32_t n=0;; ++n) 
+    {
+        auto T_ptr = co_await alg::awaitable<pod_T,DEBUG>{}; // wait for caller until t is ready
+
+        std::cout << "\ncoroutine::iteration " << n << ", " << *T_ptr;
+    }
 }
+
 
 void test_coroutine_awaitor()
 {
     std::cout << "\n--------------------";
-    alg::task<pod_T,pod_U> fut = coroutine2<pod_T,pod_U>();
-    auto& t = fut.get_product_T_ref();
-    auto& u = fut.get_product_U_ref();
-    std::cout << "\n--------------------";
+    alg::task<pod_T, true> fut = coroutine_to_consume<true>();
+    auto& t = fut.get_product_by_ref();
+
     for(int i=0; i<8; ++i) 
     {
         // produce here
@@ -176,8 +159,6 @@ void test_coroutine_awaitor()
         t.n = i;
 
         std::cout << "\ncaller produces t = " << t;
-        fut.push_product();
-        std::cout << "\ncaller produces u = " << u;
         fut.push_product();
     }
     std::cout << "\n\n";
