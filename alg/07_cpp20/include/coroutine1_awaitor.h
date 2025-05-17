@@ -2,15 +2,12 @@
 #include <iostream>
 #include <exception>
 #include <coroutine>
-
-
+#include <coroutine0_generator.h>
 
 
 namespace alg
 {
-    // T = data from caller to coroutine
-    // U = data from coroutine to caller
-    template<typename T, typename U>
+    template<typename T, typename U, bool DEBUG = true>
     class task 
     {
         // ********************************* //
@@ -21,13 +18,13 @@ namespace alg
         {
             promise_type() 
             {
-                std::cout << "\npromise::construct";   
+                debug<DEBUG>("promise_type::promise_type");
             }
 
             // Factory of task (construct task from coroutine frame handle)
             task<T,U> get_return_object()  
             {
-                std::cout << "\npromise::get task"; 
+                debug<DEBUG>("promise_type::get_return_object");
                 return task<T,U>
                 { 
                     std::coroutine_handle<promise_type>::from_promise(*this) 
@@ -35,13 +32,13 @@ namespace alg
             }   
 
             // Return type governs suspension policy of coroutine caller
-            std::suspend_never initial_suspend()          { std::cout << "\npromise::initial"; return {}; }
-            std::suspend_never   final_suspend() noexcept { std::cout << "\npromise::final";   return {}; }
+            std::suspend_never initial_suspend()          { debug<DEBUG>("promise_type::initial_suspend"); return {}; }
+            std::suspend_never   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
             void unhandled_exception()                    { }
 
             // The product
-            T data_T; // <--- new stuff (as compared to previous)
-            U data_U; // <--- new stuff (as compared to previous)
+            T data_T; 
+            U data_U;
         };
 
     private:
@@ -51,12 +48,13 @@ namespace alg
     public:
         explicit task(std::coroutine_handle<promise_type> handle) : m_handle(handle) 
         {
-            std::cout << "\ntask::construct"; 
+            debug<DEBUG>("task::task");
         } 
 
         // RAII of coroutine frame
        ~task()
         {
+            debug<DEBUG>("task::~task");
             if (m_handle) m_handle.destroy();
         }
 
@@ -65,11 +63,13 @@ namespace alg
         // ********************************************* //
         T& get_product_T_ref()
         {
+            debug<DEBUG>("task::get_product_by_ref");
             return m_handle.promise().data_T;
         }
 
         U& get_product_U_ref()
         {
+            debug<DEBUG>("task::get_product_by_ref");
             return m_handle.promise().data_U;
         }
 
@@ -84,22 +84,24 @@ namespace alg
     {
         awaitable() : data_T_ptr(nullptr), data_U_ptr(nullptr)
         {
-            std::cout << "\nawait::await"; 
+            std::cout << "\nawait::construct"; 
         }
 
         bool await_ready() const noexcept { return false; }
-        bool await_suspend(std::coroutine_handle<typename task<T,U>::promise_type> h) // <--- need to add promise_type inside handle
+        bool await_suspend(std::coroutine_handle<typename task<T,U>::promise_type> handle) // <--- need to add promise_type inside handle
         {
-            std::cout << "\nawait::suspend(handle)";
-            data_T_ptr = &(h.promise().data_T);   
-            data_U_ptr = &(h.promise().data_U);   
+            std::cout << "\nawait::suspend";
+            data_T_ptr = &(handle.promise().data_T);   
+            data_U_ptr = &(handle.promise().data_U);   
             return true; 
         }
         std::pair<T*,U*> await_resume() const noexcept
         { 
+            std::cout << "\nawait::resumr";
             return std::make_pair(data_T_ptr, data_U_ptr);
         }
 
+    private:
         // Keep data-pointer instead of handle-pointer
         T* data_T_ptr;
         U* data_U_ptr;

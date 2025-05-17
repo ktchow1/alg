@@ -46,7 +46,13 @@
   
 namespace alg 
 {
-    template<typename T>
+    template<bool DEBUG>
+    void debug(const std::string& message) 
+    {
+        if constexpr (DEBUG) std::cout << "\n" << message << std::flush;
+    }
+
+    template<typename T, bool DEBUG>
     class generator 
     {
         // ********************************* //
@@ -57,12 +63,14 @@ namespace alg
         {
             promise_type() : m_num_yields(0)
             { 
+                debug<DEBUG>("promise_type::promise_type");
             } 
 
             // Factory of generator (construct generator from coroutine frame handle)
-            generator<T> get_return_object() 
+            generator<T,DEBUG> get_return_object() 
             { 
-                return generator<T>
+                debug<DEBUG>("promise_type::get_return_object");
+                return generator<T,DEBUG>
                 {
                     std::coroutine_handle<promise_type>::from_promise(*this) 
                 };
@@ -71,15 +79,16 @@ namespace alg
             // Return type governs suspension policy of coroutine (usually, the producer)
             std::suspend_always yield_value(const T& product)
             {
+                debug<DEBUG>("promise_type::yield_value");
                 m_product = product; 
                 ++m_num_yields;
                 return {};
             }
 
             // Return type governs suspension policy of coroutine caller (usually, the consumer)
-            std::suspend_always initial_suspend()          { return {}; }
-            std::suspend_always   final_suspend() noexcept { return {}; }
-            void unhandled_exception()                     {            }
+            std::suspend_always initial_suspend()          { debug<DEBUG>("promise_type::initial_suspend"); return {}; }
+            std::suspend_always   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
+            void unhandled_exception()                     { }
 
             // The product
             T m_product; 
@@ -97,11 +106,13 @@ namespace alg
     public:
         explicit generator(std::coroutine_handle<promise_type> handle) : m_handle(handle) 
         {
+            debug<DEBUG>("generator::generator");
         } 
 
         // RAII of coroutine frame
        ~generator() 
         {
+            debug<DEBUG>("generator::~generator");
             if (m_handle) m_handle.destroy(); 
         }
 
@@ -111,12 +122,14 @@ namespace alg
         // ********************************************* //
         operator bool() const 
         {
+            debug<DEBUG>("generator::bool");
             return !m_handle.done();
         } 
 
         [[nodiscard]]   // <--- caller must cache new product reference everytime, otherwise it will be stale
         const T& get_product() const  
         {
+            debug<DEBUG>("generator::get_product");
             m_handle(); // <--- coroutine caller yield here, asking coroutine for next product
             return m_handle.promise().m_product;
         }

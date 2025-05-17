@@ -19,10 +19,11 @@ struct pod
 };
 
 // Producer : Monthly payment date generator
-inline alg::generator<pod> coroutine_to_produce(std::uint32_t y,
-                                                std::uint32_t m,
-                                                std::uint32_t d, 
-                                                std::uint32_t N)
+template<bool DEBUG>
+alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y,
+                                               std::uint32_t m,
+                                               std::uint32_t d, 
+                                               std::uint32_t N)
 {
     pod data{y,m,d};
     for(std::uint32_t n=0; n!=N; ++n) 
@@ -45,13 +46,10 @@ inline alg::generator<pod> coroutine_to_produce(std::uint32_t y,
 // Consumer
 void test_coroutine_generator() 
 {
-    alg::generator<pod> g0 = coroutine_to_produce(2021, 10, 31, 5);
-    alg::generator<pod> g1 = coroutine_to_produce(2022,  5, 31, 3);
-    alg::generator<pod> g2 = coroutine_to_produce(2022,  5, 31, 5);
-
     // ***************** //
     // *** Example 1 *** //
     // ***************** //
+    alg::generator<pod,false> g0 = coroutine_to_produce<false>(2021, 10, 31, 5);
     {
         assert(g0);
         const auto& t = g0.get_product(); // <--- caller yields here, coroutine produces and co_yield, caller then resumes
@@ -80,6 +78,7 @@ void test_coroutine_generator()
     // ***************** //
     // *** Example 2 *** //
     // ***************** //
+    alg::generator<pod,false> g1 = coroutine_to_produce<false>(2022, 5, 31, 3);
     {
         assert(g1);
         const auto& t = g1.get_product(); // <--- caller yields here, coroutine produces and co_yield, caller then resumes
@@ -102,13 +101,15 @@ void test_coroutine_generator()
     // ******************************** //
     // *** Example 3 (normal usage) *** //
     // ******************************** //
+    std::cout << "\n======================================";
+
+    alg::generator<pod,true> g2 = coroutine_to_produce< true>(2022, 5, 31, 3);
     while(g2)
     {
         const auto& t = g2.get_product();
-        std::stringstream ss;
-        ss << "num_yields = " << g2.get_num_yields() << ", date = "  << t.y << "-" << t.m << "-" << t.d;
-        print_summary("coroutine - generator", ss.str());
+        std::cout << "\ncaller consumes ---> num_yields = " << g2.get_num_yields() << ", date = "  << t.y << "-" << t.m << "-" << t.d;
     }
+    std::cout << "\n======================================";
 }
 
 
