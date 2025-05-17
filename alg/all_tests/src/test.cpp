@@ -83,6 +83,7 @@ void test_range();
 void test_concepts_apply();
 void test_concepts_define();
 void test_concepts_define_examples();
+void test_coroutine();
 
 // *** 08_interview *** //
 void test_alphagrep();
@@ -179,20 +180,21 @@ int main()
 //  banner("06_threading - mpmcq & threadpool");
 //  test_mpmcq();
 //  test_threadpool();
-//
-//  banner("07_cpp20");  
+  
+    banner("07_cpp20");  
 //  test_spaceship();
 //  test_range();
 //  test_concepts_apply();
 //  test_concepts_define();
 //  test_concepts_define_examples();
+    test_coroutine();
 
-    banner("08_interview");
-    test_alphagrep();
-    test_apt_research();
-    test_archax();
-    test_citadel();
-    test_optiver();
+//  banner("08_interview");
+//  test_alphagrep();
+//  test_apt_research();
+//  test_archax();
+//  test_citadel();
+//  test_optiver();
   
     std::cout << "\n\n\n";
     return 0;

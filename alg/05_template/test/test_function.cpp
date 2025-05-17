@@ -41,6 +41,7 @@ struct N_ary_functor
     }
 };
 
+
 // *******************************************//
 // Objective : function class that can wrap :
 // * function pointer
@@ -81,6 +82,7 @@ void test_simple_function()
     print_summary("alg::simple_function - nullary returning void", "succeeded");
 }
   
+
 void test_general_function()
 {
     N_ary_functor f;
@@ -117,9 +119,116 @@ void test_general_function()
     print_summary("alg::function - N-ary returning R", "succeeded");
 }
 
+
+// ******************************************** //
+// *** Binding to template or std::function *** //
+// ******************************************** //
+template<typename T, typename F>
+auto invoke_as_template_para(T x, T y, F fct)
+{
+    return fct(x,y);
+}
+
+template<typename T, typename U>
+auto invoke_as_std_function(T x, T y, std::function<U(T,T)> fct)
+{
+    return fct(x,y);
+}
+
+
+void test_binding_function()
+{
+    N_ary_functor f;
+
+    // ***************************** //
+    // *** as template parameter *** //
+    // ***************************** //
+    auto s0 = invoke_as_template_para(1, 2, &N_ary_function);   
+    auto s1 = invoke_as_template_para(1, 2, N_ary_functor{});
+    auto s2 = invoke_as_template_para(1, 2, f);           
+    auto s3 = invoke_as_template_para(1, 2, [](int,int) -> std::string
+    {
+        ++N_ary_lambda_count;
+        return "xxx"; 
+    });
+
+    assert(s0 == std::string{"xxx"});
+    assert(s1 == std::string{"xxx"});
+    assert(s2 == std::string{"xxx"});
+    assert(s3 == std::string{"xxx"});
+
+
+    // ************************ //
+    // *** as std::function *** //
+    // ************************ //
+//  auto r4 = invoke_as_std_function(1, 2, &N_ary_function);                 // cannot compile
+//  auto r5 = invoke_as_std_function(1, 2, N_ary_functor{});                 // cannot compile
+//  auto r6 = invoke_as_std_function(1, 2, f);                               // cannot compile
+//  auto r7 = invoke_as_std_function(1, 2, [](int,int) -> std::string ...    // cannot compile
+    auto s4 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{&N_ary_function});   
+    auto s5 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{N_ary_functor{}});
+    auto s6 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{f});           
+    auto s7 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{[](int,int) -> std::string
+    {
+        ++N_ary_lambda_count;
+        return "xxx"; 
+    }});
+
+    assert(s4 == std::string{"xxx"});
+    assert(s5 == std::string{"xxx"});
+    assert(s6 == std::string{"xxx"});
+    assert(s7 == std::string{"xxx"});
+
+
+    // Alternatively ...
+    auto s8 = invoke_as_std_function<int,std::string>(1, 2, &N_ary_function);   
+    auto s9 = invoke_as_std_function<int,std::string>(1, 2, N_ary_functor{});
+    auto sA = invoke_as_std_function<int,std::string>(1, 2, f);           
+    auto sB = invoke_as_std_function<int,std::string>(1, 2, [](int,int) -> std::string
+    {
+        ++N_ary_lambda_count;
+        return "xxx"; 
+    });
+
+    assert(s8 == std::string{"xxx"});
+    assert(s9 == std::string{"xxx"});
+    assert(sA == std::string{"xxx"});
+    assert(sB == std::string{"xxx"});
+
+    print_summary("std::function - binding", "succeeded");
+}
+
+// *************************************************************************************************************************************** //
+// In the above ...
+//
+// Why s0-s3 can compile? Because
+// - compiler can deduce both T and F from template function instantiation 
+// - given 1st and 2nd arg, it deduces T = int 
+// - given 3rd arg,         it deduces F = std::string (*)(int,int)     for s0
+// - given 3rd arg,         it deduces F = N_ary_functor                for s1
+// - given 3rd arg,         it deduces F = N_ary_functor                for s2
+// - given 3rd arg,         it deduces F = lambda ...                   for s3
+//
+// Why r4-s7 cannot compile?
+// - compiler cannot deduce U from template function instantiation
+// - given 1st and 2nd arg, it deduces T = int 
+// - given 3rd arg,         it cannot match std::function<U(T,T) with std::string (*)(int,int)   for r4
+// - given 3rd arg,         it cannot match std::function<U(T,T) with N_ary_functor              for r5
+// - given 3rd arg,         it cannot match std::function<U(T,T) with N_ary_functor              for r6
+// - given 3rd arg,         it cannot match std::function<U(T,T) with lambda ...                 for r7
+//
+// Why s4-s7 can compile?
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s4
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s5
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s6
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s7
+// *************************************************************************************************************************************** //
+
+
 void test_function()
 {
     test_simple_function();
     test_general_function();
+    test_binding_function();
 }
 
