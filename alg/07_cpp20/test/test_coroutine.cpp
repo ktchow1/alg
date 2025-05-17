@@ -19,10 +19,10 @@ struct pod
 };
 
 // Producer : Monthly payment date generator
-inline alg::generator<pod> coroutine(std::uint32_t y,
-                                     std::uint32_t m,
-                                     std::uint32_t d, 
-                                     std::uint32_t N)
+inline alg::generator<pod> coroutine_to_produce(std::uint32_t y,
+                                                std::uint32_t m,
+                                                std::uint32_t d, 
+                                                std::uint32_t N)
 {
     pod data{y,m,d};
     for(std::uint32_t n=0; n!=N; ++n) 
@@ -45,8 +45,9 @@ inline alg::generator<pod> coroutine(std::uint32_t y,
 // Consumer
 void test_coroutine_generator() 
 {
-    alg::generator<pod> g0 = coroutine(2021, 10, 31, 5);
-    alg::generator<pod> g1 = coroutine(2022,  5, 31, 3);
+    alg::generator<pod> g0 = coroutine_to_produce(2021, 10, 31, 5);
+    alg::generator<pod> g1 = coroutine_to_produce(2022,  5, 31, 3);
+    alg::generator<pod> g2 = coroutine_to_produce(2022,  5, 31, 5);
 
     // ***************** //
     // *** Example 1 *** //
@@ -97,6 +98,17 @@ void test_coroutine_generator()
         assert(g1.get_num_yields() == 3 && t.y == 2022 && t.m == 8 && t.d == 30);
     }
     print_summary("coroutine - generator", "succeeded");
+
+    // ******************************** //
+    // *** Example 3 (normal usage) *** //
+    // ******************************** //
+    while(g2)
+    {
+        const auto& t = g2.get_product();
+        std::stringstream ss;
+        ss << "num_yields = " << g2.get_num_yields() << ", date = "  << t.y << "-" << t.m << "-" << t.d;
+        print_summary("coroutine - generator", ss.str());
+    }
 }
 
 
@@ -106,7 +118,8 @@ void test_coroutine_generator()
 // *************** //
 void test_coroutine_awaitor()
 {
-    std::cout << "\ncaller with main thread_id = " << std::this_thread::get_id();
+    std::cout << "\n";
+    std::cout << "\n";
     std::cout << "\n";
 
 
@@ -140,18 +153,20 @@ void test_coroutine_awaitor()
     // *** Experiment 2 *** //
     std::cout << "\nExperiment 2";
     std::cout << "\n--------------------";
-    std::coroutine_handle<future2<pod_T,pod_U>::promise_type> h2 = coroutine2<pod_T,pod_U>();
-    auto& p2 = h2.promise();
+    future2<pod_T,pod_U> fut = coroutine2<pod_T,pod_U>();
+    auto& t = fut.get_product_T_ref();
+    auto& u = fut.get_product_U_ref();
     std::cout << "\n--------------------";
     for(int i=0; i<8; ++i) 
     {
-        p2.data_T.a = static_cast<char>('A' + i);
-        p2.data_T.n = i;
+        // produce here
+        t.a = static_cast<char>('A' + i);
+        t.n = i;
 
-        std::cout << "\ncaller inputs " << p2.data_T;
-        h2();
-        std::cout << "\ncaller outputs " << p2.data_U;
-        h2();
+        std::cout << "\ncaller produces t = " << t;
+        fut.push_product();
+        std::cout << "\ncaller produces u = " << u;
+        fut.push_product();
     }
     std::cout << "\n\n";
 
@@ -160,7 +175,6 @@ void test_coroutine_awaitor()
     // *** Explicit destroy handle in heap *** //
     h0.destroy();
 //  h1.destroy();
-    h2.destroy();
 }
 
 

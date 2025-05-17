@@ -4,6 +4,19 @@
 #include <coroutine>
 
 
+
+
+namespace alg
+{
+}
+
+
+
+
+
+
+
+
 // ******************** // 
 // *** Experiment 0 *** //
 // ******************** // 
@@ -125,13 +138,33 @@ struct future2
     } 
 
     // *** Conversion operator *** //
-    operator std::coroutine_handle<promise_type>() const 
+/*    operator std::coroutine_handle<promise_type>() const 
     {
         std::cout << "\nfuture::convert_to_handle"; 
         return h;
-    } 
+    }  */
 
     std::coroutine_handle<promise_type> h;
+
+
+    T& get_product_T_ref()
+    {
+        return h.promise().data_T;
+    }
+    U& get_product_U_ref()
+    {
+        return h.promise().data_U;
+    }
+
+    void push_product()
+    {
+        h(); // yield to coroutine
+    }
+    
+    ~future2()
+    {
+        if (h) h.destroy();
+    }
 };
 
 template<typename T, typename U>
