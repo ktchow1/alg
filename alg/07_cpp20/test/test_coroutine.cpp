@@ -42,7 +42,8 @@ inline alg::generator<pod> coroutine(std::uint32_t y,
     }
 }
 
-void test_coroutine_generator() // consumer
+// Consumer
+void test_coroutine_generator() 
 {
     alg::generator<pod> g0 = coroutine(2021, 10, 31, 5);
     alg::generator<pod> g1 = coroutine(2022,  5, 31, 3);

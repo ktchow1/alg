@@ -69,7 +69,7 @@ namespace alg
                 };
             }   
 
-            // Return type governs suspension policy of producer (coroutine)
+            // Return type governs suspension policy of coroutine (usually, the producer)
             std::suspend_always yield_value(const T& product)
             {
                 m_product = product; 
@@ -77,7 +77,7 @@ namespace alg
                 return {};
             }
 
-            // Return type governs suspension policy of consumer (coroutine caller)
+            // Return type governs suspension policy of coroutine caller (usually, the consumer)
             std::suspend_always initial_suspend()          { return {}; }
             std::suspend_always   final_suspend() noexcept { return {}; }
             void unhandled_exception()                     {            }
@@ -103,7 +103,10 @@ namespace alg
         // RAII of coroutine frame
        ~generator() 
         {
-            m_handle.destroy(); 
+            if (m_handle)
+            {
+                m_handle.destroy(); 
+            }
         }
 
 
@@ -115,6 +118,7 @@ namespace alg
             return !m_handle.done();
         } 
 
+        [[nodiscard]]   // <--- caller must cache new product reference everytime, otherwise it will be stale
         const T& get_product() const  
         {
             m_handle(); // <--- coroutine caller yield here, asking coroutine for next product
