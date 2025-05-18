@@ -5,7 +5,7 @@
 #include <coroutine0_generator.h>
 
 
-// *********************************************************************************** //
+// ****************************************************************************** //
 // How to define coroutine as pr using co_await?
 //
 // alg::task<my_product> my_coroutine(...)
@@ -15,9 +15,9 @@
 //     consume(x);
 // }
 //
-// Remark 1 : "co_await" to 
+// Remark 1 : "co_await" to wait for newly created product from coroutine caller 
 // Remark 2 : "return alg::task<my_product>" is NOT needed, my_coroutine is async 
-// *********************************************************************************** //
+// ****************************************************************************** //
 namespace alg
 {
     template<typename T, bool DEBUG>
@@ -44,15 +44,18 @@ namespace alg
                 };
             }   
 
-            // Return type governs suspension policy of coroutine caller
+            // Suspension policy of coroutine caller governed by return type
             std::suspend_never initial_suspend()          { debug<DEBUG>("promise_type::initial_suspend"); return {}; }
             std::suspend_never   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
             void unhandled_exception()                    { }
 
-            // The product
-            T m_product; 
+            // Transfer of product (from task<T> to coroutine) is done in awaitable
 
-            // Other states
+
+            // ************************** //
+            // *** Product and states *** //
+            // ************************** //
+            T             m_product; 
             std::uint32_t m_num_awaits; 
         };
 
@@ -109,7 +112,7 @@ namespace alg
             return false; 
         }
 
-        // Connection between task and awaitable, coroutine handle will be passed to awaitable on "co_await"
+        // Connection between task and awaitable, coroutine framge handle will be passed to awaitable on "co_await"
         bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
             debug<DEBUG>("awaitable::await_suspend");

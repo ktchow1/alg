@@ -24,11 +24,12 @@ std::ostream& operator<<(std::ostream& os, const pod& date)
 }
 
 
-// ************************* //
-// *** Generator pattern *** //
-// ************************* //
-
-// Producer : Monthly payment date generator
+// **************************************** //
+// *** Step by step - Generator pattern *** //
+// **************************************** //
+// producer  = alg::generator 
+// coonsumer = test function
+//
 template<bool DEBUG>
 alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y,
                                                std::uint32_t m,
@@ -53,12 +54,62 @@ alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y,
     }
 }
 
-// Consumer
-void test_coroutine_generator() 
+
+
+
+
+void test_coroutine_step_by_step_generator() 
 {
-    // ***************** //
-    // *** Example 1 *** //
-    // ***************** //
+    std::cout << "\n======================================";
+    alg::generator<pod,true> g2 = coroutine_to_produce< true>(2022, 5, 31, 4);
+
+    while(g2)
+    {
+        const auto& date = g2.get_product();
+        std::cout << "\ncaller consumes ---> num_yields = " << g2.get_num_yields() << ", date = " << date;
+    }
+    std::cout << "\n======================================";
+}
+
+
+
+// ************************************** //
+// *** Step by step - Awaitor pattern *** //
+// ************************************** //
+// producer  = alg::generator 
+// coonsumer = test function
+//
+
+template<bool DEBUG>
+[[nodiscard]] alg::task<pod,DEBUG> coroutine_to_consume()
+{
+    alg::awaitable<pod,DEBUG> awaitable{}; 
+    for(std::uint32_t n=0; ; ++n) // infinity loop, its producer's call to end the loop
+    {
+        const auto& date = co_await awaitable; 
+        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date;
+    }
+}
+
+void test_coroutine_step_by_step_awaitor()
+{
+    std::cout << "\n======================================";
+    alg::task<pod,true> task = coroutine_to_consume<true>();
+
+    for(std::uint32_t n=0; n<4; ++n) 
+    {
+        pod date{2030, 1+n, 15};
+        task.set_product(date);
+    }
+    std::cout << "\n======================================";
+}
+
+
+// ***************************************** //
+// *** Complete test - Generator pattern *** //
+// ***************************************** //
+void test_coroutine_complete_test_generator() 
+{
     alg::generator<pod,false> g0 = coroutine_to_produce<false>(2021, 10, 31, 5);
     {
         assert(g0);
@@ -86,9 +137,6 @@ void test_coroutine_generator()
         assert(g0.get_num_yields() == 5 && t.y == 2022 && t.m == 3 && t.d == 28);
     }
 
-    // ***************** //
-    // *** Example 2 *** //
-    // ***************** //
     alg::generator<pod,false> g1 = coroutine_to_produce<false>(2022, 5, 31, 3);
     {
         assert(g1);
@@ -111,56 +159,13 @@ void test_coroutine_generator()
 }
 
 
-void test_coroutine_generator_debug() 
+
+// *************************************** //
+// *** Complete test - Awaitor pattern *** //
+// *************************************** //
+void test_coroutine_complete_test_awaitor() 
 {
-    // ******************************** //
-    // *** Example 3 (normal usage) *** //
-    // ******************************** //
-    std::cout << "\n======================================";
-    alg::generator<pod,true> g2 = coroutine_to_produce< true>(2022, 5, 31, 3);
-
-    while(g2)
-    {
-        const auto& date = g2.get_product();
-        std::cout << "\ncaller consumes ---> num_yields = " << g2.get_num_yields() << ", date = " << date;
-    }
-    std::cout << "\n======================================";
 }
-
-
-
-// *********************** //
-// *** Awaitor pattern *** //
-// *********************** //
-
-// Consumer 
-template<bool DEBUG>
-[[nodiscard]] alg::task<pod,DEBUG> coroutine_to_consume()
-{
-    alg::awaitable<pod,DEBUG> awaitable{}; 
-    for(std::uint32_t n=0; ; ++n) // infinity loop, its producer's call to end the loop
-    {
-        const auto& date = co_await awaitable; 
-        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date;
-    }
-}
-
-// Producer
-void test_coroutine_awaitor_debug()
-{
-    std::cout << "\n======================================";
-    alg::task<pod,true> task = coroutine_to_consume<true>();
-
-    for(std::uint32_t n=0; n<8; ++n) 
-    {
-        pod date{2030, 1+n, 15};
-        task.set_product(date);
-    }
-    std::cout << "\n======================================";
-}
-
-
-
 
 
 
@@ -246,8 +251,10 @@ void test_coroutine_pc()
 // ************ //
 void test_coroutine()
 {
-    test_coroutine_generator();
-    test_coroutine_generator_debug();
-    test_coroutine_awaitor_debug();
+    test_coroutine_step_by_step_generator();   std::cout << "\n"; 
+    test_coroutine_step_by_step_awaitor();     std::cout << "\n";
+
+    test_coroutine_complete_test_generator();
+//  test_coroutine_complete_test_awaitor();
 //  test_coroutine_pc();
 }
