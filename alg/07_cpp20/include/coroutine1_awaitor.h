@@ -5,6 +5,19 @@
 #include <coroutine0_generator.h>
 
 
+// *********************************************************************************** //
+// How to define coroutine as pr using co_await?
+//
+// alg::task<my_product> my_coroutine(...)
+// {
+//     alg::awaitable<my_product> awaitable; 
+//     auto x = co_await awaitable;  
+//     consume(x);
+// }
+//
+// Remark 1 : "co_await" to 
+// Remark 2 : "return alg::task<my_product>" is NOT needed, my_coroutine is async 
+// *********************************************************************************** //
 namespace alg
 {
     template<typename T, bool DEBUG>
@@ -16,7 +29,7 @@ namespace alg
     public:
         struct promise_type 
         {
-            promise_type() 
+            promise_type() : m_num_awaits(0)
             {
                 debug<DEBUG>("promise_type::promise_type");
             }
@@ -38,6 +51,9 @@ namespace alg
 
             // The product
             T m_product; 
+
+            // Other states
+            std::uint32_t m_num_awaits; 
         };
 
 
@@ -70,16 +86,19 @@ namespace alg
             m_handle(); // yield to coroutine
         }
     };
+}
 
 
-    // ********************************************** //
-    // *** Data transfer from task<T> to co_await *** //
-    // ********************************************** //
+// ********************************************** //
+// *** Data transfer from task<T> to co_await *** //
+// ********************************************** //
+namespace alg
+{
     template<typename T, bool DEBUG>
     class awaitable
     {
     public:
-        awaitable() : m_product_ptr(nullptr), m_num_awaits(0)
+        awaitable() 
         {
             debug<DEBUG>("awaitable::awaitable");
         }
@@ -94,31 +113,29 @@ namespace alg
         bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
             debug<DEBUG>("awaitable::await_suspend");
-            ++m_num_awaits;
-            m_product_ptr = &(handle.promise().m_product);   
+            m_handle = handle; // deep copy of light weight handle  
+            m_handle.promise().m_num_awaits++;
             return true; 
         }
 
-        // Return product produced by coroutiner caller to coroutine on co_await
-        T* await_resume() const noexcept
+        // Return product produced by coroutine caller to coroutine on co_await
+        const T& await_resume() const noexcept
         { 
             debug<DEBUG>("awaitable::await_resume");
-            return m_product_ptr;
+            return m_handle.promise().m_product;
         }
 
 
     public:
         std::uint32_t get_num_awaits() const  
         {
-            return m_num_awaits;
+            return m_handle.promise().m_num_awaits;
         }
 
 
     private:
-        T* m_product_ptr;
+        std::coroutine_handle<typename task<T,DEBUG>::promise_type> m_handle;
 
-        // Other states
-        std::uint32_t m_num_awaits; 
     }; 
 }
 
@@ -127,51 +144,3 @@ namespace alg
 
 
 
-
-// ******************** // 
-// *** Experiment 0 *** //
-// ******************** // 
-struct future0 
-{
-    struct promise_type // This is promise_type, NOT promise.
-    {
-        promise_type()                                {  std::cout << "\npromise::promise";             }
-        future0 get_return_object()                   {  std::cout << "\npromise::ret_obj"; return {};  }
-        void unhandled_exception()                    {  }
-        std::suspend_never initial_suspend()          {  std::cout << "\npromise::initial"; return {};  } 
-        std::suspend_never   final_suspend() noexcept {  std::cout << "\npromise::final";   return {};  }
-    };
-    
-    future0()
-    {
-        std::cout << "\nfuture::future"; 
-    }
-};
-
-struct awaitable0
-{
-    explicit awaitable0(std::coroutine_handle<>* h_ptr_) : h_ptr(h_ptr_)
-    {
-        std::cout << "\nawait::await"; 
-    }
-
-    // No printing for constexpr fct.
-    bool await_ready()  const noexcept            { std::cout << "\nawait::ready";     return false; } 
-    void await_suspend(std::coroutine_handle<> h) { std::cout << "\nawait::suspend(h)";  *h_ptr = h; }
-    void await_resume() const noexcept            { std::cout << "\nawait::resume";                  }
-
-    std::coroutine_handle<>* h_ptr;
-};
-
-future0 coroutine0(std::coroutine_handle<>* h_ptr)
-{
-    awaitable0 a{ h_ptr };
-    for(std::uint32_t n=0;; ++n) 
-    {
-        co_await a;
-        std::cout << "\ncoroutine::iteration " << n << " with thread_id = " << std::this_thread::get_id(); 
-    }
-}
-
-
-    

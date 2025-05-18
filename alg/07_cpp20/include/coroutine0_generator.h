@@ -4,46 +4,6 @@
 #include <coroutine>
 
 
-// *********************************************************************** //
-// The following coroutine mechanics :
-// * are exposed in c++ (implemented in this header file)
-// * are hidden in python 
-// thus python coroutine code looks simple, just like test_coroutine.cpp.
-//
-//
-// Class and function with free-to-choose name :
-// * generator
-// * generator::bool()
-// * generator::get_product()
-//
-//
-// Class and function with standard name :
-// * generator::promise_type 
-// * generator::promise_type::get_return_object()
-// * generator::promise_type::yield_value()
-// * generator::promise_type::initial_suspend()
-// * generator::promise_type::  final_suspend()
-// * generator::promise_type::unhandled_exception()
-// *********************************************************************** //
-// How to use this generator in coroutine? Define like this :
-//
-// alg::generator<my_product> my_coroutine(...)
-// {
-//     my_product x = create_my_product();
-//     
-//     // some updates if you want
-//     x.a = ...
-//     x.b = ...
-//     x.c = ...
-//
-//     co_yield x; 
-// }
-//
-// Remark 1 : co_yield to yield the new created my_product
-// Remark 2 :  no need to return alg::generator<my_product> explicitly
-// *********************************************************************** //
-                             
-  
 namespace alg 
 {
     template<bool DEBUG>
@@ -53,6 +13,21 @@ namespace alg
     }
 }
 
+// *********************************************************************************** //
+// How to define coroutine as producer using co_yield?
+//
+// alg::generator<my_product> my_coroutine(...)
+// {
+//     my_product x = create_my_product();
+//     x.a = ...
+//     x.b = ...
+//     x.c = ...
+//     co_yield x;  
+// }
+//
+// Remark 1 : "co_yield" to yield newly created product to coroutiner caller
+// Remark 2 : "return alg::generator<my_product>" is NOT needed, my_coroutine is async 
+// *********************************************************************************** //
 namespace alg 
 {
     template<typename T, bool DEBUG>

@@ -4,7 +4,8 @@
 
 #include <coroutine0_generator.h>
 #include <coroutine1_awaitor.h>
-#include <coroutine2_pc.h>
+#include <coroutine2_awaitor.h>
+#include <coroutine3_pipeline.h>
 #include <utility.h>
 
 
@@ -140,8 +141,8 @@ template<bool DEBUG>
     alg::awaitable<pod,DEBUG> awaitable{}; 
     for(std::uint32_t n=0; ; ++n) // infinity loop, its producer's call to end the loop
     {
-        auto date_ptr = co_await awaitable; 
-        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << *date_ptr;
+        const auto& date = co_await awaitable; 
+        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date;
     }
 }
 

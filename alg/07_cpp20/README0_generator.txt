@@ -135,9 +135,23 @@ Relation between coroutine_handle and promise_type ?
 
 
 
+The following coroutine mechanics :
+* are exposed in c++ (implemented in this header file)
+* are hidden in python 
+thus python coroutine code looks simple, just like test_coroutine.cpp.
 
+Class and function with free-to-choose name :
+* generator
+* generator::bool()
+* generator::get_product()
 
-
+Class and function with standard name :
+* generator::promise_type 
+* generator::promise_type::get_return_object()
+* generator::promise_type::yield_value()
+* generator::promise_type::initial_suspend()
+* generator::promise_type::  final_suspend()
+* generator::promise_type::unhandled_exception()
 
 
 
