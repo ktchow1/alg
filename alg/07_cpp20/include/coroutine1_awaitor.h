@@ -82,10 +82,18 @@ namespace alg
         // ********************************************* //
         // *** Custom functions for coroutine caller *** //
         // ********************************************* //
-        void set_product(const T& product)
+        void set_product_copy(const T& product)
         {
             debug<DEBUG>("task::set_product");
             m_handle.promise().m_product = product;
+            m_handle(); // yield to coroutine
+        }
+
+        template<typename...ARGS>
+        void set_product(ARGS&&...args) 
+        {
+            debug<DEBUG>("task::set_product");
+            new (&m_handle.promise().m_product) T{ std::forward<ARGS>(args)... };
             m_handle(); // yield to coroutine
         }
     };
@@ -98,7 +106,7 @@ namespace alg
 namespace alg
 {
     template<typename T, bool DEBUG>
-    class awaitable
+    class awaitable // <--- we can also call it like "asyn_produce"
     {
     public:
         awaitable() 
