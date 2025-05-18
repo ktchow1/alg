@@ -54,7 +54,12 @@ namespace alg
                 };
             }   
 
-            // Return type governs suspension policy of coroutine (usually, the producer)
+            // Return type governs suspension policy of coroutine caller 
+            std::suspend_always initial_suspend()          { debug<DEBUG>("promise_type::initial_suspend"); return {}; }
+            std::suspend_always   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
+            void unhandled_exception()                     { }
+
+            // Return type governs suspension policy of coroutine 
             std::suspend_always yield_value(const T& product)
             {
                 debug<DEBUG>("promise_type::yield_value");
@@ -62,11 +67,6 @@ namespace alg
                 ++m_num_yields;
                 return {};
             }
-
-            // Return type governs suspension policy of coroutine caller (usually, the consumer)
-            std::suspend_always initial_suspend()          { debug<DEBUG>("promise_type::initial_suspend"); return {}; }
-            std::suspend_always   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
-            void unhandled_exception()                     { }
 
             // The product
             T m_product; 

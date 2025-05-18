@@ -4,8 +4,7 @@
 
 #include <coroutine0_generator.h>
 #include <coroutine1_awaitor.h>
-#include <coroutine2_awaitor.h>
-#include <coroutine3_pipeline.h>
+#include <coroutine2_pipeline.h>
 #include <utility.h>
 
 
@@ -176,28 +175,6 @@ void test_coroutine_awaitor_debug()
 
 
 
-
-
-
-
-
-void test_coroutine_awaitor2()
-{
-    // *** Experiment 0 *** //
-    std::coroutine_handle<> h0;
-    std::cout << "\nExperiment 0";
-    std::cout << "\n--------------------";
-    coroutine0(&h0);
-    std::cout << "\n--------------------";
-    for(int i=0; i<8; ++i)
-    {
-        std::cout << "\ncaller invokes handle"; 
-        h0();
-    }
-    std::cout << "\n\n";
-  
-    h0.destroy();
-}
 
 
 
