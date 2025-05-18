@@ -162,10 +162,15 @@ void test_coroutine_awaitor()
         fut.push_product();
     }
     std::cout << "\n\n";
-    std::cout << "\n";
-    std::cout << "\n";
-    std::cout << "\n";
 }
+
+
+
+
+
+
+
+
 
 
 

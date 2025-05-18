@@ -75,22 +75,27 @@ namespace alg
         }
     };
 
+
+    // ********************************************** //
+    // *** Data transfer from task<T> to co_await *** //
+    // ********************************************** //
     template<typename T, bool DEBUG>
     struct awaitable
     {
         awaitable() : m_product_ptr(nullptr)
         {
-            std::cout << "\nawaitable::awaitable"; 
+            debug<DEBUG>("awaitable::awaitable");
         }
 
         bool await_ready() const noexcept 
         { 
+            debug<DEBUG>("awaitable::await_ready");
             return false; 
         }
 
         bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
-            std::cout << "\nawaitable::await_suspend";
+            debug<DEBUG>("awaitable::await_suspend");
             m_product_ptr = &(handle.promise().m_product);   
             return true; 
         }
@@ -98,7 +103,7 @@ namespace alg
         // Return product produced by coroutiner caller to coroutine on co_await
         T* await_resume() const noexcept
         { 
-            std::cout << "\nawaitable::await_resume";
+            debug<DEBUG>("awaitable::await_resume");
             return m_product_ptr;
         }
 

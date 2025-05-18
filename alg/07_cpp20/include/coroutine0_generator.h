@@ -51,7 +51,10 @@ namespace alg
     {
         if constexpr (DEBUG) std::cout << "\n" << message << std::flush;
     }
+}
 
+namespace alg 
+{
     template<typename T, bool DEBUG>
     class generator 
     {
