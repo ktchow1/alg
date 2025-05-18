@@ -8,15 +8,25 @@
 #include <utility.h>
 
 
-// ***************** //
-// *** Generator *** //
-// ***************** //
 struct pod
 {
     std::uint32_t y;
     std::uint32_t m;
     std::uint32_t d;
 };
+
+std::ostream& operator<<(std::ostream& os, const pod& date)
+{
+    os << date.y << "-"
+       << date.m << "-"
+       << date.d;
+    return os;
+}
+
+
+// ************************* //
+// *** Generator pattern *** //
+// ************************* //
 
 // Producer : Monthly payment date generator
 template<bool DEBUG>
@@ -75,6 +85,7 @@ void test_coroutine_generator()
         const auto& t = g0.get_product(); // <--- caller yields here, coroutine run to end and return (without produces), caller then resumes
         assert(g0.get_num_yields() == 5 && t.y == 2022 && t.m == 3 && t.d == 28);
     }
+
     // ***************** //
     // *** Example 2 *** //
     // ***************** //
@@ -97,71 +108,55 @@ void test_coroutine_generator()
         assert(g1.get_num_yields() == 3 && t.y == 2022 && t.m == 8 && t.d == 30);
     }
     print_summary("coroutine - generator", "succeeded");
+}
 
+
+void test_coroutine_generator_debug() 
+{
     // ******************************** //
     // *** Example 3 (normal usage) *** //
     // ******************************** //
     std::cout << "\n======================================";
-
     alg::generator<pod,true> g2 = coroutine_to_produce< true>(2022, 5, 31, 3);
+
     while(g2)
     {
-        const auto& t = g2.get_product();
-        std::cout << "\ncaller consumes ---> num_yields = " << g2.get_num_yields() << ", date = "  << t.y << "-" << t.m << "-" << t.d;
+        const auto& date = g2.get_product();
+        std::cout << "\ncaller consumes ---> num_yields = " << g2.get_num_yields() << ", date = " << date;
     }
     std::cout << "\n======================================";
 }
 
 
 
-// *************** //
-// *** Awaitor *** //
-// *************** //
+// *********************** //
+// *** Awaitor pattern *** //
+// *********************** //
 
-// Sample POD
-struct pod_T 
-{
-    char a;
-    std::uint16_t n;
-};
-
-
-inline std::ostream& operator<<(std::ostream& os, const pod_T& t)
-{
-    os << "T = " << t.a << "_" << t.n;
-    return os;
-}
-
-// Consumer : bi-monthly meeting date generator
+// Consumer 
 template<bool DEBUG>
-[[nodiscard]] alg::task<pod_T,DEBUG> coroutine_to_consume()
+[[nodiscard]] alg::task<pod,DEBUG> coroutine_to_consume()
 {
-
-    for(std::uint32_t n=0;; ++n) 
+    alg::awaitable<pod,DEBUG> awaitable{}; 
+    for(std::uint32_t n=0; ; ++n) // infinity loop, its producer's call to end the loop
     {
-        auto T_ptr = co_await alg::awaitable<pod_T,DEBUG>{}; // wait for caller until t is ready
-
-        std::cout << "\ncoroutine::iteration " << n << ", " << *T_ptr;
+        auto date_ptr = co_await awaitable; 
+        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << *date_ptr;
     }
 }
 
-
-void test_coroutine_awaitor()
+// Producer
+void test_coroutine_awaitor_debug()
 {
-    std::cout << "\n--------------------";
-    alg::task<pod_T, true> fut = coroutine_to_consume<true>();
-    auto& t = fut.get_product_by_ref();
+    std::cout << "\n======================================";
+    alg::task<pod,true> task = coroutine_to_consume<true>();
 
-    for(int i=0; i<8; ++i) 
+    for(std::uint32_t n=0; n<8; ++n) 
     {
-        // produce here
-        t.a = static_cast<char>('A' + i);
-        t.n = i;
-
-        std::cout << "\ncaller produces t = " << t;
-        fut.push_product();
+        pod date{2030, 1+n, 15};
+        task.set_product(date);
     }
-    std::cout << "\n\n";
+    std::cout << "\n======================================";
 }
 
 
@@ -199,23 +194,8 @@ void test_coroutine_awaitor2()
         h0();
     }
     std::cout << "\n\n";
-
   
-    // *** Experiment 1 *** //
-//  std::cout << "\nExperiment 1";
-//  std::cout << "\n--------------------";
-//  std::coroutine_handle<> h1 = coroutine1();
-//  std::cout << "\n--------------------";
-//  for(int i=0; i<8; ++i) 
-//  {
-//      std::cout << "\ncaller invokes handle";
-//      h1();
-//  }
-//  std::cout << "\n\n";
-    
-    // *** Explicit destroy handle in heap *** //
-//  h0.destroy();
-//  h1.destroy();
+    h0.destroy();
 }
 
 
@@ -289,6 +269,7 @@ void test_coroutine_pc()
 void test_coroutine()
 {
     test_coroutine_generator();
-    test_coroutine_awaitor();
+    test_coroutine_generator_debug();
+    test_coroutine_awaitor_debug();
 //  test_coroutine_pc();
 }

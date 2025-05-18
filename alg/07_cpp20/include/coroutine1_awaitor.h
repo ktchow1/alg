@@ -63,14 +63,10 @@ namespace alg
         // ********************************************* //
         // *** Custom functions for coroutine caller *** //
         // ********************************************* //
-        T& get_product_by_ref()
+        void set_product(const T& product)
         {
-            debug<DEBUG>("task::get_product_by_ref");
-            return m_handle.promise().m_product;
-        }
-
-        void push_product()
-        {
+            debug<DEBUG>("task::set_product");
+            m_handle.promise().m_product = product;
             m_handle(); // yield to coroutine
         }
     };
@@ -80,9 +76,10 @@ namespace alg
     // *** Data transfer from task<T> to co_await *** //
     // ********************************************** //
     template<typename T, bool DEBUG>
-    struct awaitable
+    class awaitable
     {
-        awaitable() : m_product_ptr(nullptr)
+    public:
+        awaitable() : m_product_ptr(nullptr), m_num_awaits(0)
         {
             debug<DEBUG>("awaitable::awaitable");
         }
@@ -93,9 +90,11 @@ namespace alg
             return false; 
         }
 
+        // Connection between task and awaitable, coroutine handle will be passed to awaitable on "co_await"
         bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
             debug<DEBUG>("awaitable::await_suspend");
+            ++m_num_awaits;
             m_product_ptr = &(handle.promise().m_product);   
             return true; 
         }
@@ -107,8 +106,19 @@ namespace alg
             return m_product_ptr;
         }
 
+
+    public:
+        std::uint32_t get_num_awaits() const  
+        {
+            return m_num_awaits;
+        }
+
+
     private:
         T* m_product_ptr;
+
+        // Other states
+        std::uint32_t m_num_awaits; 
     }; 
 }
 
@@ -162,51 +172,6 @@ future0 coroutine0(std::coroutine_handle<>* h_ptr)
         std::cout << "\ncoroutine::iteration " << n << " with thread_id = " << std::this_thread::get_id(); 
     }
 }
-
-
-// ******************** // 
-// *** Experiment 1 *** //
-// ******************** // 
-struct future1 
-{
-    struct promise_type 
-    {
-        promise_type()                                {   std::cout << "\npromise::promise";   }
-        future1 get_return_object()                   {   std::cout << "\npromise::ret_obj";  
-                                                          return future1
-                                                          { 
-                                                              std::coroutine_handle<promise_type>::from_promise(*this) 
-                                                          };
-                                                      }   
-        void unhandled_exception()                    {   }
-        std::suspend_never initial_suspend()          {   std::cout << "\npromise::initial"; return {};   }
-        std::suspend_never   final_suspend() noexcept {   std::cout << "\npromise::final";   return {};   }
-    };
-
-    explicit future1(std::coroutine_handle<promise_type> h_) : h(h_) 
-    {
-        std::cout << "\nfuture::future"; 
-    } 
-
-    // *** Conversion operator *** //
-    operator std::coroutine_handle<promise_type>() const 
-    {
-        std::cout << "\nfuture::convert_to_handle"; 
-        return h;
-    } 
-
-    std::coroutine_handle<promise_type> h;
-};
-
-[[nodiscard]] future1 coroutine1()
-{
-    for(std::uint32_t n=0;; ++n) 
-    {
-        co_await std::suspend_always{};
-        std::cout << "\ncoroutine::iteration " << n << " with thread_id = " << std::this_thread::get_id();
-    }
-}
-
 
 
     
