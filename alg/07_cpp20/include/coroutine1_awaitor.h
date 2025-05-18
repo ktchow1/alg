@@ -127,6 +127,11 @@ namespace alg
 
 
     public:
+        const T& get_product() const  
+        {
+            return m_handle.promise().m_product;
+        }
+
         std::uint32_t get_num_awaits() const  
         {
             return m_handle.promise().m_num_awaits;
@@ -135,7 +140,6 @@ namespace alg
 
     private:
         std::coroutine_handle<typename task<T,DEBUG>::promise_type> m_handle;
-
     }; 
 }
 
