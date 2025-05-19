@@ -34,7 +34,7 @@ namespace alg
                 debug<DEBUG>("promise_type::promise_type");
             }
 
-            // Factory of task (construct task from coroutine frame handle)
+            // Factory of task (construct task from coroutine-frame-handle)
             task<T,DEBUG> get_return_object()  
             {
                 debug<DEBUG>("promise_type::get_return_object");
@@ -49,7 +49,11 @@ namespace alg
             std::suspend_never   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
             void unhandled_exception()                    { }
 
-            // Transfer of product (from task<T> to coroutine) is done in awaitable
+
+            // ******************************************************* //
+            // *** Transfer of product (from task<T> to coroutine) *** //
+            // ******************************************************* //
+            // This part is done in awaitable.
 
 
             // ************************** //
@@ -61,7 +65,7 @@ namespace alg
 
 
     private:
-        // Pointer to coroutine frame
+        // Coroutine-frame-handle
         std::coroutine_handle<promise_type> m_handle;
 
 
@@ -86,7 +90,7 @@ namespace alg
         {
             debug<DEBUG>("task::set_product");
             m_handle.promise().m_product = product;
-            m_handle(); // yield to coroutine
+            m_handle(); // yield to coroutine, ask coroutine to consume
         }
 
         template<typename...ARGS>
@@ -94,19 +98,19 @@ namespace alg
         {
             debug<DEBUG>("task::set_product");
             new (&m_handle.promise().m_product) T{ std::forward<ARGS>(args)... };
-            m_handle(); // yield to coroutine
+            m_handle(); // yield to coroutine, ask coroutine to consume
         }
     };
 }
 
 
-// ********************************************** //
-// *** Data transfer from task<T> to co_await *** //
-// ********************************************** //
+// *************************************** //
+// *** Awaitable, a.k.a. Async produce *** //
+// *************************************** //
 namespace alg
 {
     template<typename T, bool DEBUG>
-    class awaitable // <--- we can also call it like "asyn_produce"
+    class awaitable 
     {
     public:
         awaitable() 
@@ -120,7 +124,10 @@ namespace alg
             return false; 
         }
 
-        // Connection between task and awaitable, coroutine framge handle will be passed to awaitable on "co_await"
+
+        // ******************************************************************** //
+        // *** Transfer of coroutine_handle (from coroutine to awaitable<T> *** //
+        // ******************************************************************** //
         bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
             debug<DEBUG>("awaitable::await_suspend");
@@ -129,7 +136,10 @@ namespace alg
             return true; 
         }
 
-        // Return product produced by coroutine caller to coroutine on co_await
+
+        // ************************************************************ // 
+        // *** Transfer of product (from awaitable<T> to coroutine) *** //
+        // ************************************************************ // 
         const T& await_resume() const noexcept
         { 
             debug<DEBUG>("awaitable::await_resume");
