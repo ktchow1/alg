@@ -65,7 +65,7 @@ alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y,
     }
 }
 
-void test_coroutine_step_by_step_generator() 
+void run_coroutine_caller_to_consume() 
 {
     std::cout << "\n======================================";
     alg::generator<pod,true> generator = coroutine_to_produce< true>(2022, 5, 31, 4);
@@ -89,14 +89,14 @@ void test_coroutine_step_by_step_generator()
 [[nodiscard]] alg::task<pod,true> coroutine_to_consume()
 {
     alg::awaitable<pod,true> awaitable{}; 
-    while(true) // <--- This is inf loop, how can prog end? See remark 1
+    while(true) // <--- This is inf loop, how can coroutine end? See Remark 1
     {
         const auto& date = co_await awaitable; 
-        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date << " / " << awaitable.get_product();
+        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date << " = " << awaitable.get_product();
     }
 }
 
-void test_coroutine_step_by_step_awaitor()
+void run_coroutine_caller_to_produce()
 {
     std::cout << "\n======================================";
     alg::task<pod,true> task = coroutine_to_consume();
@@ -109,8 +109,8 @@ void test_coroutine_step_by_step_awaitor()
     std::cout << "\n======================================";
     
     // Remark 1 :
-    // When caller resumes execution (right after coroutine finished the last production),
-    // then caller runs to the end of test function, task runs out of scope, destroy coroutine by RAII. 
+    // When caller resumes after its last production, it runs to end.
+    // Task<pod> runs out of scope, destroy coroutine by RAII. 
 }
 
 
@@ -120,7 +120,7 @@ void test_coroutine_step_by_step_awaitor()
 // ***************************************** //
 // assert is done in coroutine caller
 //
-void test_coroutine_complete_test_generator() 
+void run_coroutine_caller_to_consume_full_test() 
 {
     alg::generator<pod,false> generator0 = coroutine_to_produce<false>(2021, 10, 31, 5);
     {
@@ -169,7 +169,7 @@ void test_coroutine_complete_test_generator()
         assert((generator1.get_num_yields() == 3 && date == pod{2022, 8, 30}));
     }
     assert(!generator1);
-    print_summary("coroutine - generator", "succeeded");
+    print_summary("coroutine - generator full test", "succeeded");
 }
 
 
@@ -181,23 +181,41 @@ void test_coroutine_complete_test_generator()
 // * we cannot reuse coroutine_to_consume()
 // * we need to  use coroutine_to_consume_with_assert()
 //
-[[nodiscard]] alg::task<pod,false> coroutine_to_consume_with_assert() // <--- Todo
+[[nodiscard]] alg::task<pod,false> coroutine_to_consume_with_assert() 
 {
     alg::awaitable<pod,false> awaitable{}; 
     {
         const auto& date = co_await awaitable; 
-        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date;
+        assert((awaitable.get_num_awaits() == 1));
+        assert((awaitable.get_product() == pod{2030, 1, 15}));
+    }{
+        const auto& date = co_await awaitable; 
+        assert((awaitable.get_num_awaits() == 2));
+        assert((awaitable.get_product() == pod{2030, 2, 15}));
+    }{
+        const auto& date = co_await awaitable; 
+        assert((awaitable.get_num_awaits() == 3));
+        assert((awaitable.get_product() == pod{2030, 3, 15}));
+    }{
+        const auto& date = co_await awaitable; 
+        assert((awaitable.get_num_awaits() == 4));
+        assert((awaitable.get_product() == pod{2030, 4, 15}));
+    }{
+        const auto& date = co_await awaitable; 
+        assert(false); // <--- cannot be reached, see Remark 1
     }
 }
 
-void test_coroutine_complete_test_awaitor() 
+void run_coroutine_caller_to_produce_full_test() 
 {
-/*  alg::task<pod,false> task0 = coroutine_to_consume_with_assert();
+    alg::task<pod,false> task = coroutine_to_consume_with_assert();
+
+    for(std::uint32_t n=0; n<4; ++n) 
     {
-        pod date{2030, 1, 15};
-        task0.set_product(date);
-    } */
-    print_summary("coroutine - awaitor", "succeeded");
+        pod date{2030, 1+n, 15};
+        task.set_product(date);
+    }
+    print_summary("coroutine - awaitor full test", "succeeded");
 }
 
 
@@ -217,12 +235,10 @@ void test_coroutine_complete_test_awaitor()
 // ************ //
 void test_coroutine()
 {
-    test_coroutine_step_by_step_generator();   std::cout << "\n"; 
-    test_coroutine_step_by_step_awaitor();     std::cout << "\n";
-//  test_coroutine_step_by_step_pipeline();    std::cout << "\n";
-
-    test_coroutine_complete_test_generator();
-    test_coroutine_complete_test_awaitor();
+    run_coroutine_caller_to_consume();            std::cout << "\n"; 
+    run_coroutine_caller_to_produce();            std::cout << "\n";
+    run_coroutine_caller_to_consume_full_test();
+    run_coroutine_caller_to_produce_full_test();
 }
 
 
