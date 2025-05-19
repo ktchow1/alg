@@ -39,10 +39,10 @@ std::ostream& operator<<(std::ostream& os, const pod& date)
 // consumer = test function 
 //
 template<bool DEBUG>
-alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y,
+alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y, 
                                                std::uint32_t m,
-                                               std::uint32_t d, 
-                                               std::uint32_t N)
+                                               std::uint32_t d, // start date
+                                               std::uint32_t N) // num of days
 {
     pod data{y,m,d};
     for(std::uint32_t n=0; n!=N; ++n) 
@@ -92,15 +92,7 @@ void test_coroutine_step_by_step_generator()
     while(true) // <--- This is inf loop, how can prog end? See remark 1
     {
         const auto& date = co_await awaitable; 
-        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date;
-    }
-}
-
-[[nodiscard]] alg::task<pod,false> coroutine_to_consume_with_assert() // <--- Todo
-{
-    alg::awaitable<pod,false> awaitable{}; 
-    {
-        const auto& date = co_await awaitable; 
+        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date << " / " << awaitable.get_product();
     }
 }
 
@@ -133,7 +125,7 @@ void test_coroutine_complete_test_generator()
     alg::generator<pod,false> generator0 = coroutine_to_produce<false>(2021, 10, 31, 5);
     {
         assert(generator0);
-        const auto& date = generator0.get_product(); // <--- caller yields here, coroutine produces and co_yield, caller then resumes
+        const auto& date = generator0.get_product(); // <--- caller yields, coroutine produces and co_yield, caller resumes
         assert((generator0.get_num_yields() == 1 && date == pod{2021, 11, 30}));
     }{ 
         assert(generator0);
@@ -153,7 +145,7 @@ void test_coroutine_complete_test_generator()
         assert((generator0.get_num_yields() == 5 && date == pod{2022, 3, 28}));
     }{ 
         assert(generator0);
-        const auto& date = generator0.get_product(); // <--- caller yields here, coroutine run to end and return (without produces), caller then resumes
+        const auto& date = generator0.get_product(); // <--- caller yields, coroutine run to end without produces, caller resumes
         assert((generator0.get_num_yields() == 5 && date == pod{2022, 3, 28}));
     }
     assert(!generator0);
@@ -161,7 +153,7 @@ void test_coroutine_complete_test_generator()
     alg::generator<pod,false> generator1 = coroutine_to_produce<false>(2022, 5, 31, 3);
     {
         assert(generator1);
-        const auto& date = generator1.get_product(); // <--- caller yields here, coroutine produces and co_yield, caller then resumes
+        const auto& date = generator1.get_product(); // <--- caller yields, coroutine produces and co_yield, caller resumes
         assert((generator1.get_num_yields() == 1 && date == pod{2022, 6, 30}));
     }{ 
         assert(generator1);
@@ -173,7 +165,7 @@ void test_coroutine_complete_test_generator()
         assert((generator1.get_num_yields() == 3 && date == pod{2022, 8, 30}));
     }{ 
         assert(generator1);
-        const auto& date = generator1.get_product(); // <--- caller yields here, coroutine run to end and return (without produces), caller then resumes
+        const auto& date = generator1.get_product(); // <--- caller yields, coroutine run to end without produces, caller resumes
         assert((generator1.get_num_yields() == 3 && date == pod{2022, 8, 30}));
     }
     assert(!generator1);
@@ -187,8 +179,17 @@ void test_coroutine_complete_test_generator()
 // *************************************** //
 // assert is done in coroutine, hence :
 // * we cannot reuse coroutine_to_consume()
-// * we need another coroutine_to_consume_with_assert()
+// * we need to  use coroutine_to_consume_with_assert()
 //
+[[nodiscard]] alg::task<pod,false> coroutine_to_consume_with_assert() // <--- Todo
+{
+    alg::awaitable<pod,false> awaitable{}; 
+    {
+        const auto& date = co_await awaitable; 
+        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date;
+    }
+}
+
 void test_coroutine_complete_test_awaitor() 
 {
 /*  alg::task<pod,false> task0 = coroutine_to_consume_with_assert();
