@@ -184,24 +184,29 @@ void run_coroutine_caller_to_consume_full_test()
 {
     alg::awaitable<pod,false> awaitable{}; 
     {
+        assert(awaitable);
         const auto& date = co_await awaitable; 
         assert((awaitable.get_num_awaits() == 1));
         assert((awaitable.get_product() == pod{2030, 1, 15}));
     }{
+        assert(awaitable);
         const auto& date = co_await awaitable; 
         assert((awaitable.get_num_awaits() == 2));
         assert((awaitable.get_product() == pod{2030, 2, 15}));
     }{
+        assert(awaitable);
         const auto& date = co_await awaitable; 
         assert((awaitable.get_num_awaits() == 3));
         assert((awaitable.get_product() == pod{2030, 3, 15}));
     }{
+        assert(awaitable);
         const auto& date = co_await awaitable; 
         assert((awaitable.get_num_awaits() == 4));
         assert((awaitable.get_product() == pod{2030, 4, 15}));
     }{
-        const auto& date = co_await awaitable; 
-        assert(false); // <--- cannot be reached, see Remark 1
+        assert(awaitable);                     // <--- awaitable here, as handle still exists
+        const auto& date = co_await awaitable; // <--- yields to caller, caller runs to the end, task<T> out of scope
+        assert(false);                         // <--- caller never yields again, hence this line cannot be reached
     }
 }
 
