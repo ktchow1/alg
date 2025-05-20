@@ -4,7 +4,7 @@
 
 #include <coroutine0_generator.h>
 #include <coroutine1_awaitor.h>
-#include <coroutine2_pipeline.h>
+#include <coroutine2_awaitor_generator.h>
 #include <utility.h>
 
 

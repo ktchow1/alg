@@ -61,7 +61,7 @@ namespace alg
         void send_T_to_coroutine(ARGS&&... args) const // universal reference
         {
             h.promise().data_T = T{ std::forward<ARGS>(args)... };
-            h();
+            h.resume();
         }
 
         // Mimic python : data = next(source)

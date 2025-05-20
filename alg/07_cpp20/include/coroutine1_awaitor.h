@@ -46,7 +46,7 @@ namespace alg
 
             // Suspension policy of coroutine caller governed by return type
             std::suspend_never initial_suspend()          { debug<DEBUG>("promise_type::initial_suspend"); return {}; }
-            std::suspend_never   final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
+            std::suspend_always  final_suspend() noexcept { debug<DEBUG>("promise_type::final_suspend");   return {}; }
             void unhandled_exception()                    { }
 
 
@@ -85,7 +85,7 @@ namespace alg
         {
             debug<DEBUG>("task::set_product");
             m_handle.promise().m_product = product;
-            m_handle(); // <--- yield to coroutine, ask coroutine to consume
+            m_handle.resume(); // <--- yield to coroutine, ask coroutine to consume
         }
 
         template<typename...ARGS>
@@ -93,7 +93,7 @@ namespace alg
         {
             debug<DEBUG>("task::set_product");
             new (&m_handle.promise().m_product) T{ std::forward<ARGS>(args)... };
-            m_handle(); // <--- yield to coroutine, ask coroutine to consume
+            m_handle.resume(); // <--- yield to coroutine, ask coroutine to consume
         }
 
 

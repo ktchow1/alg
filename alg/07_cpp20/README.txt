@@ -25,3 +25,17 @@ Relation among those concepts
 
 
 
+
+
+
+suspend coroutine / resume coroutine caller
+* co_yield 
+* co_await 
+
+suspend coroutine caller / resume coroutine
+* handle.resume() <--- prefer thie, more readable 
+* handle()
+
+we usually talk in the perspective of coroutine, that is : 
+* suspend on co_*** operator
+* resume  on handle.resume() 

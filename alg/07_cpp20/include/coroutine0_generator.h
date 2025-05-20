@@ -101,7 +101,7 @@ namespace alg
         const T& get_product() const  
         {
             debug<DEBUG>("generator::get_product");
-            m_handle(); // <--- yield to coroutine, ask coroutine to produce
+            m_handle.resume(); // <--- yield to coroutine, ask coroutine to produce
             return m_handle.promise().m_product;
         }
 
