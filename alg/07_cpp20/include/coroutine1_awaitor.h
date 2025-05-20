@@ -2,11 +2,11 @@
 #include <iostream>
 #include <exception>
 #include <coroutine>
-#include <coroutine0_generator.h>
+#include <utility.h>
 
 
 // ****************************************************************************** //
-// How to define coroutine as pr using co_await?
+// How to define coroutine as consumer using co_await?
 //
 // alg::task<my_product> my_coroutine(...)
 // {
@@ -64,11 +64,6 @@ namespace alg
         };
 
 
-    private:
-        // Coroutine-frame-handle
-        std::coroutine_handle<promise_type> m_handle;
-
-
     public:
         explicit task(std::coroutine_handle<promise_type> handle) : m_handle(handle) 
         {
@@ -100,6 +95,11 @@ namespace alg
             new (&m_handle.promise().m_product) T{ std::forward<ARGS>(args)... };
             m_handle(); // yield to coroutine, ask coroutine to consume
         }
+
+
+    private:
+        // Coroutine-frame-handle
+        std::coroutine_handle<promise_type> m_handle;
     };
 }
 

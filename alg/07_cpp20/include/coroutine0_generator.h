@@ -2,16 +2,8 @@
 #include <iostream>
 #include <exception>
 #include <coroutine>
+#include <utility.h>
 
-
-namespace alg 
-{
-    template<bool DEBUG>
-    void debug(const std::string& message) 
-    {
-        if constexpr (DEBUG) std::cout << "\n" << message << std::flush;
-    }
-}
 
 // *********************************************************************************** //
 // How to define coroutine as producer using co_yield?
@@ -82,11 +74,6 @@ namespace alg
         };
 
 
-    private:
-        // Coroutine-frame-handle
-        std::coroutine_handle<promise_type> m_handle; 
-
-
     public:
         explicit generator(std::coroutine_handle<promise_type> handle) : m_handle(handle) 
         {
@@ -122,6 +109,11 @@ namespace alg
         {
             return m_handle.promise().m_num_yields;
         }
+
+
+    private:
+        // Coroutine-frame-handle
+        std::coroutine_handle<promise_type> m_handle; 
     };
 }
 
