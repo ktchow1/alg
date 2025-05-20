@@ -73,7 +73,8 @@ void run_coroutine_caller_to_consume()
     while(generator)
     {
         const auto& date = generator.get_product();
-        std::cout << "\ncaller consumes ---> num_yields = " << generator.get_num_yields() << ", date = " << date;
+        std::cout << "\ncaller consumes ---> num_yields = " 
+                  << generator.get_num_yields() << ", date = " << date;
     }
     std::cout << "\n======================================";
 }
@@ -89,10 +90,12 @@ void run_coroutine_caller_to_consume()
 [[nodiscard]] alg::task<pod,true> coroutine_to_consume()
 {
     alg::awaitable<pod,true> awaitable{}; 
-    while(true) // <--- This is inf loop, how can coroutine end? See Remark 1
+    while(awaitable)
     {
         const auto& date = co_await awaitable; 
-        std::cout << "\ncoroutine consumes ---> num_awaits = " << awaitable.get_num_awaits() << ", date = " << date << " = " << awaitable.get_product();
+        std::cout << "\ncoroutine consumes ---> num_awaits = " 
+                  << awaitable.get_num_awaits() << ", date = " << date << " = "
+                  << awaitable.get_product();
     }
 }
 
@@ -107,10 +110,6 @@ void run_coroutine_caller_to_produce()
         task.set_product(date);
     }
     std::cout << "\n======================================";
-    
-    // Remark 1 :
-    // When caller resumes after its last production, it runs to end.
-    // Task<pod> runs out of scope, destroy coroutine by RAII. 
 }
 
 

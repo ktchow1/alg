@@ -85,7 +85,7 @@ namespace alg
         {
             debug<DEBUG>("task::set_product");
             m_handle.promise().m_product = product;
-            m_handle(); // yield to coroutine, ask coroutine to consume
+            m_handle(); // <--- yield to coroutine, ask coroutine to consume
         }
 
         template<typename...ARGS>
@@ -93,7 +93,7 @@ namespace alg
         {
             debug<DEBUG>("task::set_product");
             new (&m_handle.promise().m_product) T{ std::forward<ARGS>(args)... };
-            m_handle(); // yield to coroutine, ask coroutine to consume
+            m_handle(); // <--- yield to coroutine, ask coroutine to consume
         }
 
 
@@ -148,6 +148,20 @@ namespace alg
 
 
     public:
+        operator bool() const
+        {
+            debug<DEBUG>("awaitable::bool");
+            if (m_handle)
+            {
+                return !m_handle.done();
+            }
+            else 
+            {
+                // unlike generator, before the first co_await is called, handle is null
+                return true; 
+            }
+        }
+        
         const T& get_product() const  
         {
             return m_handle.promise().m_product;
