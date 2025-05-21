@@ -87,7 +87,8 @@ void run_coroutine_caller_to_consume()
 // consumer = alg::task (co_await to pull product)
 // producer = test function
 //
-[[nodiscard]] alg::task<pod,true> coroutine_to_consume()
+[[nodiscard]] 
+alg::task<pod,true> coroutine_to_consume()
 {
     alg::awaitable<pod,true> awaitable{}; 
     while(awaitable)
@@ -180,7 +181,8 @@ void run_coroutine_caller_to_consume_full_test()
 // * we cannot reuse coroutine_to_consume()
 // * we need to  use coroutine_to_consume_with_assert()
 //
-[[nodiscard]] alg::task<pod,false> coroutine_to_consume_with_assert() 
+[[nodiscard]] 
+alg::task<pod,false> coroutine_to_consume_with_assert() 
 {
     alg::awaitable<pod,false> awaitable{}; 
     {
@@ -227,64 +229,59 @@ void run_coroutine_caller_to_produce_full_test()
 // *************************************** //
 // *** Producer & consumer - full test *** //
 // *************************************** //
-struct pod_X
-{
-    char a;
-    std::uint16_t n;
-};
-
-struct pod_Y
-{
-    char a;
-    char b;
-    char c;
-};
-
-inline std::ostream& operator<<(std::ostream& os, const pod_X& t)
-{
-    os << "T = " << t.a << "_" << t.n;
-    return os;
-}
-
-inline std::ostream& operator<<(std::ostream& os, const pod_Y& u)
-{
-    os << "U = " << u.a << u.b << u.c;
-    return os;
-}
-
-[[nodiscard]] alg::generator_pc<pod_X, pod_Y> coroutine_pc()
+[[nodiscard]] 
+alg::generator_pc<pod, std::string> coroutine_pc()
 {
     // Two suspensions in each loop
+    // * co_await T from coroutine caller
+    // * co_yield U to   coroutine caller
+    //
     while(true) 
     {
-        const pod_X& t = co_await alg::awaitable_pc<pod_X, pod_Y>{};
+        const pod& date = co_await alg::awaitable_pc<pod, std::string>{};
 
-        pod_Y u;
-        u.a = t.a;
-        u.b = t.a + t.n;
-        u.c = t.a + t.n * 2;
+        std::string str(std::to_string(date.y));
+        str.append("-");
+        if (date.m < 10) str.append("0");
+        str.append(std::to_string(date.m));
+        str.append("-");
+        if (date.d < 10) str.append("0");
+        str.append(std::to_string(date.d));
 
-        std::cout << "\ncoroutine : input " << t << ", output " << u;
-        co_yield u;
+        co_yield str;
     }
 }
 
 void run_producer_consumer_full_test()
 {
-    auto f = coroutine_pc();
-    for(std::uint16_t n=0; n!=10; ++n) 
+    auto generator = coroutine_pc();
     {
-        pod_X t{static_cast<char>('a'+n), n};
-
-        f.set_product_T(t);
-        pod_Y u = f.get_product_U();
-
-        std::cout << "\ncaller : input " << t << ", output " << u;
+        generator.set_product_T(pod{2016, 7, 12});
+        const auto& str = generator.get_product_U();
+        assert(str == "2016-07-12");
+    }{
+        generator.set_product_T(pod{2017, 8, 11});
+        const auto& str = generator.get_product_U();
+        assert(str == "2017-08-11");
+    }{
+        generator.set_product_T(pod{2018, 9, 10});
+        const auto& str = generator.get_product_U();
+        assert(str == "2018-09-10");
+    }{
+        generator.set_product_T(pod{2019, 10, 9});
+        const auto& str = generator.get_product_U();
+        assert(str == "2019-10-09");
+    }{
+        generator.set_product_T(pod{2020, 11, 8});
+        const auto& str = generator.get_product_U();
+        assert(str == "2020-11-08");
+    }{
+        generator.set_product_T(pod{2021, 12, 7});
+        const auto& str = generator.get_product_U();
+        assert(str == "2021-12-07");
     }
-    std::cout << "\n\n";
+    print_summary("coroutine - producer-consumer full test", "succeeded");
 }
-
-
 
 
 
