@@ -27,56 +27,28 @@
   contains .                                           . ables call promise_type::yield_value() via co_yield
            .                                           .
            .                                           .
-           .                                           .
-       coroutine caller                            coroutine
-      (consumer)                                  (producer)  
+           .                 co_yield product          .
+       coroutine caller  <~~~~~~~~~~~~~~~~~~~~~~~  coroutine
+      (consumer)         ~~~~~~~~~~~~~~~~~~~~~~~> (producer)  
+                             handle.resume()
 
 
 
 
 
+*************
+*** Model *** 
+*************
 Producer consumer model
 * coroutine        is the producer of product
 * coroutine caller is the consumer of product, our test_coroutine_xxx() are coroutine caller
-* coroutine        (producer) push new product into generator::promise_type via co_yield     <--- analogous to std::promise
-* coroutine caller (consumer) pop  new product from generator               via get function <--- analogous to std::future
-* hence in some occasions, generator is called future
-
-
-
-
-
-Call sequence for generator : 
-1. generator::promise_type::promise_type()
-2. generator::promise_type::get_return_object()
-3. generator::generator()
-4. generator::promise_type::initial_suspend()
-
-Call sequence for task : 
-1. task::promise_type::promise_type()
-2. task::promise_type::get_return_object()
-3. task::generator()
-4. task::promise_type::initial_suspend()
-5. awaitable::awaitable()
-6. awaitable::initial_suspend()
-
-
-
+* product is stored inside promise_type
 
 
 What is the flow of program?
 * coroutine        yield cooperatively to coroutine caller  on co_yield / co_await
 * coroutine caller yield cooperatively to coroutine         on std::coroutine_handle<promise_type>::operator()  <--+-- these 2 are equivalent
                                                             or std::coroutine_handle<promise_type>::resume()    <--+
-                                                            or std::coroutine_handle<promise_type>'s construction (if initial_suspend returns ...)
-* therefore :
-- coroutine is just one thread, doing things concurrently (not in parallel)
-- coroutine is cooperative scheduling, not preemptive scheduling 
-- coroutine is non-blocking, it returns to coroutine caller with generator  (hence async)
-
-
-
-
 
 What is the flow of product?
 * product created by coroutine 
@@ -88,6 +60,9 @@ What is the flow of product?
 
 
 
+**********************
+*** Under the hood ***
+**********************
 How is it implemented under the hood?
 [1] When coroutine caller invokes coroutine :
 -   allocate coroutine frame in heap
@@ -111,6 +86,9 @@ How is it implemented under the hood?
 
 
 
+*******************************
+*** More about promise_type ***
+*******************************
 Member functions of promise_type : 
 * return type of promise_type::yield_value()     governs the suspension policy of producer 
 * return type of promise_type::initial_suspend() governs the suspension policy of consumer
@@ -123,10 +101,6 @@ Hence the uses of promise_type::yield_value() :
 - promise_type::yield_value() is similar to std::promise::set_value()
 - promise_type::yield_value() can either by value or by reference
 
-
-
-
-
 Relation between coroutine_handle and promise_type ?  
 * we can get promise from coroutine_handle : auto& promise = handle.promise()                    
 * we can get coroutine_handle from promise : std::coroutine_handle<promise_type>::from_promise()
@@ -135,11 +109,9 @@ Relation between coroutine_handle and promise_type ?
 
 
 
-The following coroutine mechanics :
-* are exposed in c++ (implemented in this header file)
-* are hidden in python 
-thus python coroutine code looks simple, just like test_coroutine.cpp.
-
+******************************
+*** Coroutine requirements ***
+******************************
 Class and function with free-to-choose name :
 * generator
 * generator::bool()
@@ -152,17 +124,6 @@ Class and function with standard name :
 * generator::promise_type::initial_suspend()
 * generator::promise_type::  final_suspend()
 * generator::promise_type::unhandled_exception()
-
-
-
-
-
-
-
-
-
-
-
 
 
 

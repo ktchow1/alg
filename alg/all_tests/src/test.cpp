@@ -105,96 +105,96 @@ inline void banner(const std::string str)
 
 int main()
 {
-//  banner("01_algorithm");
-//  test_arithmetic();
-//  test_bisection();
-//  test_stack();
-//  test_dual();
-//  test_list();
-//  test_tree();
-//  test_tree_variant();
-//  test_sorting();
-//
-//  banner("02_dynprog_vec");
-//  test_two_point_sum();
-//  test_two_point_diff();
-//  test_subseq_sum();
-//  test_string_problem();
-//  test_stack_problem();
-//  test_sorting_problem();
-//
-//  banner("03_dynprog");
-//  test_dp_matrix_and_graph();
-//  test_dp_matrix_only();  
-//
-//  banner("04_fundalmental");
-//  test_cast();
-//  test_constexpr();
-//  test_constexpr_array();
-//  test_constexpr_map();
-//  test_exception();
-//  test_memory_allocator();
-//  test_memory_deleter();
-//  test_memory_new_operator();
-//  test_memory_placement_new();
-//  test_memory_shared_ptr();
-//  test_memory_unique_ptr();
-//  test_optional();
-//  test_polymophism();
-//  test_rvalue();
-//  test_std_alg();
-//  test_std_container();
-//  test_std_layout();
-//  test_timer();
-//
-//  banner("05_template");
-//  test_array();
-//  test_function();
-//  test_metaprog();
-//  test_optional_ref();
-//  test_shared_ptr();
-//  test_template(); 
-//  test_template_specialization(); 
-//  test_traits();
-//  test_tuple_idx_seq();
-//  test_tuple();
-//  test_type_erasure_example();
-//  test_type_erasure();
-//  test_unique_ptr();
-//  test_variadic(); 
-//  test_variant_basic();  
-//  test_variant_overloading_lambda();  
-//  test_variant_visit(); 
-//
-//  banner("06_threading");
-//  test_thread_create();
-//  test_thread_stop_source();
-//  test_thread_timing();
-//  test_spinlock_mutex();
-//  test_shared_mutex();
-//  test_semaphore();
-//  test_singleton();
-//  test_synchronization();
-//  test_promise_future();
-//
-//  banner("06_threading - mpmcq & threadpool");
-//  test_mpmcq();
-//  test_threadpool();
+    banner("01_algorithm");
+    test_arithmetic();
+    test_bisection();
+    test_stack();
+    test_dual();
+    test_list();
+    test_tree();
+    test_tree_variant();
+    test_sorting();
+  
+    banner("02_dynprog_vec");
+    test_two_point_sum();
+    test_two_point_diff();
+    test_subseq_sum();
+    test_string_problem();
+    test_stack_problem();
+    test_sorting_problem();
+  
+    banner("03_dynprog");
+    test_dp_matrix_and_graph();
+    test_dp_matrix_only();  
+  
+    banner("04_fundalmental");
+    test_cast();
+    test_constexpr();
+    test_constexpr_array();
+    test_constexpr_map();
+    test_exception();
+    test_memory_allocator();
+    test_memory_deleter();
+    test_memory_new_operator();
+    test_memory_placement_new();
+    test_memory_shared_ptr();
+    test_memory_unique_ptr();
+    test_optional();
+    test_polymophism();
+    test_rvalue();
+    test_std_alg();
+    test_std_container();
+    test_std_layout();
+    test_timer();
+  
+    banner("05_template");
+    test_array();
+    test_function();
+    test_metaprog();
+    test_optional_ref();
+    test_shared_ptr();
+    test_template(); 
+    test_template_specialization(); 
+    test_traits();
+    test_tuple_idx_seq();
+    test_tuple();
+    test_type_erasure_example();
+    test_type_erasure();
+    test_unique_ptr();
+    test_variadic(); 
+    test_variant_basic();  
+    test_variant_overloading_lambda();  
+    test_variant_visit(); 
+  
+    banner("06_threading");
+    test_thread_create();
+    test_thread_stop_source();
+    test_thread_timing();
+    test_spinlock_mutex();
+    test_shared_mutex();
+    test_semaphore();
+    test_singleton();
+    test_synchronization();
+    test_promise_future();
+  
+    banner("06_threading - mpmcq & threadpool");
+    test_mpmcq();
+    test_threadpool();
   
     banner("07_cpp20");  
-//  test_spaceship();
-//  test_range();
-//  test_concepts_apply();
-//  test_concepts_define();
-//  test_concepts_define_examples();
+    test_spaceship();
+    test_range();
+    test_concepts_apply();
+    test_concepts_define();
+    test_concepts_define_examples();
     test_coroutine();
 
-//  banner("08_interview");
-//  test_alphagrep();
-//  test_apt_research();
-//  test_archax();
-//  test_citadel();
-//  test_optiver();
+    banner("08_interview");
+    test_alphagrep();
+    test_apt_research();
+    test_archax();
+    test_citadel();
+    test_optiver();
   
     std::cout << "\n\n\n";
     return 0;

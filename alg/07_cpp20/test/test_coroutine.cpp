@@ -67,7 +67,7 @@ alg::generator<pod,DEBUG> coroutine_to_produce(std::uint32_t y,
 
 void run_coroutine_caller_to_consume() 
 {
-    std::cout << "\n======================================";
+    std::cout << "\n=========================================================================================";
     alg::generator<pod,true> generator = coroutine_to_produce< true>(2022, 5, 31, 4);
 
     while(generator)
@@ -76,7 +76,7 @@ void run_coroutine_caller_to_consume()
         std::cout << "\ncaller consumes ---> num_yields = " 
                   << generator.get_num_yields() << ", date = " << date;
     }
-    std::cout << "\n======================================";
+    std::cout << "\n=========================================================================================";
 }
 
 
@@ -102,7 +102,7 @@ alg::task<pod,true> coroutine_to_consume()
 
 void run_coroutine_caller_to_produce()
 {
-    std::cout << "\n======================================";
+    std::cout << "\n=========================================================================================";
     alg::task<pod,true> task = coroutine_to_consume();
 
     for(std::uint32_t n=0; n<4; ++n) 
@@ -110,7 +110,7 @@ void run_coroutine_caller_to_produce()
         pod date{2030, 1+n, 15};
         task.set_product(date);
     }
-    std::cout << "\n======================================";
+    std::cout << "\n=========================================================================================";
 }
 
 
@@ -290,11 +290,11 @@ void run_producer_consumer_full_test()
 // ************ //
 void test_coroutine()
 {
-    run_coroutine_caller_to_consume();            std::cout << "\n"; 
-    run_coroutine_caller_to_produce();            std::cout << "\n";
     run_coroutine_caller_to_consume_full_test();
     run_coroutine_caller_to_produce_full_test();
-    run_producer_consumer_full_test();
+    run_producer_consumer_full_test();            std::cout << "\n";
+    run_coroutine_caller_to_consume();            std::cout << "\n"; 
+    run_coroutine_caller_to_produce();            std::cout << "\n";
 }
 
 
