@@ -4,7 +4,7 @@
 
 #include <coroutine0_generator.h>
 #include <coroutine1_awaitor.h>
-#include <coroutine2_awaitor_generator.h>
+#include <coroutine2_awaitor_pc.h>
 #include <utility.h>
 
 
@@ -32,9 +32,9 @@ std::ostream& operator<<(std::ostream& os, const pod& date)
 
 
 
-// **************************************** //
-// *** Step by step - Generator pattern *** //
-// **************************************** //
+// *********************************** //
+// *** Generator pattern - example *** //
+// *********************************** //
 // producer = alg::generator (co_yield to push product)
 // consumer = test function 
 //
@@ -81,9 +81,9 @@ void run_coroutine_caller_to_consume()
 
 
 
-// ************************************** //
-// *** Step by step - Awaitor pattern *** //
-// ************************************** //
+// ********************************* //
+// *** Awaitor pattern - example *** //
+// ********************************* //
 // consumer = alg::task (co_await to pull product)
 // producer = test function
 //
@@ -114,9 +114,9 @@ void run_coroutine_caller_to_produce()
 
 
 
-// ***************************************** //
-// *** Complete test - Generator pattern *** //
-// ***************************************** //
+// ************************************* //
+// *** Generator pattern - full test *** //
+// ************************************* //
 // assert is done in coroutine caller
 //
 void run_coroutine_caller_to_consume_full_test() 
@@ -173,9 +173,9 @@ void run_coroutine_caller_to_consume_full_test()
 
 
 
-// *************************************** //
-// *** Complete test - Awaitor pattern *** //
-// *************************************** //
+// *********************************** //
+// *** Awaitor pattern - full test *** //
+// *********************************** //
 // assert is done in coroutine, hence :
 // * we cannot reuse coroutine_to_consume()
 // * we need to  use coroutine_to_consume_with_assert()
@@ -224,39 +224,9 @@ void run_coroutine_caller_to_produce_full_test()
 
 
 
-
-
-
-
-
-
-
-
-
-
-// ************ //
-// *** Test *** //
-// ************ //
-void test_coroutine()
-{
-    run_coroutine_caller_to_consume();            std::cout << "\n"; 
-    run_coroutine_caller_to_produce();            std::cout << "\n";
-    run_coroutine_caller_to_consume_full_test();
-    run_coroutine_caller_to_produce_full_test();
-}
-
-
-
-
-
-// ********************************** //
-// *** Producer consumer pipeline *** //
-// ********************************** //
-// Coroutine that acts as producer and consumer
-//
-// X = data from caller to coroutine
-// Y = data from coroutine to caller
-  
+// *************************************** //
+// *** Producer & consumer - full test *** //
+// *************************************** //
 struct pod_X
 {
     char a;
@@ -282,7 +252,7 @@ inline std::ostream& operator<<(std::ostream& os, const pod_Y& u)
     return os;
 }
 
-[[nodiscard]] alg::future<pod_X, pod_Y> coroutine_pc()
+[[nodiscard]] alg::generator_pc<pod_X, pod_Y> coroutine_pc()
 {
     // Two suspensions in each loop
     while(true) 
@@ -298,7 +268,8 @@ inline std::ostream& operator<<(std::ostream& os, const pod_Y& u)
         co_yield u;
     }
 }
-void test_coroutine_step_by_step_pipeline()
+
+void run_producer_consumer_full_test()
 {
     auto f = coroutine_pc();
     for(std::uint16_t n=0; n!=10; ++n) 
@@ -312,5 +283,24 @@ void test_coroutine_step_by_step_pipeline()
     }
     std::cout << "\n\n";
 }
+
+
+
+
+
+// ************ //
+// *** Test *** //
+// ************ //
+void test_coroutine()
+{
+    run_coroutine_caller_to_consume();            std::cout << "\n"; 
+    run_coroutine_caller_to_produce();            std::cout << "\n";
+    run_coroutine_caller_to_consume_full_test();
+    run_coroutine_caller_to_produce_full_test();
+    run_producer_consumer_full_test();
+}
+
+
+
 
 
