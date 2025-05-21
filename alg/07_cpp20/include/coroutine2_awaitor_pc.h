@@ -73,15 +73,15 @@ namespace alg
         // *** Custom functions for coroutine caller *** //
         // ********************************************* //
         template<typename... ARGS>
-        void send_T_to_coroutine(ARGS&&... args) const // universal reference
+        void set_product_T(ARGS&&... args) 
         {
             m_handle.promise().m_product_from_caller = T{ std::forward<ARGS>(args)... };
             m_handle.resume();
         }
 
-        const U& next_U_from_coroutine() const 
+        const U& get_product_U() const 
         {
-            m_handle();
+            m_handle.resume();
             return m_handle.promise().m_product_from_coroutine;
         }
 
@@ -108,12 +108,20 @@ namespace alg
             return false; 
         }
 
+
+        // ****************************************************************** //
+        // *** Transfer of coroutine_handle (from coroutine to awaitable) *** //
+        // ****************************************************************** //
         bool await_suspend(std::coroutine_handle<typename generator_pc<T,U>::promise_type> handle) 
         {
             m_handle = handle;
             return true; 
         }
 
+
+        // ********************************************************* // 
+        // *** Transfer of product (from awaitable to coroutine) *** //
+        // ********************************************************* // 
         const T& await_resume() const noexcept
         { 
             return m_handle.promise().m_product_from_caller;
@@ -121,6 +129,9 @@ namespace alg
 
     
     public:
+        // ********************************************* //
+        // *** Custom functions for coroutine caller *** //
+        // ********************************************* //
 
 
     private:

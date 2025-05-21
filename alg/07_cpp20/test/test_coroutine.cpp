@@ -276,8 +276,8 @@ void run_producer_consumer_full_test()
     {
         pod_X t{static_cast<char>('a'+n), n};
 
-        f.send_T_to_coroutine(t);
-        pod_Y u = f.next_U_from_coroutine();
+        f.set_product_T(t);
+        pod_Y u = f.get_product_U();
 
         std::cout << "\ncaller : input " << t << ", output " << u;
     }

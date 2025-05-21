@@ -36,7 +36,7 @@ namespace alg
                 debug<DEBUG>("promise_type::promise_type");
             } 
 
-            // Factory of generator (construct generator from coroutine-frame-handle)
+            // Factory of generator 
             generator<T,DEBUG> get_return_object() 
             { 
                 debug<DEBUG>("promise_type::get_return_object");
@@ -52,9 +52,9 @@ namespace alg
             void unhandled_exception()                     { }
 
 
-            // ************************************************************ //
-            // *** Transfer of product (from coroutine to generator<T>) *** //
-            // ************************************************************ //
+            // ********************************************************* //
+            // *** Transfer of product (from coroutine to generator) *** //
+            // ********************************************************* //
             // Suspension policy of coroutine governed by return type
             //
             std::suspend_always yield_value(const T& product) 

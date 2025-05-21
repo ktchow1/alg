@@ -34,7 +34,7 @@ namespace alg
                 debug<DEBUG>("promise_type::promise_type");
             }
 
-            // Factory of task (construct task from coroutine-frame-handle)
+            // Factory of task 
             task<T,DEBUG> get_return_object()  
             {
                 debug<DEBUG>("promise_type::get_return_object");
@@ -50,9 +50,9 @@ namespace alg
             void unhandled_exception()                    { }
 
 
-            // ******************************************************* //
-            // *** Transfer of product (from task<T> to coroutine) *** //
-            // ******************************************************* //
+            // **************************************************** //
+            // *** Transfer of product (from task to coroutine) *** //
+            // **************************************************** //
             // This part is done in awaitable.
 
 
@@ -124,9 +124,9 @@ namespace alg
         }
 
 
-        // ******************************************************************** //
-        // *** Transfer of coroutine_handle (from coroutine to awaitable<T> *** //
-        // ******************************************************************** //
+        // ****************************************************************** //
+        // *** Transfer of coroutine_handle (from coroutine to awaitable) *** //
+        // ****************************************************************** //
         bool await_suspend(std::coroutine_handle<typename task<T,DEBUG>::promise_type> handle) 
         {
             debug<DEBUG>("awaitable::await_suspend");
@@ -136,9 +136,9 @@ namespace alg
         }
 
 
-        // ************************************************************ // 
-        // *** Transfer of product (from awaitable<T> to coroutine) *** //
-        // ************************************************************ // 
+        // ********************************************************* // 
+        // *** Transfer of product (from awaitable to coroutine) *** //
+        // ********************************************************* // 
         const T& await_resume() const noexcept
         { 
             debug<DEBUG>("awaitable::await_resume");
@@ -147,6 +147,9 @@ namespace alg
 
 
     public:
+        // ********************************************* //
+        // *** Custom functions for coroutine caller *** //
+        // ********************************************* //
         operator bool() const
         {
             debug<DEBUG>("awaitable::bool");
