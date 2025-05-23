@@ -6,7 +6,7 @@
 
 
 // ***************************************************************************************************************** //
-// Alphagrep questions have a lot of common features :
+// All questions have a lot of common features :
 // * all 4 questions are about subseq
 // * all 4 questions are not about dynprog
 //
@@ -34,7 +34,7 @@
 // * 01, 0011, 000111 ...
 // * 10, 1100, 111000 ...
 //
-namespace alphagrep 
+namespace alpha 
 {
     // No dynamic programming
     // No exhaustive search
@@ -146,7 +146,7 @@ namespace alphagrep
 // method 3 : exhaustive O(n^3)
 // should work for k = 0
 //
-namespace alphagrep 
+namespace alpha 
 {
     std::uint32_t count_k_odd_subseq_2_ptrs(const std::vector<std::uint32_t>& vec, std::uint32_t k)    
     {
@@ -230,7 +230,7 @@ namespace alphagrep
 // i.e. find v[n0] > v[n1] > v[n2]
 //      where  n0  <   n1  <   n2
 //
-namespace alphagrep 
+namespace alpha 
 {
     std::uint32_t count_decreasing_triplet_heuristic(const std::vector<std::uint32_t>& vec) // O(N^2)
     {
@@ -305,7 +305,7 @@ namespace alphagrep
 // * iterative is O(N^3)
 // * bisection is O(NlogN)
 //
-namespace alphagrep
+namespace alpha
 {
     std::uint32_t max_min_diff_in_subseq_recursive_impl(const std::vector<std::uint32_t>::const_iterator& begin,
                                                         const std::vector<std::uint32_t>::const_iterator& end,

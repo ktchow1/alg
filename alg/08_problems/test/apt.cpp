@@ -6,7 +6,7 @@
 #include <mutex>
 #include <unistd.h>
 
-#include <apt_research.h>
+#include <apt.h>
 #include <utility.h>
 
 
@@ -143,7 +143,7 @@ namespace apt
             assert(output2.size() == 1 && static_cast<std::uint32_t>(static_cast<unsigned char>(output2[0])) == 165);
         } 
   
-        print_summary("apt research : question 2", "succeeded");
+        print_summary("apt : question 2", "succeeded");
     }
 }
 
@@ -178,7 +178,7 @@ namespace apt
         fct(a1);
         assert(A::x == 2);
         
-        print_summary("apt research : question 3", "succeeded");
+        print_summary("apt : question 3", "succeeded");
     }
 }
 
@@ -235,7 +235,7 @@ namespace apt
             assert(x == y); 
         }
 
-        print_summary("apt research : question 4", "succeeded");
+        print_summary("apt : question 4", "succeeded");
     }
 
 
@@ -279,7 +279,7 @@ namespace apt
         {
             assert(mantissa[6] == 0);
         }
-        print_summary("apt research : question 4 (double representation)", "succeeded");
+        print_summary("apt : question 4 (double representation)", "succeeded");
     }
 }
 
@@ -342,7 +342,7 @@ namespace apt
 }
 
 
-void test_apt_research()
+void test_apt()
 {
     apt::test_question2();
     apt::test_question3();

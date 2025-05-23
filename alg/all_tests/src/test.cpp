@@ -1,5 +1,4 @@
 #include<iostream>
-#include<interview.h>
 
 // *** 01_algorithm *** //
 void test_arithmetic();
@@ -38,7 +37,7 @@ void test_memory_unique_ptr();
 void test_optional();
 void test_polymophism();
 void test_rvalue();
-void test_std_alg();
+void ivertest_std_alg();
 void test_std_container();
 void test_std_layout();
 void test_timer();
@@ -85,12 +84,12 @@ void test_concepts_define();
 void test_concepts_define_examples();
 void test_coroutine();
 
-// *** 08_interview *** //
-void test_alphagrep();
-void test_apt_research();
-void test_archax();
-void test_citadel();
-void test_optiver();
+// *** 08_problems *** //
+void test_alpha();
+void test_apt();
+void test_arch();
+void test_ctd();
+void test_opt();
 
 
 
@@ -189,12 +188,12 @@ int main()
 //  test_concepts_define_examples();
 //  test_coroutine();
 
-//  banner("08_interview");
-//  test_alphagrep();
-//  test_apt_research();
-//  test_archax();
-//  test_citadel();
-//  test_optiver();
+    banner("08_problems");
+    test_alpha();
+    test_apt();
+    test_arch();
+    test_ctd();
+    test_opt();
   
     std::cout << "\n\n\n";
     return 0;

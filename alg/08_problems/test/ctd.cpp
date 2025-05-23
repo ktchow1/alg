@@ -1,6 +1,6 @@
 #include<cassert>
 
-#include<citadel.h>
+#include<ctd.h>
 #include<matrix.h>
 #include<utility.h>
 
@@ -18,7 +18,7 @@ bool is_vec_iota(const std::vector<T>& vec)
 }
 
 
-void test_citadel_spiral_traverse()
+void test_ctd_spiral_traverse()
 {
     // case 1 : even y, even x
     {
@@ -28,7 +28,7 @@ void test_citadel_spiral_traverse()
         mat.set_row(2, {10,15,14, 5});
         mat.set_row(3, { 9, 8, 7, 6});
 
-        auto ans = citadel::spiral_traverse(mat);
+        auto ans = ctd::spiral_traverse(mat);
         assert(ans.size() == mat.size_y() * mat.size_x());
         assert(is_vec_iota(ans));
     }
@@ -40,7 +40,7 @@ void test_citadel_spiral_traverse()
         mat.set_row(2, {12,19,18,17, 6});
         mat.set_row(3, {11,10, 9, 8, 7});
 
-        auto ans = citadel::spiral_traverse(mat);
+        auto ans = ctd::spiral_traverse(mat);
         assert(ans.size() == mat.size_y() * mat.size_x());
         assert(is_vec_iota(ans));
     }
@@ -55,7 +55,7 @@ void test_citadel_spiral_traverse()
         mat.set_row(5, {15,28,27,26, 9});
         mat.set_row(6, {14,13,12,11,10});
 
-        auto ans = citadel::spiral_traverse(mat);
+        auto ans = ctd::spiral_traverse(mat);
         assert(ans.size() == mat.size_y() * mat.size_x());
         assert(is_vec_iota(ans));
     }
@@ -70,15 +70,15 @@ void test_citadel_spiral_traverse()
         mat.set_row(5, {13,24,23, 8});
         mat.set_row(6, {12,11,10, 9});
 
-        auto ans = citadel::spiral_traverse(mat);
+        auto ans = ctd::spiral_traverse(mat);
         assert(ans.size() == mat.size_y() * mat.size_x());
         assert(is_vec_iota(ans));
     }
-    print_summary("citadel : spiral traverse", "succeeded");
+    print_summary("ctd : spiral traverse", "succeeded");
 }
 
 
-void test_citadel_K_merge()
+void test_ctd_K_merge()
 {
     std::uint32_t T    = 500;
     std::uint32_t K    = 10;
@@ -106,36 +106,36 @@ void test_citadel_K_merge()
         std::vector<std::uint32_t> ans0;
         std::vector<std::uint32_t> ans1;
         std::vector<std::uint32_t> ans2;
-        citadel::K_merge_pairwise   (data_ranges, std::back_inserter(ans0)); 
-        citadel::K_merge_all_at_once(data_ranges, std::back_inserter(ans1)); 
-        citadel::K_merge_all_in_one (data_ranges, std::back_inserter(ans2)); 
+        ctd::K_merge_pairwise   (data_ranges, std::back_inserter(ans0)); 
+        ctd::K_merge_all_at_once(data_ranges, std::back_inserter(ans1)); 
+        ctd::K_merge_all_in_one (data_ranges, std::back_inserter(ans2)); 
 
         assert(ans0 == ans2);
         assert(ans1 == ans2);
     }
-    print_summary("citadel : K merge", "succeeded");
+    print_summary("ctd : K merge", "succeeded");
 }
 
 
-void test_citadel_assignment_problem()
+void test_ctd_assignment_problem()
 {
     std::uint32_t num_trial = 200;
     std::uint32_t size = 8;
     std::uint32_t min  = 0;
     std::uint32_t max  = 100;
 
-    benchmark<1>("citadel : assignment problem",           
+    benchmark<1>("ctd : assignment problem",           
                  std::bind(gen_random_mat<std::uint32_t>, size, size, min, max), 
-                 std::bind(citadel::assignment_by_exhaustive_iteration, _1),     
-                 std::bind(citadel::assignment_by_exhaustive_recursive, _1),
+                 std::bind(ctd::assignment_by_exhaustive_iteration, _1),     
+                 std::bind(ctd::assignment_by_exhaustive_recursive, _1),
                  num_trial); 
 }
 
 
-void test_citadel()
+void test_ctd()
 {
-    test_citadel_spiral_traverse();
-    test_citadel_K_merge();
-    test_citadel_assignment_problem();
+    test_ctd_spiral_traverse();
+    test_ctd_K_merge();
+    test_ctd_assignment_problem();
 }
 

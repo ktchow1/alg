@@ -7,10 +7,10 @@
 #include<sorting.h>
 
 
-// *********************** //
-// *** 2020 Citadel HK *** //
-// *********************** //
-namespace citadel
+// *************** //
+// *** 2020 HK *** //
+// *************** //
+namespace ctd
 {
     enum class direction 
     {
@@ -64,10 +64,10 @@ namespace citadel
 }
 
 
-// *********************** //
-// *** 2021 Citadel UK *** //
-// *********************** //
-namespace citadel
+// *************** //
+// *** 2021 UK *** //
+// *************** //
+namespace ctd
 {
     template<typename ITER, typename OITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
     void K_merge_pairwise(const std::vector<std::pair<ITER,ITER>>& ranges, OITER oiter)
@@ -194,9 +194,9 @@ namespace citadel
 }
 
 
-// ******************************************** //
-// *** 2022 Citadel UK - Assignment problem *** //
-// ******************************************** //
+// ************************************ //
+// *** 2022 UK - Assignment problem *** //
+// ************************************ //
 // Given cost matrix :
 // * row n = agent n
 // * col m = task m
@@ -210,7 +210,7 @@ namespace citadel
 // The output "ans" is a vector, such that :
 // * ans[n] = task assigned to agent n
 //
-namespace citadel
+namespace ctd
 {
     std::uint32_t find_cost(const alg::matrix<std::uint32_t>& cost_mat, const std::vector<std::uint32_t>& assignment)
     {

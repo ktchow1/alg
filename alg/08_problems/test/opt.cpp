@@ -1,12 +1,12 @@
 #include<cassert>
-#include<optiver.h>
+#include<opt.h>
 #include<utility.h>
 
 
 // ********************************** //
 // This is a test-driven development. //
 // ********************************** //
-void test_optiver()
+void test_opt()
 {
     for(std::uint32_t n=0; n!=55; ++n)
     {
@@ -86,7 +86,7 @@ void test_optiver()
         if (n==53)  { str = "(";                                                    expected = "E1"; } // E1
         if (n==54)  { str = "";                                                     expected = "E5"; } // E5
 
-        optiver::tree_checker chk;
+        opt::tree_checker chk;
         chk.load(str);
         auto answer = chk.get_output();
 
@@ -97,6 +97,6 @@ void test_optiver()
         // *********************************************** //
     //  chk.debug(); 
     }
-    print_summary("optiver : tree checker", "succeeded");
+    print_summary("opt : tree checker", "succeeded");
 }
 

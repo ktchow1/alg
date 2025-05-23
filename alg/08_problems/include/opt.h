@@ -34,7 +34,7 @@
 // E5d : an edge from a node to another tree             :      no cycle, eith    multi-parents, return E4
 // ...   hence E5d always comes together with E4.
 // ******************************************************************************************************* //
-namespace optiver
+namespace opt
 {
     class tree_checker
     {
