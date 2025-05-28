@@ -50,7 +50,7 @@ namespace alg
         void set(const K& key, const V& value)
         {
             // *************************** //
-            // *** case 1 : amend item *** //
+            // *** Exist - update time *** //
             // *************************** //
             auto map_iter = m_map.find(key);
             if (map_iter != m_map.end())
@@ -58,9 +58,9 @@ namespace alg
                 m_list.splice(m_list.begin(), m_list, map_iter->second); // move list iterator to the front
                 map_iter->second->second = value;
             }
-            // ************************* //
-            // *** case 2 : new item *** //
-            // ************************* //
+            // ********************************* //
+            // *** Not exist - add and erase *** //
+            // ********************************* //
             else
             {
                 if (m_list.size() == N)
@@ -74,12 +74,18 @@ namespace alg
 
         std::optional<V> get(const K& key) const
         {
+            // *************************** //
+            // *** Exist - update time *** //
+            // *************************** //
             auto map_iter = m_map.find(key);
             if (map_iter != m_map.end())
             {
                 m_list.splice(m_list.begin(), m_list, map_iter->second); // move list iterator to the front
                 return std::make_optional(map_iter->second->second);
             }
+            // ******************************* //
+            // *** Not exist - return null *** //
+            // ******************************* //
             else
             {
                 return std::nullopt;

@@ -154,7 +154,7 @@ int main()
 //  test_shared_ptr();
 //  test_template(); 
 //  test_template_specialization(); 
-//  test_traits();
+    test_traits();
 //  test_tuple_idx_seq();
 //  test_tuple();
 //  test_type_erasure_example();
@@ -187,13 +187,13 @@ int main()
 //  test_concepts_define();
 //  test_concepts_define_examples();
 //  test_coroutine();
-
-    banner("08_problems");
-    test_alpha();
-    test_apt();
-    test_arch();
-    test_ctd();
-    test_opt();
+// 
+//  banner("08_problems");
+//  test_alpha();
+//  test_apt();
+//  test_arch();
+//  test_ctd();
+//  test_opt();
   
     std::cout << "\n\n\n";
     return 0;

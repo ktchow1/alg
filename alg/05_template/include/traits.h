@@ -325,6 +325,37 @@ namespace alg
     }
 
 
+    // *********************************************** //
+    // *** example 1A : perfect forwarding (again) *** //
+    // *********************************************** //
+    template<typename T> 
+    struct perfect_forward
+    {
+        void bar(const T&  x) {  m_value = 1; }
+        void bar(      T&& x) {  m_value = 2; }
+
+        template<typename U> // for universal reference
+        void foo(U&& x)
+        {
+            bar(std::forward<U>(x));
+        }
+
+        std::uint32_t m_value{0};
+    };
+
+    template<typename T, typename enable_if<!std::is_lvalue_reference<T>::value, int>::type dummy = 0> 
+    bool perfect_forwarding_bar(T&& arg)
+    {
+        return false;
+    }
+
+    template<typename T>
+    bool perfect_forwarding_foo(T&& arg) 
+    {
+        return perfect_forwarding_impl(std::forward<T>(arg));
+    }
+
+
     // *************************************************** //
     // *** example 2 : sfinae in class member function *** //
     // *************************************************** //
