@@ -386,10 +386,8 @@ void test_sfinae_traits()
     assert((alg::perfect_forwarding(std::string{ }) == false));
     
     alg::perfect_forward<std::string> perf;
-    assert(perf.m_value == 0);
-    perf.foo(str);
-    assert(perf.m_value == 1);
-    perf.foo(std::move(str));
+    assert(perf.m_value == 0);     perf.foo(str);
+    assert(perf.m_value == 1);     perf.foo(std::move(str));
     assert(perf.m_value == 2);
 
     // example 2 : sfinae in class member function

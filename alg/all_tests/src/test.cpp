@@ -154,7 +154,7 @@ int main()
 //  test_shared_ptr();
 //  test_template(); 
 //  test_template_specialization(); 
-    test_traits();
+//  test_traits();
 //  test_tuple_idx_seq();
 //  test_tuple();
 //  test_type_erasure_example();
