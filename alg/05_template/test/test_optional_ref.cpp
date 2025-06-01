@@ -355,10 +355,10 @@ void test_optional_ref()
 {
     test_constructibility();
     test_reference<std::reference_wrapper, std::ref, std::cref>("std::reference");
-//  test_reference<alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
-//  test_optional<std::optional, std_nullopt>("std::optional");
-//  test_optional<alg::optional, alg_nullopt>("alg::optional");
-//  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
+    test_reference<alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
+    test_optional<std::optional, std_nullopt>("std::optional");
+    test_optional<alg::optional, alg_nullopt>("alg::optional");
+    test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
 //  test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); <--- Todo
 
     // The failure in the last case above, is likely, to be solved 

@@ -83,6 +83,8 @@ Two access functions :
 1. std::reference_wrapper<T>::operator=(const std::reference_wrapper<T>&) <--- release     the underlying T&, and point to new one (re-bind)
 2. std::reference_wrapper<T>::get()                                       <--- dereference the underlying T&, and can then be modified by user
 
+std::reference_wrapper<T> of callable T should support operator().
+
 
 
 
@@ -108,16 +110,15 @@ Please note that :
 // ************************** //
 Ambiguity of std::optional<T&> :
 
-    T x{...};
-    T y{...};
+    T x{1}
+    T y{2};
 
-    std::optional<T> op0 = x;
-    op0 = y;                  
-    *op0 == y
+    std::optional<T&> op = x;
+    op = y; <--- what does that mean? 
+                 
+1. assigning internal reference of op to y ? or ... 
+2. assigning internal value     of op to y's value ?
 
-
-    opt = y; <--- what does that mean? 
-                  1. re-assigning opt to y ?
-                  2. dereference x and assign with y ?
+This is controversal, and c++ compiler treats this as illegal.
 
 
