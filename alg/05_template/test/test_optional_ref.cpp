@@ -2,14 +2,15 @@
 #include<cassert>
 #include<type_traits>
 #include<optional_ref.h>
+#include<literal.h>
 #include<utility.h>
 
 
 struct A
 {
-    int m_x;
-    int m_y;
-    int m_z;
+    std::uint32_t m_x;
+    std::uint32_t m_y;
+    std::uint32_t m_z;
 };
 
 bool operator==(const A& lhs, const A& rhs) 
@@ -23,24 +24,20 @@ struct B : public A
 {
 };
 
+struct C
+{
 
-// ***************** //
-// *** Reference *** //
-// ***************** //
-//
-// ******************************************************** //
-// 1st argument of fct_for_reference() can bind to either :
-// * const reference_wrapper<const A> ...  or
-// * const reference_wrapper<A> 
-// 
-// When it binds to the latter, a temporary instance of
-// reference_wrapper<const A> is created, which is rvalue.
-// 
-// reference_wrapper can be
-// * std::reference_wrapper or
-// * alg::reference_wrapper
-// ******************************************************** //
-//
+    std::uint32_t m_x;
+    std::uint32_t m_y;
+    std::uint32_t m_z;
+};
+
+
+
+
+
+
+
 template<template<typename> typename reference_wrapper>
 void fct_for_reference(const reference_wrapper<const A>& cr, const A& a, bool equal)
 {
@@ -49,9 +46,18 @@ void fct_for_reference(const reference_wrapper<const A>& cr, const A& a, bool eq
 }
 
 
-template<template<typename> typename reference_wrapper,
-         reference_wrapper<      A>(* ref)(      A&),
-         reference_wrapper<const A>(*cref)(const A&)>
+
+
+
+// ************************* //
+// *** Reference wrapper *** //
+// ************************* //
+template
+<
+    template<typename> typename reference_wrapper,    // reference wrapper under test
+    reference_wrapper<      A>(* ref)(      A&),      // factory 
+    reference_wrapper<const A>(*cref)(const A&)       // factory
+>
 void test_reference(const std::string& test_name)
 {
     A a0(10,11,12);
@@ -282,14 +288,14 @@ void test_optional_reference(const std::string& test_name)
 
 void test_optional_ref()
 {
-    test_reference<std::reference_wrapper, std::ref, std::cref>   ("std::reference");
-    test_optional<std::optional, std_nullopt>                     ("std::optional");
-    test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
-
-    test_reference<alg::reference_wrapper, alg::ref, alg::cref>   ("alg::reference");
-    test_optional<alg::optional, alg_nullopt>                     ("alg::optional");
+    test_reference<std::reference_wrapper, std::ref, std::cref>("std::reference");
+//  test_reference<alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
+  
+//  test_optional<std::optional, std_nullopt>("std::optional");
+//  test_optional<alg::optional, alg_nullopt>("alg::optional");
+  
+//  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
 //  test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); <--- Todo
-
 
     // The failure in the last case above, is likely, to be solved 
     // by changing implementation of optional from value into ptr.

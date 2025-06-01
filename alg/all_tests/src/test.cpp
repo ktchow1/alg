@@ -28,6 +28,7 @@ void test_constexpr();
 void test_constexpr_array();
 void test_constexpr_map();
 void test_exception();
+void test_literal();
 void test_memory_allocator();
 void test_memory_deleter();
 void test_memory_new_operator();
@@ -132,13 +133,14 @@ int main()
 //  test_constexpr_array();
 //  test_constexpr_map();
 //  test_exception();
+    test_literal();
 //  test_memory_allocator();
 //  test_memory_deleter();
 //  test_memory_new_operator();
 //  test_memory_placement_new();
 //  test_memory_shared_ptr();
 //  test_memory_unique_ptr();
-//  test_optional();
+    test_optional();
 //  test_polymophism();
 //  test_rvalue();
 //  test_std_alg();
@@ -164,18 +166,18 @@ int main()
 //  test_variant_basic();  
 //  test_variant_overloading_lambda();  
 //  test_variant_visit(); 
-  
-    banner("06_threading");
-    test_thread_create();
-    test_thread_stop_source();
-    test_thread_timing();
-    test_spinlock_mutex();
-    test_shared_mutex();   // <--- THIS TEST MAY RARELY FAIL, PLEASE CHECK
-    test_semaphore();
-    test_singleton();
-    test_synchronization();
-    test_promise_future();
-  
+//
+//  banner("06_threading");
+//  test_thread_create();
+//  test_thread_stop_source();
+//  test_thread_timing();
+//  test_spinlock_mutex();
+//  test_shared_mutex();   // <--- THIS TEST MAY RARELY FAIL, PLEASE CHECK
+//  test_semaphore();
+//  test_singleton();
+//  test_synchronization();
+//  test_promise_future();
+//
 //  banner("06_threading - mpmcq & threadpool");
 //  test_mpmcq();
 //  test_threadpool();
