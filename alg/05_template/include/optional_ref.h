@@ -2,6 +2,37 @@
 #include<optional>
 #include<functional> // for std::reference_wrapper
 
+// *************** //
+// *** Summary *** //
+// *************** //
+//
+//                                   | T*          T&          ref<T>      opt<T>      opt<ref<T>> vector<T> 
+// ----------------------------------+-----------------------------------------------------------------------
+// represent null?                   | yes         no          no          yes         yes         yes     
+// def-constructible                 | yes         no          no          yes         yes         yes      
+// copyable                          | yes         yes         yes         yes         yes         yes        
+// assignable                        | yes         no          yes         yes         yes         yes        
+// require T to be def-constructible | no          no          no          no          no          no       
+// require T to be copyable          | no          no          no          no          no          no               
+// require T to be assignable        | no          no          no          no          no          no       
+//
+// 
+// note
+// 1. std::optional<T&> cannot be constructed, as there is ambiguity
+//
+// std::optional<int&> i = x;
+// i = y; <--- what does that mean? ambiguous : 
+//             rebinding i to y? or
+//             assigning x with y's value?
+//
+
+
+
+
+
+
+
+
 
 // [Different referencing] 
 // T&                             : cannot be null, not assignable, not used in vector
@@ -12,13 +43,7 @@
 //
 //
 //
-// [Problem of std::optional<T&>]
-// std::optional<T&> is not allowed, why? 
 //
-// std::optional<int&> i = x;
-// i = y; <--- what does that mean? ambiguous : 
-//             rebinding i to y? or
-//             assigning x with y's value?
 //
 //
 //

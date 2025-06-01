@@ -6,7 +6,7 @@
 #include<utility.h>
 
 
-struct A
+struct A // default constructible
 {
     std::uint32_t m_x;
     std::uint32_t m_y;
@@ -24,16 +24,34 @@ struct B : public A
 {
 };
 
-struct C
+struct C // non default constructible
 {
+    C(std::uint32_t x, std::uint32_t y, std::uint32_t z) : m_x(x), m_y(y), m_z(z)
+    {
+    }
 
     std::uint32_t m_x;
     std::uint32_t m_y;
     std::uint32_t m_z;
 };
 
+struct D // non copyable, but assignable
+{
+    D(const D&) = delete;
 
+    std::uint32_t m_x;
+    std::uint32_t m_y;
+    std::uint32_t m_z;
+};
 
+struct E // copyable, but non assignable
+{
+    E& operator=(const E&) = delete;
+
+    std::uint32_t m_x;
+    std::uint32_t m_y;
+    std::uint32_t m_z;
+};
 
 
 
@@ -186,11 +204,11 @@ void test_optional(const std::string& test_name)
     optional<A> oa4;                                // factory
     if constexpr (std::is_same_v<optional<A>, std::optional<A>>)
     {
-        oa4 = std::make_optional<A>(40,41,42);  
+        oa4 = std::make_optional<A>(40_u32,41_u32,42_u32);  
     }
     if constexpr (std::is_same_v<optional<A>, alg::optional<A>>)
     {
-        oa4 = alg::make_optional<A>(40,41,42);  
+        oa4 = alg::make_optional<A>(40_u32,41_u32,42_u32);  
     }
 
     assert(oa0 == nullopt::value);

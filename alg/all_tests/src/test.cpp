@@ -133,7 +133,7 @@ int main()
 //  test_constexpr_array();
 //  test_constexpr_map();
 //  test_exception();
-    test_literal();
+//  test_literal();
 //  test_memory_allocator();
 //  test_memory_deleter();
 //  test_memory_new_operator();
