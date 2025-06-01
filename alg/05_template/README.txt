@@ -2,6 +2,8 @@ More about std::reference_wrapper and std::optional
 
 
 
+
+
 *************** //
 *** Summary *** //
 *************** //
@@ -60,22 +62,62 @@ require T to be assignable        | no          no          no          yes *   
 
 
 
+
+
 ***************** //
 *** Objective *** //
 ***************** //
 1. disadvantage of T* is not safe
-2. disadvantage of T& is not assignable                                <--- hence we have std::reference_wrapper<T>
+2. disadvantage of T& is not re-assignable                             <--- hence we have std::reference_wrapper<T>
 3. disadvantage of std::reference_wrapper<T> is no null-representation <--- hence we have std::optional<std::reference_wrapper<T>>
-4. std::optional<T&> cannot be compiled, because there is ambiguity
+4. but why not use std::optional<T&>? This is because std::optional<T&> cannot be compiled.
 
-   std::uint32_t x = 12;
-   std::uint32_t y = 23;
-   std::optional<std::uint32_t&> opt = x;
-   opt = y; <--- what does that mean? 
-                 1. re-assigning opt to y ?
-                 2. dereference x and assign with y ?
 
-   To understand this, we need to know the difference between :
-   1. std::optional<T>::operator=(const T&) <--- destruct    the underlying T, and construct new one 
-   2. std::optional<T>::operator*()         <--- dereference the underlying T, and can then be modified by user
+
+
+
+// ***************** //
+// *** Reference *** //
+// ***************** //
+Two access functions : 
+1. std::reference_wrapper<T>::operator=(const std::reference_wrapper<T>&) <--- release     the underlying T&, and point to new one (re-bind)
+2. std::reference_wrapper<T>::get()                                       <--- dereference the underlying T&, and can then be modified by user
+
+
+
+
+
+// **************** //
+// *** Optional *** //
+// **************** //
+Two access functions : 
+1. std::optional<T>::operator=(const std::optional<T>&) <--- destruct    the underlying T, and construct new one (re-bind)
+2. std::optional<T>::operator=(const T&)                <--- destruct    the underlying T, and construct new one (re-bind)
+3. std::optional<T>::operator*()                        <--- dereference the underlying T, and can then be modified by user
+
+Please note that :
+* re-bind in std::reference_wrapper does NOT destruct
+* re-bind in std::optional          does     destruct current object, if it exists 
+
+
+
+
+
+// ************************** //
+// *** Optional reference *** //
+// ************************** //
+Ambiguity of std::optional<T&> :
+
+    T x{...};
+    T y{...};
+
+    std::optional<T> op0 = x;
+    op0 = y;                  
+    *op0 == y
+
+
+    opt = y; <--- what does that mean? 
+                  1. re-assigning opt to y ?
+                  2. dereference x and assign with y ?
+
 
