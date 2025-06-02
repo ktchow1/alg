@@ -24,7 +24,8 @@ struct B // non default constructible
 
 struct C // non copyable, but assignable
 {
-    C() = default; // add this, as default constructor is hidden by copy constructor
+    C() = default;                                                                    // add this to make it default-constructible
+    C(std::uint32_t x, std::uint32_t y, std::uint32_t z) : m_x(x), m_y(y), m_z(z) {}  // add this to make it         constructible
     C(const C&) = delete;
 
     std::uint32_t m_x;
@@ -53,8 +54,8 @@ bool operator==(const A& lhs, const A& rhs)
            lhs.m_z == rhs.m_z;
 }
 
-template<template<typename> typename reference_wrapper>
-void fct_for_reference(const reference_wrapper<const A>& cr, const A& a, bool equal)
+template<typename T, template<typename> typename reference_wrapper>
+void fct_for_reference(const reference_wrapper<const T>& cr, const T& a, bool equal)
 {
     if (equal)  assert(&cr.get() == &a);
     else        assert(&cr.get() != &a);
@@ -120,28 +121,29 @@ void test_constructibility()
 // ************************* //
 template
 <
+    typename T, typename DT,                          // T = type for referenece wrapper, DT = derived class of T
     template<typename> typename reference_wrapper,    // reference wrapper under test
-    reference_wrapper<      A>(* ref)(      A&),      // factory 
-    reference_wrapper<const A>(*cref)(const A&)       // factory
+    reference_wrapper<      T>(* ref)(      T&),      // factory 
+    reference_wrapper<const T>(*cref)(const T&)       // factory
 >
 void test_reference(const std::string& test_name)
 {
-    A a0(10,11,12);
-    A& a1(a0);
+    T a0(10,11,12);
+    T& a1(a0);
 
-    // 1a. construct reference_wrapper from A
-//  reference_wrapper<A> r;                 // compile error : cannot bind to null
-//  reference_wrapper<A> r(A{10,11,12});    // compile error : cannot bind to prvalue
-//  reference_wrapper<A> r(std::move(a0));  // compile error : cannot bind to xvalue
-    reference_wrapper<A> r0(a0); 
-    reference_wrapper<A> r1(a1); 
+    // 1a. construct reference_wrapper from T
+//  reference_wrapper<T> r;                 // compile error : cannot bind to null
+//  reference_wrapper<T> r(T{10,11,12});    // compile error : cannot bind to prvalue
+//  reference_wrapper<T> r(std::move(a0));  // compile error : cannot bind to xvalue
+    reference_wrapper<T> r0(a0); 
+    reference_wrapper<T> r1(a1); 
     auto r2 = ref(a0);
     auto cr = cref(a0);
 
-//  static_assert(std::is_same_v<decltype(r2), reference_wrapper<A>>,       "failed to test reference_wrapper");
-//  static_assert(std::is_same_v<decltype(cr), reference_wrapper<const A>>, "failed to test reference_wrapper");
-    static_assert(std::is_same_v<typename decltype(r2)::type, A>,           "failed to test reference_wrapper");
-    static_assert(std::is_same_v<typename decltype(cr)::type, const A>,     "failed to test reference_wrapper");
+//  static_assert(std::is_same_v<decltype(r2), reference_wrapper<T>>,       "failed to test reference_wrapper");
+//  static_assert(std::is_same_v<decltype(cr), reference_wrapper<const T>>, "failed to test reference_wrapper");
+    static_assert(std::is_same_v<typename decltype(r2)::type, T>,           "failed to test reference_wrapper");
+    static_assert(std::is_same_v<typename decltype(cr)::type, const T>,     "failed to test reference_wrapper");
     assert(&r0.get() == &a0);
     assert(&r1.get() == &a0);
     assert(&r2.get() == &a0);
@@ -162,18 +164,21 @@ void test_reference(const std::string& test_name)
     assert(r2.get().m_y == 21);
     assert(r2.get().m_z == 22);
 
-    // 2a. construct A from reference_wrapper 
-    A a2(r0);
-    assert(&r0.get() != &a2);
-    assert(&r1.get() != &a2);
-    assert(&r2.get() != &a2);
-    assert(&cr.get() != &a2);
-    assert(a2.m_x == a0.m_x);
-    assert(a2.m_y == a0.m_y);
-    assert(a2.m_z == a0.m_z);
+    // 2a. construct T from reference_wrapper 
+    if constexpr (std::is_copy_constructible_v<T>)
+    {
+        T a2(r0);
+        assert(&r0.get() != &a2);
+        assert(&r1.get() != &a2);
+        assert(&r2.get() != &a2);
+        assert(&cr.get() != &a2);
+        assert(a2.m_x == a0.m_x);
+        assert(a2.m_y == a0.m_y);
+        assert(a2.m_z == a0.m_z);
+    }
 
-    // 2b. construct A& from reference_wrapper 
-    A& a3(r0);  
+    // 2b. construct T& from reference_wrapper 
+    T& a3(r0);  
     assert(&r0.get() == &a3);
     assert(&r1.get() == &a3);
     assert(&r2.get() == &a3);
@@ -183,8 +188,8 @@ void test_reference(const std::string& test_name)
     assert(a3.m_z == a0.m_z);
 
     // 3. construct reference_wrapper from reference_wrapper
-    reference_wrapper<A> r3{r0};
-    reference_wrapper<A> r4{std::move(r0)}; // move construction becomes copy construction
+    reference_wrapper<T> r3{r0};
+    reference_wrapper<T> r4{std::move(r0)}; // move construction becomes copy construction
     assert(&r0.get() == &a0);               // hence ... r0 is still valid
     assert(&r1.get() == &a0); 
     assert(&r2.get() == &a0);
@@ -193,8 +198,8 @@ void test_reference(const std::string& test_name)
     assert(&cr.get() == &a0);
 
     // 4a. used in vector
-//  std::vector<A&> vec; // compile error
-    std::vector<reference_wrapper<A>> vec;
+//  std::vector<T&> vec; // compile error
+    std::vector<reference_wrapper<T>> vec;
     vec.push_back(r0);
     vec.push_back(r1);
     vec.push_back(r2);
@@ -204,16 +209,15 @@ void test_reference(const std::string& test_name)
     // 4b. used in function
     for(const auto& x:vec) 
     {
-        fct_for_reference<reference_wrapper>(x, a0, true);
-        fct_for_reference<reference_wrapper>(x, a1, true);
-        fct_for_reference<reference_wrapper>(x, a2, false);
-        fct_for_reference<reference_wrapper>(x, a3, true); 
+        fct_for_reference<T, reference_wrapper>(x, a0, true);
+        fct_for_reference<T, reference_wrapper>(x, a1, true);
+        fct_for_reference<T, reference_wrapper>(x, a3, true); 
     }
 
     // 5. derived class
-    DA da({90,91,91});
-    reference_wrapper <A>  ra(da);
-    reference_wrapper<DA> rda(da);
+    DT da({90,91,91});
+    reference_wrapper <T>  ra(da);
+    reference_wrapper<DT> rda(da);
     assert( &ra.get() == &da);
     assert(&rda.get() == &da);
     print_summary(test_name, "succeeded");
@@ -355,8 +359,14 @@ void test_optional_reference(const std::string& test_name)
 void test_optional_ref()
 {
     test_constructibility();
-    test_reference<std::reference_wrapper, std::ref, std::cref>("std::reference");
-    test_reference<alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
+    test_reference<A, DA, std::reference_wrapper, std::ref, std::cref>("std::reference");
+    test_reference<A, DA, alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
+    test_reference<B, DB, std::reference_wrapper, std::ref, std::cref>("std::reference");
+    test_reference<B, DB, alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
+    test_reference<C, DC, std::reference_wrapper, std::ref, std::cref>("std::reference");
+    test_reference<C, DC, alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
+    test_reference<D, DD, std::reference_wrapper, std::ref, std::cref>("std::reference");
+    test_reference<D, DD, alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
 //  test_optional<std::optional, std_nullopt>("std::optional");
 //  test_optional<alg::optional, alg_nullopt>("alg::optional");
 //  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
