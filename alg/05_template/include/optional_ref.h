@@ -50,6 +50,8 @@ namespace alg
             return *m_ptr;
         }
 
+        // std::reference_wrapper<T> of callable T should support operator().
+
     public: 
         // Todo - should be private, but don't know how to grant friendship
         // from alg::reference_wrapper<T> 

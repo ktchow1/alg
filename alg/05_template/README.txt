@@ -76,23 +76,14 @@ require T to be assignable        | no          no          no          yes *   
 
 
 
-// ***************** //
-// *** Reference *** //
-// ***************** //
-Two access functions : 
+// ***************************** //
+// *** Reference vs Optional *** //
+// ***************************** //
+Two functions for reference : 
 1. std::reference_wrapper<T>::operator=(const std::reference_wrapper<T>&) <--- release     the underlying T&, and point to new one (re-bind)
 2. std::reference_wrapper<T>::get()                                       <--- dereference the underlying T&, and can then be modified by user
 
-std::reference_wrapper<T> of callable T should support operator().
-
-
-
-
-
-// **************** //
-// *** Optional *** //
-// **************** //
-Two access functions : 
+Two functions for optional : 
 1. std::optional<T>::operator=(const std::optional<T>&) <--- destruct    the underlying T, and construct new one (re-bind)
 2. std::optional<T>::operator=(const T&)                <--- destruct    the underlying T, and construct new one (re-bind)
 3. std::optional<T>::operator*()                        <--- dereference the underlying T, and can then be modified by user
@@ -121,4 +112,16 @@ Ambiguity of std::optional<T&> :
 
 This is controversal, and c++ compiler treats this as illegal.
 
+
+
+
+
+// ********************** //
+// *** Implementation *** //
+// ********************** //
+std::reference_wrapper<T> implemented as T*                  no dynamic allocation, just pointing to variable
+std::optional<T>          implemented as char[sizeof(T)]     no dynamic allocation, allow non-default-constructible T
+std::optional<T> can't be implemented as T*                  as it involves dynamic allocation
+std::optional<T> can't be implemented as T                   as it requires default-constructiblility of T
+std::vector<T>            implemented as T*                  as it involves dynamic allocation anyway
 
