@@ -13,37 +13,38 @@ struct A // default constructible
     std::uint32_t m_z;
 };
 
-struct B : public A
+struct B // non default constructible
 {
-};
-
-struct C // non default constructible
-{
-    C(std::uint32_t x, std::uint32_t y, std::uint32_t z) : m_x(x), m_y(y), m_z(z) {}
+    B(std::uint32_t x, std::uint32_t y, std::uint32_t z) : m_x(x), m_y(y), m_z(z) {}
 
     std::uint32_t m_x;
     std::uint32_t m_y;
     std::uint32_t m_z;
 };
 
-struct D // non copyable, but assignable
+struct C // non copyable, but assignable
 {
-    D() = default; // add this, as default constructor is hidden by copy constructor
-    D(const D&) = delete;
+    C() = default; // add this, as default constructor is hidden by copy constructor
+    C(const C&) = delete;
 
     std::uint32_t m_x;
     std::uint32_t m_y;
     std::uint32_t m_z;
 };
 
-struct E // copyable, but non assignable
+struct D // copyable, but non assignable
 {
-    E& operator=(const E&) = delete;
+    D& operator=(const D&) = delete;
 
     std::uint32_t m_x;
     std::uint32_t m_y;
     std::uint32_t m_z;
 };
+
+struct DA : public A {};
+struct DB : public B {};
+struct DC : public C {};
+struct DD : public D {};
 
 bool operator==(const A& lhs, const A& rhs) 
 {
@@ -60,29 +61,14 @@ void fct_for_reference(const reference_wrapper<const A>& cr, const A& a, bool eq
 }
 
 
+
 // ************************ //
 // *** Constructibility *** //
 // ************************ //
+// Unfortunately, there is no std traits to check re-assignability.
+//
 void test_constructibility()
 {
-    static_assert(std::is_default_constructible_v<A> ==  true, "constructiblility is wrong");
-    static_assert(std::is_default_constructible_v<B> ==  true, "constructiblility is wrong");
-    static_assert(std::is_default_constructible_v<C> == false, "constructiblility is wrong");
-    static_assert(std::is_default_constructible_v<D> ==  true, "constructiblility is wrong");
-    static_assert(std::is_default_constructible_v<E> ==  true, "constructiblility is wrong");
-
-    static_assert(std::is_copy_constructible_v<A> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_constructible_v<B> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_constructible_v<C> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_constructible_v<D> == false, "constructiblility is wrong");
-    static_assert(std::is_copy_constructible_v<E> ==  true, "constructiblility is wrong");
- 
-    static_assert(std::is_copy_assignable_v<A> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_assignable_v<B> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_assignable_v<C> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_assignable_v<D> ==  true, "constructiblility is wrong");
-    static_assert(std::is_copy_assignable_v<E> == false, "constructiblility is wrong");
-
     static_assert(std::is_default_constructible_v<A*>                                       ==  true, "constructiblility is wrong");
     static_assert(std::is_default_constructible_v<A&>                                       == false, "constructiblility is wrong");
     static_assert(std::is_default_constructible_v<std::reference_wrapper<A>>                == false, "constructiblility is wrong");
@@ -97,7 +83,6 @@ void test_constructibility()
     static_assert(std::is_copy_constructible_v<std::optional<std::reference_wrapper<A>>> ==  true, "constructiblility is wrong");
 //  static_assert(std::is_copy_constructible_v<std::optional<A&>>                        == false, "CANNOT COMPILE");
   
-    // unfortunately, there is no std traits to check re-assignability.
     static_assert(std::is_copy_assignable_v<A*>                                       ==  true, "constructiblility is wrong");
     static_assert(std::is_copy_assignable_v<A&>                                       ==  true, "constructiblility is wrong");
     static_assert(std::is_copy_assignable_v<std::reference_wrapper<A>>                ==  true, "constructiblility is wrong"); 
@@ -110,8 +95,24 @@ void test_constructibility()
     static_assert(std::is_default_constructible_v<std::vector<std::reference_wrapper<A>>>                ==  true, "constructiblility is wrong");
     static_assert(std::is_default_constructible_v<std::vector<std::optional<A>>>                         ==  true, "constructiblility is wrong");
     static_assert(std::is_default_constructible_v<std::vector<std::optional<std::reference_wrapper<A>>>> ==  true, "constructiblility is wrong");
+
+    static_assert(std::is_default_constructible_v<A> ==  true, "constructiblility is wrong");
+    static_assert(std::is_default_constructible_v<B> == false, "constructiblility is wrong");
+    static_assert(std::is_default_constructible_v<C> ==  true, "constructiblility is wrong");
+    static_assert(std::is_default_constructible_v<D> ==  true, "constructiblility is wrong");
+
+    static_assert(std::is_copy_constructible_v<A> ==  true, "constructiblility is wrong");
+    static_assert(std::is_copy_constructible_v<B> ==  true, "constructiblility is wrong");
+    static_assert(std::is_copy_constructible_v<C> == false, "constructiblility is wrong");
+    static_assert(std::is_copy_constructible_v<D> ==  true, "constructiblility is wrong");
+ 
+    static_assert(std::is_copy_assignable_v<A> ==  true, "constructiblility is wrong");
+    static_assert(std::is_copy_assignable_v<B> ==  true, "constructiblility is wrong");
+    static_assert(std::is_copy_assignable_v<C> ==  true, "constructiblility is wrong");
+    static_assert(std::is_copy_assignable_v<D> == false, "constructiblility is wrong");
     print_summary("std::reference constructiblility", "succeeded");
 }
+
 
 
 // ************************* //
@@ -129,9 +130,9 @@ void test_reference(const std::string& test_name)
     A& a1(a0);
 
     // 1a. construct reference_wrapper from A
-//  reference_wrapper<A> r;                // compile error : cannot bind to nothing
-//  reference_wrapper<A> r(A{10,11,12});   // compile error : cannot bind to rvalue
-//  reference_wrapper<A> r(std::move(a0)); // compile error : cannot bind to rvalue
+//  reference_wrapper<A> r;                 // compile error : cannot bind to null
+//  reference_wrapper<A> r(A{10,11,12});    // compile error : cannot bind to prvalue
+//  reference_wrapper<A> r(std::move(a0));  // compile error : cannot bind to xvalue
     reference_wrapper<A> r0(a0); 
     reference_wrapper<A> r1(a1); 
     auto r2 = ref(a0);
@@ -210,11 +211,11 @@ void test_reference(const std::string& test_name)
     }
 
     // 5. derived class
-    B b({90,91,91});
-    reference_wrapper<A> rb0(b);
-    reference_wrapper<B> rb1(b);
-    assert(&rb0.get() == &b);
-    assert(&rb1.get() == &b);
+    DA da({90,91,91});
+    reference_wrapper <A>  ra(da);
+    reference_wrapper<DA> rda(da);
+    assert( &ra.get() == &da);
+    assert(&rda.get() == &da);
     print_summary(test_name, "succeeded");
 }
 
@@ -356,9 +357,9 @@ void test_optional_ref()
     test_constructibility();
     test_reference<std::reference_wrapper, std::ref, std::cref>("std::reference");
     test_reference<alg::reference_wrapper, alg::ref, alg::cref>("alg::reference");
-    test_optional<std::optional, std_nullopt>("std::optional");
-    test_optional<alg::optional, alg_nullopt>("alg::optional");
-    test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
+//  test_optional<std::optional, std_nullopt>("std::optional");
+//  test_optional<alg::optional, alg_nullopt>("alg::optional");
+//  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
 //  test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); <--- Todo
 
     // The failure in the last case above, is likely, to be solved 

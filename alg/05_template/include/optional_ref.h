@@ -6,14 +6,17 @@
 
 namespace alg
 {
+    // Reference wrapper should support the following :
+    // * construct T from reference_wrapper<T>
+    // * reference_wrapper<const T> pointing to reference_wrapper<T>     
+    // * reference_wrapper<BASE>    pointing to reference_wrapper<DERIVED> 
+    // * reference_wrapper<callable> and invoked by ref(a,b,c...)
+      
     template<typename T> class reference_wrapper
     {
     public:
         using type = T;
 
-        // Allow the following : 
-        // * reference_wrapper<const T> pointing to reference_wrapper<T>     
-        // * reference_wrapper<BASE>    pointing to reference_wrapper<DERIVED> 
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper(U& u) : m_ptr(&u)
