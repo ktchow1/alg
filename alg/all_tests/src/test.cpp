@@ -47,7 +47,7 @@ void test_timer();
 void test_array();
 void test_function();
 void test_metaprog();
-void test_optional_ref();
+void test_optional_and_reference();
 void test_shared_ptr();
 void test_template();
 void test_template_specialization(); 
@@ -140,7 +140,7 @@ int main()
 //  test_memory_placement_new();
 //  test_memory_shared_ptr();
 //  test_memory_unique_ptr();
-    test_optional();
+//  test_optional();
 //  test_polymophism();
 //  test_rvalue();
 //  test_std_alg();
@@ -152,7 +152,7 @@ int main()
 //  test_array();
 //  test_function();
 //  test_metaprog();
-//  test_optional_ref();
+    test_optional_and_reference();
 //  test_shared_ptr();
 //  test_template(); 
 //  test_template_specialization(); 
