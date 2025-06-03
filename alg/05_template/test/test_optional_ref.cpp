@@ -132,51 +132,36 @@ template
 >
 void test_reference(const std::string& test_name)
 {
-    T  x0(10,11,12);
-    T& x1(x0);
+    T  x(10,11,12);
+    T& y(x);
 
 
     // ********************** // 
     // *** Cannot compile *** //
     // ********************** // 
-/*  reference_wrapper<T> rx;                 // cannot bind to null
-    reference_wrapper<T> rx(T{10,11,12});    // cannot bind to prvalue
-    reference_wrapper<T> rx(std::move(x0));  // cannot bind to xvalue
-    */
-
+    {   
+    //  reference_wrapper<T> rx;                 // cannot bind to null
+    //  reference_wrapper<T> rx(T{10,11,12});    // cannot bind to prvalue
+    //  reference_wrapper<T> rx(std::move(x0));  // cannot bind to xvalue
+    }
+    
 
     // ************************************************************** //
     // *** Construct reference_wrapper from T or T& (and factory) *** //
     // ************************************************************** //
-    reference_wrapper<T> rx0(x0); 
-    reference_wrapper<T> rx1(x1); 
-    auto  rx2 = ref(x0);
-    auto crx = cref(x0);
+    reference_wrapper<T> rx0(x); 
+    reference_wrapper<T> rx1(y); 
+    auto  rx2 = ref(x);
+    auto crx = cref(x);
 
     static_assert(std::is_same_v<decltype(rx2), reference_wrapper<T>>,       "failed to test reference_wrapper");
     static_assert(std::is_same_v<decltype(crx), reference_wrapper<const T>>, "failed to test reference_wrapper");
     static_assert(std::is_same_v<typename decltype(rx2)::type, T>,           "failed to test reference_wrapper");
     static_assert(std::is_same_v<typename decltype(crx)::type, const T>,     "failed to test reference_wrapper");
-    assert(&rx0.get() == &x0);
-    assert(&rx1.get() == &x0);
-    assert(&rx2.get() == &x0);
-    assert(&crx.get() == &x0);
-    assert(rx0.get() == x0);
-    assert(rx1.get() == x0);
-    assert(rx2.get() == x0);
-    assert(crx.get() == x0);
-
-    // 1b. modify content
-    rx0.get().m_x = 20;
-    rx0.get().m_y = 21;
-    rx0.get().m_z = 22;
- // crx.get().m_x = 30; // compile error
-    assert(rx1.get().m_x == x0.m_x);
-    assert(rx1.get().m_y == x0.m_y);
-    assert(rx1.get().m_z == x0.m_z);
-    assert(rx2.get().m_x == 20);
-    assert(rx2.get().m_y == 21);
-    assert(rx2.get().m_z == 22);
+    assert(&rx0.get() == &x);
+    assert(&rx1.get() == &x);
+    assert(&rx2.get() == &x);
+    assert(&crx.get() == &x);
 
 
     // ************************************************ //
@@ -189,20 +174,20 @@ void test_reference(const std::string& test_name)
         assert(&rx1.get() != &x2);
         assert(&rx2.get() != &x2);
         assert(&crx.get() != &x2);
-        assert(x2.m_x == x0.m_x);
-        assert(x2.m_y == x0.m_y);
-        assert(x2.m_z == x0.m_z);
+        assert(x2.m_x == x.m_x);
+        assert(x2.m_y == x.m_y);
+        assert(x2.m_z == x.m_z);
     }
 
     // 2b. construct T& from reference_wrapper 
-    T& x3(rx0);  
-    assert(&rx0.get() == &x3);
-    assert(&rx1.get() == &x3);
-    assert(&rx2.get() == &x3);
-    assert(&crx.get() == &x3);
-    assert(x3.m_x == x0.m_x);
-    assert(x3.m_y == x0.m_y);
-    assert(x3.m_z == x0.m_z);
+    T& z(rx0);  
+    assert(&rx0.get() == &z);
+    assert(&rx1.get() == &z);
+    assert(&rx2.get() == &z);
+    assert(&crx.get() == &z);
+    assert(z.m_x == x.m_x);
+    assert(z.m_y == x.m_y);
+    assert(z.m_z == x.m_z);
 
 
     // ********************************************************** //
@@ -210,17 +195,27 @@ void test_reference(const std::string& test_name)
     // ********************************************************** //
     reference_wrapper<T> rx3{rx0};
     reference_wrapper<T> rx4{std::move(rx0)}; // move construction becomes copy construction
-    assert(&rx0.get() == &x0);                // hence ... rx0 is still valid
-    assert(&rx1.get() == &x0); 
-    assert(&rx2.get() == &x0);
-    assert(&rx3.get() == &x0);
-    assert(&rx4.get() == &x0);
-    assert(&crx.get() == &x0);
+    assert(&rx0.get() == &x);                // hence ... rx0 is still valid
+    assert(&rx1.get() == &x); 
+    assert(&rx2.get() == &x);
+    assert(&rx3.get() == &x);
+    assert(&rx4.get() == &x);
+    assert(&crx.get() == &x);
 
 
     // ************************* //
     // *** Modify and rebind *** //
     // ************************* //
+    rx0.get().m_x = 20;
+    rx0.get().m_y = 21;
+    rx0.get().m_z = 22;
+ // crx.get().m_x = 30; // compile error
+    assert(rx1.get().m_x == x.m_x);
+    assert(rx1.get().m_y == x.m_y);
+    assert(rx1.get().m_z == x.m_z);
+    assert(rx2.get().m_x == 20);
+    assert(rx2.get().m_y == 21);
+    assert(rx2.get().m_z == 22);
 
 
     // *********************** //
@@ -235,11 +230,11 @@ void test_reference(const std::string& test_name)
     vec.push_back(rx4);
 
     // 4b. used in function
-    for(const auto& y:vec) 
+    for(const auto& w:vec) 
     {
-        assert((compare_address<T, reference_wrapper>(y, x0)));
-        assert((compare_address<T, reference_wrapper>(y, x1)));
-        assert((compare_address<T, reference_wrapper>(y, x3))); 
+        assert((compare_address<T, reference_wrapper>(w, x)));
+        assert((compare_address<T, reference_wrapper>(w, y)));
+        assert((compare_address<T, reference_wrapper>(w, z))); 
     }
 
 
