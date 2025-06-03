@@ -6,6 +6,7 @@
 #include<utility.h>
 
 
+
 struct A // default constructible
 {
     std::uint32_t m_x;
@@ -48,11 +49,19 @@ struct DC : public C {};
 struct DD : public D {};
 
 
-template<typename T, template<typename> typename reference_wrapper>
-void check_reference_wrapper(const reference_wrapper<const T>& crx, const T& x, bool equal)
+
+template<typename T> 
+bool operator==(const T& lhs, const T& rhs) // T is a tri-integers POD
 {
-    if (equal)  assert(&crx.get() == &x);
-    else        assert(&crx.get() != &x);
+    return lhs.m_x == rhs.m_x &&
+           lhs.m_y == rhs.m_y &&
+           lhs.m_z == rhs.m_z;
+}
+
+template<typename T, template<typename> typename reference_wrapper>
+bool compare_address(const reference_wrapper<const T>& rx, const T& x)
+{
+    return &rx.get() == &x;
 }
 
 
@@ -115,42 +124,53 @@ void test_constructibility()
 // ************************* //
 template
 <
-    typename T, typename DT,                          // T = type for referenece wrapper, DT = derived class of T
+    typename T,                                       // T must support construction from 3 integers
+    typename DT,                                      // DT is derived class of T
     template<typename> typename reference_wrapper,    // reference wrapper under test
     reference_wrapper<      T>(* ref)(      T&),      // factory 
     reference_wrapper<const T>(*cref)(const T&)       // factory
 >
 void test_reference(const std::string& test_name)
 {
-    T x0(10,11,12);
+    T  x0(10,11,12);
     T& x1(x0);
 
-    // 1a. construct reference_wrapper from T
-//  reference_wrapper<T> rx;                 // compile error : cannot bind to null
-//  reference_wrapper<T> rx(T{10,11,12});    // compile error : cannot bind to prvalue
-//  reference_wrapper<T> rx(std::move(x0));  // compile error : cannot bind to xvalue
+
+    // ********************** // 
+    // *** Cannot compile *** //
+    // ********************** // 
+/*  reference_wrapper<T> rx;                 // cannot bind to null
+    reference_wrapper<T> rx(T{10,11,12});    // cannot bind to prvalue
+    reference_wrapper<T> rx(std::move(x0));  // cannot bind to xvalue
+    */
+
+
+    // ************************************************************** //
+    // *** Construct reference_wrapper from T or T& (and factory) *** //
+    // ************************************************************** //
     reference_wrapper<T> rx0(x0); 
     reference_wrapper<T> rx1(x1); 
     auto  rx2 = ref(x0);
     auto crx = cref(x0);
 
-//  static_assert(std::is_same_v<decltype(rx2), reference_wrapper<T>>,       "failed to test reference_wrapper");
-//  static_assert(std::is_same_v<decltype(crx), reference_wrapper<const T>>, "failed to test reference_wrapper");
+    static_assert(std::is_same_v<decltype(rx2), reference_wrapper<T>>,       "failed to test reference_wrapper");
+    static_assert(std::is_same_v<decltype(crx), reference_wrapper<const T>>, "failed to test reference_wrapper");
     static_assert(std::is_same_v<typename decltype(rx2)::type, T>,           "failed to test reference_wrapper");
     static_assert(std::is_same_v<typename decltype(crx)::type, const T>,     "failed to test reference_wrapper");
     assert(&rx0.get() == &x0);
     assert(&rx1.get() == &x0);
     assert(&rx2.get() == &x0);
     assert(&crx.get() == &x0);
-    assert(rx0.get().m_x == x0.m_x);
-    assert(rx0.get().m_y == x0.m_y);
-    assert(rx0.get().m_z == x0.m_z);
+    assert(rx0.get() == x0);
+    assert(rx1.get() == x0);
+    assert(rx2.get() == x0);
+    assert(crx.get() == x0);
 
     // 1b. modify content
     rx0.get().m_x = 20;
     rx0.get().m_y = 21;
     rx0.get().m_z = 22;
-//  crx.get().m_x = 30; // compile error
+ // crx.get().m_x = 30; // compile error
     assert(rx1.get().m_x == x0.m_x);
     assert(rx1.get().m_y == x0.m_y);
     assert(rx1.get().m_z == x0.m_z);
@@ -158,7 +178,10 @@ void test_reference(const std::string& test_name)
     assert(rx2.get().m_y == 21);
     assert(rx2.get().m_z == 22);
 
-    // 2a. construct T from reference_wrapper 
+
+    // ************************************************ //
+    // *** Construct T or T& from reference_wrapper *** //
+    // ************************************************ //
     if constexpr (std::is_copy_constructible_v<T>)
     {
         T x2(rx0);
@@ -181,7 +204,10 @@ void test_reference(const std::string& test_name)
     assert(x3.m_y == x0.m_y);
     assert(x3.m_z == x0.m_z);
 
-    // 3. construct reference_wrapper from reference_wrapper
+
+    // ********************************************************** //
+    // *** Construct reference_wrapper from reference_wrapper *** //
+    // ********************************************************** //
     reference_wrapper<T> rx3{rx0};
     reference_wrapper<T> rx4{std::move(rx0)}; // move construction becomes copy construction
     assert(&rx0.get() == &x0);                // hence ... rx0 is still valid
@@ -191,7 +217,15 @@ void test_reference(const std::string& test_name)
     assert(&rx4.get() == &x0);
     assert(&crx.get() == &x0);
 
-    // 4a. used in vector
+
+    // ************************* //
+    // *** Modify and rebind *** //
+    // ************************* //
+
+
+    // *********************** //
+    // *** Usage in vector *** //
+    // *********************** //
 //  std::vector<T&> vec; // compile error, this is why we have std::reference_wrapper
     std::vector<reference_wrapper<T>> vec;
     vec.push_back(rx0);
@@ -203,12 +237,15 @@ void test_reference(const std::string& test_name)
     // 4b. used in function
     for(const auto& y:vec) 
     {
-        check_reference_wrapper<T, reference_wrapper>(y, x0, true);
-        check_reference_wrapper<T, reference_wrapper>(y, x1, true);
-        check_reference_wrapper<T, reference_wrapper>(y, x3, true); 
+        assert((compare_address<T, reference_wrapper>(y, x0)));
+        assert((compare_address<T, reference_wrapper>(y, x1)));
+        assert((compare_address<T, reference_wrapper>(y, x3))); 
     }
 
-    // 5. derived class
+
+    // **************************** //
+    // *** Usage in inheritance *** //
+    // **************************** //
     DT dx({90,91,91});
     reference_wrapper <T>  rx(dx);
     reference_wrapper<DT> rdx(dx);
