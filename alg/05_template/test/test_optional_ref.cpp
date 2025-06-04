@@ -124,7 +124,7 @@ void test_constructibility()
 // ************************* //
 template
 <
-    typename T,                                       // T must support construction from 3 integers
+    typename  T,                                      //  T is constructed from 3 integers
     typename DT,                                      // DT is derived class of T
     template<typename> typename reference_wrapper,    // reference wrapper under test
     reference_wrapper<      T>(* ref)(      T&),      // factory 
@@ -152,17 +152,17 @@ void test_reference(const std::string& test_name)
     reference_wrapper<T> rx(x); 
     reference_wrapper<T> ry(y); 
     {
-        auto rx2 =  ref(x);
-        auto ry2 = cref(y);
+        auto rx0 =  ref(x);
+        auto ry0 = cref(y);
 
-        static_assert(std::is_same_v<decltype(rx2), reference_wrapper<T>>,       "failed to test reference_wrapper");
-        static_assert(std::is_same_v<decltype(ry2), reference_wrapper<const T>>, "failed to test reference_wrapper");
-        static_assert(std::is_same_v<typename decltype(rx2)::type, T>,           "failed to test reference_wrapper");
-        static_assert(std::is_same_v<typename decltype(ry2)::type, const T>,     "failed to test reference_wrapper");
+        static_assert(std::is_same_v<decltype(rx0), reference_wrapper<T>>,       "failed to test reference_wrapper");
+        static_assert(std::is_same_v<decltype(ry0), reference_wrapper<const T>>, "failed to test reference_wrapper");
+        static_assert(std::is_same_v<typename decltype(rx0)::type, T>,           "failed to test reference_wrapper");
+        static_assert(std::is_same_v<typename decltype(ry0)::type, const T>,     "failed to test reference_wrapper");
         assert(&rx .get() == &x);
         assert(&ry .get() == &x);
-        assert(&rx2.get() == &x);
-        assert(&ry2.get() == &x);
+        assert(&rx0.get() == &x);
+        assert(&ry0.get() == &x);
     }
 
 
@@ -171,81 +171,107 @@ void test_reference(const std::string& test_name)
     // ************************************************ //
     if constexpr (std::is_copy_constructible_v<T>)
     {
-        T x2(rx);
-        T y2(ry);
-        assert(&x2 != &rx.get());
-        assert(&y2 != &ry.get());
-        assert(x2 == x);
-        assert(y2 == x);
+        T x0(rx);
+        T y0(ry);
+
+        assert(&x0 != &rx.get());
+        assert(&y0 != &ry.get());
+        assert( x0 == x);
+        assert( y0 == x);
     }
-/*
-    // 2b. construct T& from reference_wrapper 
-    T& z(rx0);  
-    assert(&rx0.get() == &z);
-    assert(&rx1.get() == &z);
-    assert(&rx2.get() == &z);
-    assert(&crx.get() == &z);
-    assert(z.m_x == x.m_x);
-    assert(z.m_y == x.m_y);
-    assert(z.m_z == x.m_z);
+    // for both copy-constructible or non-copy-constructible
+    {
+        T& x0(rx);  
+        T& y0(ry);  
 
+        assert(&x0 == &rx.get());
+        assert(&y0 == &ry.get());
+        assert(&x0 == &x);
+        assert(&y0 == &x);
+        assert( x0 ==  x);
+        assert( y0 ==  x);
+    }
 
+  
     // ********************************************************** //
     // *** Construct reference_wrapper from reference_wrapper *** //
     // ********************************************************** //
-    reference_wrapper<T> rx3{rx0};
-    reference_wrapper<T> rx4{std::move(rx0)}; // move construction becomes copy construction
-    assert(&rx0.get() == &x);                // hence ... rx0 is still valid
-    assert(&rx1.get() == &x); 
-    assert(&rx2.get() == &x);
-    assert(&rx3.get() == &x);
-    assert(&rx4.get() == &x);
-    assert(&crx.get() == &x);
+    {
+        reference_wrapper<T> rx0{rx};
+        assert(&rx0.get() == &x);
+
+        reference_wrapper<T> rx1{std::move(rx0)};
+        assert(&rx1.get() == &x);
+    }
 
 
     // ************************* //
     // *** Modify and rebind *** //
     // ************************* //
-    rx0.get().m_x = 20;
-    rx0.get().m_y = 21;
-    rx0.get().m_z = 22;
- // crx.get().m_x = 30; // compile error
-    assert(rx1.get().m_x == x.m_x);
-    assert(rx1.get().m_y == x.m_y);
-    assert(rx1.get().m_z == x.m_z);
-    assert(rx2.get().m_x == 20);
-    assert(rx2.get().m_y == 21);
-    assert(rx2.get().m_z == 22);
+    {
+        auto rx0 =  ref(x);
+        auto ry0 = cref(y);
+        rx0.get().m_x = 20;
+        rx0.get().m_y = 21;
+        rx0.get().m_z = 22;
+    //  ry0.get().m_x = 30; // compile error
+      
+        assert((rx0.get() == T{20,21,22}));
+        assert((ry0.get() == T{20,21,22}));
+        assert((x == T{20,21,22}));
+        assert((y == T{20,21,22}));
+    }
 
+    // ************** //
+    // *** Rebind *** //
+    // ************** // <--- todo 
+    {
 
+    }
+
+  
     // *********************** //
     // *** Usage in vector *** //
     // *********************** //
-//  std::vector<T&> vec; // compile error, this is why we have std::reference_wrapper
-    std::vector<reference_wrapper<T>> vec;
-    vec.push_back(rx0);
-    vec.push_back(rx1);
-    vec.push_back(rx2);
-    vec.push_back(rx3);
-    vec.push_back(rx4);
-
-    // 4b. used in function
-    for(const auto& w:vec) 
     {
-        assert((compare_address<T, reference_wrapper>(w, x)));
-        assert((compare_address<T, reference_wrapper>(w, y)));
-        assert((compare_address<T, reference_wrapper>(w, z))); 
+    //  std::vector<T&> vec;                             // compile error : cannot construct vector of T&
+        std::vector<reference_wrapper<T>> vec;           // can rebind reference, can    modify value   
+        std::vector<reference_wrapper<const T>> cvec;    // can rebind reference, cannot modify value
+
+        auto rx0 = ref(x);
+        vec.push_back(rx);
+        vec.push_back(rx0);
+
+        auto ry0 = cref(y);
+        cvec.push_back(ry);
+        cvec.push_back(ry0);
+    
+        for(const auto& z:vec) 
+        {
+            static_assert(std::is_same_v<decltype(z), const reference_wrapper<T>&>, "failed to test reference_wrapper");
+            assert((compare_address<T, reference_wrapper>(z, x))); // pass reference to function
+        }
+        for(const auto& z:cvec) 
+        {
+            static_assert(std::is_same_v<decltype(z), const reference_wrapper<const T>&>, "failed to test reference_wrapper");
+            assert((compare_address<T, reference_wrapper>(z, x)));
+        }
+
+        // <--- todo
     }
 
 
     // **************************** //
     // *** Usage in inheritance *** //
     // **************************** //
-    DT dx({90,91,91});
-    reference_wrapper <T>  rx(dx);
-    reference_wrapper<DT> rdx(dx);
-    assert( &rx.get() == &dx);
-    assert(&rdx.get() == &dx); */
+    {
+        DT z({90,91,91});
+        reference_wrapper <T> rz0(z);
+        reference_wrapper<DT> rz1(z);
+
+        assert(&rz0.get() == &z);
+        assert(&rz1.get() == &z); 
+    }
     print_summary(test_name, "succeeded");
 }
 
