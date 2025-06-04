@@ -123,28 +123,42 @@ namespace alg
         {
         }
 
+        optional(const nullopt_t&) : m_flag(false)
+        {
+        }
+
         optional(const T& t) : m_flag(true) 
         {
             new (m_impl) T{t};
         }
 
-//      template<typename...ARGS>
-//      optional(ARGS&&...args) : m_flag(true), m_value{std::forward<ARGS>(args)...}
-//      {
-            // Do not provide this constructor, 
-            // otherwise it hides copy-constructor 
-//      }
-
-        optional(const nullopt_t&) : m_flag(false)
+        ~optional()
         {
+            reset();
         }
 
-        // Trivial copyable by memcpy
         optional(const optional<T>&) = default;
-        optional<T>& operator=(const optional<T>&) = default;
         optional(optional<T>&&) = default;
+
+    public:
+        // ****************** //
+        // *** Re-binding *** //
+        // ****************** //
+        optional<T>& operator=(const optional<T>&) = default;
         optional<T>& operator=(optional<T>&&) = default;
 
+        template<typename...ARGS>
+        T& emplace(ARGS&&...args) 
+        {
+            // Destruct existing
+            reset(); 
+
+            // Construct new instance
+            m_flag = true;
+            new (m_impl) T{std::forward<ARGS>(args)...};
+
+            return *get_ptr();
+        }
        
     public:
         bool operator==(const optional<T>& rhs) const noexcept 
@@ -178,6 +192,15 @@ namespace alg
         constexpr T* get_ptr()
         {
             return reinterpret_cast<T*>(m_impl);
+        }
+
+        void reset()
+        {
+            if (m_flag)
+            {
+                m_flag = false;
+                get_ptr()->~T(); // reverse placement new
+            }
         }
 
     private:
