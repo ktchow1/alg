@@ -257,18 +257,28 @@ void test_reference(const std::string& test_name)
         cvec.push_back(ry);
         cvec.push_back(ry0);
     
-        for(const auto& z:vec) 
+        for(const auto& temp:vec) 
         {
-            static_assert(std::is_same_v<decltype(z), const reference_wrapper<T>&>, "failed to test reference_wrapper");
-            assert((compare_address<T, reference_wrapper>(z, x))); // pass reference to function
+            static_assert(std::is_same_v<decltype(temp), const reference_wrapper<T>&>, "failed to test reference_wrapper");
+            assert((compare_address<T, reference_wrapper>(temp, x))); // pass reference to function
         }
-        for(const auto& z:cvec) 
+        for(const auto& temp:cvec) 
         {
-            static_assert(std::is_same_v<decltype(z), const reference_wrapper<const T>&>, "failed to test reference_wrapper");
-            assert((compare_address<T, reference_wrapper>(z, x)));
+            static_assert(std::is_same_v<decltype(temp), const reference_wrapper<const T>&>, "failed to test reference_wrapper");
+            assert((compare_address<T, reference_wrapper>(temp, x)));
         }
 
-        // <--- todo
+        // *** Rebind *** //
+        T z{90,91,92};
+        for(auto& temp:vec) 
+        {
+            temp = ref(z);
+        }
+        for(const auto& temp:vec) 
+        {
+            assert((!compare_address<T, reference_wrapper>(temp, x)));
+            assert(( compare_address<T, reference_wrapper>(temp, z)));
+        }
     }
 
 
@@ -285,6 +295,7 @@ void test_reference(const std::string& test_name)
     }
     print_summary(test_name, "succeeded");
 }
+
 
 
 // **************** //
@@ -389,6 +400,7 @@ void test_optional(const std::string& test_name)
     }
     print_summary(test_name, "succeeded");
 }
+
 
 
 // ************************** // 

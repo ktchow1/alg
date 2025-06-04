@@ -13,12 +13,12 @@ represent null?                   | yes         no          no          yes     
 def-constructible                 | yes         no          no          yes         yes         ERROR     | yes      
      copyable                     | yes         yes         yes         yes         yes         ERROR     | yes        
    assignable                     | yes         yes         yes         yes         yes         ERROR     | yes        
-re-assignable (re-bindable)       | yes         no          yes         ---         yes         ERROR     | ---    
+re-assignable (re-bindable)       | yes         no          yes         owner       yes         ERROR     | owner
 used as vector element type       | yes         no          yes         yes         yes         ERROR     | yes         
 ----------------------------------+-----------------------------------------------------------------------+-----------
 require T to be def-constructible | no          no          no          no          no          ERROR     | no       
-require T to be copyable          | no          no          no          yes *       yes *       ERROR     | yes * 
-require T to be assignable        | no          no          no          yes *       yes *       ERROR     | yes *
+require T to be copyable          | no          no          no          yes if ...  yes if ...  ERROR     | yes if ... 
+require T to be assignable        | no          no          no          yes if ...  yes i       ERROR     | yes if ...
 
 
 
@@ -58,7 +58,7 @@ require T to be assignable        | no          no          no          yes *   
 *  for std::reference_wrapper, use std::reference_wrapper<>::get()
 *  for std::optional,          use std::optional<>::operator*() 
 
-5. "yes *" means "it is a yes, if it involves copying and assignment"
+5. "yes if ..." means "it is a yes, if it involves copying and assignment"
 
 
 
