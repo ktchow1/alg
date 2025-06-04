@@ -64,6 +64,18 @@ bool compare_address(const reference_wrapper<const T>& rx, const T& x)
     return &rx.get() == &x;
 }
 
+template<typename OPT>
+void fct_for_optional(const OPT& oa, std::uint32_t count)
+{
+    if      (count == 0) assert(!oa);
+    else if (count == 1) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
+    else if (count == 2) assert(oa && oa->m_x == 20 && oa->m_y == 21 && oa->m_z == 22);
+    else if (count == 3) assert(oa && oa->m_x == 30 && oa->m_y == 31 && oa->m_z == 32);
+    else if (count == 4) assert(oa && oa->m_x == 40 && oa->m_y == 41 && oa->m_z == 42);
+    else if (count == 5) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
+    else if (count == 6) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
+}
+
 
 
 // ************************ //
@@ -301,42 +313,32 @@ void test_reference(const std::string& test_name)
 // **************** //
 // *** Optional *** //
 // **************** //
-template<typename T>
-requires std::same_as<T,std::optional<A>> || 
-         std::same_as<T,alg::optional<A>>
-void fct_for_optional(const T& oa, std::uint32_t count)
-{
-    if      (count == 0) assert(!oa);
-    else if (count == 1) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
-    else if (count == 2) assert(oa && oa->m_x == 20 && oa->m_y == 21 && oa->m_z == 22);
-    else if (count == 3) assert(oa && oa->m_x == 30 && oa->m_y == 31 && oa->m_z == 32);
-    else if (count == 4) assert(oa && oa->m_x == 40 && oa->m_y == 41 && oa->m_z == 42);
-    else if (count == 5) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
-    else if (count == 6) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
-}
-
-
-template<template<typename> typename optional, typename nullopt>
+template
+<
+    typename T,
+    template<typename> typename optional, 
+    typename nullopt
+>
 void test_optional(const std::string& test_name)
 {
-    A a(10,11,12);
-    A& ra = a;
+    T a(10,11,12);
+    T& ra = a;
 
-    // 1a. construct optional from A and from A&
-    optional<A> oa0;                                // default initialization
-    optional<A> oa1(ra);                            // direct initialization
-    optional<A> oa2(A{20,21,22});                   // direct initializtion
-    optional<A> oa3 = A{30,31,32};                  // copy initialization
-    optional<A> oa4;                                // factory
-    if constexpr (std::is_same_v<optional<A>, std::optional<A>>)
+    // 1a. construct optional from T and from T&
+    optional<T> oa0;                                // default initialization
+    optional<T> oa1(ra);                            // direct initialization
+    optional<T> oa2(T{20,21,22});                   // direct initializtion
+    optional<T> oa3 = T{30,31,32};                  // copy initialization
+    optional<T> oa4;                                // factory
+    if constexpr (std::is_same_v<optional<T>, std::optional<T>>)
     {
-        oa4 = std::make_optional<A>(40_u32,41_u32,42_u32);  
+        oa4 = std::make_optional<T>(40_u32,41_u32,42_u32);  
     }
-    if constexpr (std::is_same_v<optional<A>, alg::optional<A>>)
+    if constexpr (std::is_same_v<optional<T>, alg::optional<T>>)
     {
-        oa4 = alg::make_optional<A>(40_u32,41_u32,42_u32);  
+        oa4 = alg::make_optional<T>(40_u32,41_u32,42_u32);  
     }
-
+  
     assert(oa0 == nullopt::value);
     assert(!oa0);
     oa0 = a;
@@ -349,7 +351,7 @@ void test_optional(const std::string& test_name)
     assert(&(*oa0) != &(*oa1)); 
                                 
     // 1b. modify content
-    oa0 = A{50,51,52};
+    oa0 = T{50,51,52};
     oa1 = oa0;
     assert(oa0->m_x == 50 && oa0->m_y == 51 && oa0->m_z == 52);
     assert(oa1->m_x == 50 && oa1->m_y == 51 && oa1->m_z == 52);
@@ -358,19 +360,19 @@ void test_optional(const std::string& test_name)
     assert(oa0 == nullopt::value);
     assert(!oa0);
   
-    // 2a. construct A from optional 
-//  A a1(oa1);   // compile error
+    // 2a. construct T from optional 
+//  T a1(oa1);   // compile error
 
-    A a1(*oa1);
+    T a1(*oa1);
     assert(&a1 != &(*oa1));
 
-    // 2b. construct A& from optional 
-    A& a2(*oa1);  
+    // 2b. construct T& from optional 
+    T& a2(*oa1);  
     assert(&a2 == &(*oa1));
 
     // 3. construct optional from optional
-    optional<A> oa5{oa1};
-    optional<A> oa6{std::move(oa1)};
+    optional<T> oa5{oa1};
+    optional<T> oa6{std::move(oa1)};
     assert(oa1); // still valid
     assert(oa1->m_x == 50 && oa1->m_y == 51 && oa1->m_z == 52);
     assert(oa2->m_x == 20 && oa2->m_y == 21 && oa2->m_z == 22);
@@ -382,7 +384,7 @@ void test_optional(const std::string& test_name)
     assert(&(*oa6) != &(*oa1));
 
     // 4a. used in vector
-    std::vector<optional<A>> vec;
+    std::vector<optional<T>> vec;
     vec.push_back(oa0);
     vec.push_back(oa1);
     vec.push_back(oa2);
@@ -397,7 +399,7 @@ void test_optional(const std::string& test_name)
     {
         fct_for_optional(x, count);
         ++count;
-    }
+    } 
     print_summary(test_name, "succeeded");
 }
 
@@ -447,12 +449,16 @@ void test_optional_and_reference()
     test_reference<D, DD, std::reference_wrapper, std::ref, std::cref>("std::reference for non-copy-assignable");
     test_reference<D, DD, alg::reference_wrapper, alg::ref, alg::cref>("alg::reference for non-copy-assignable");
 
-//  test_optional<std::optional, std_nullopt>("std::optional");
-//  test_optional<alg::optional, alg_nullopt>("alg::optional");
-//  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
-//  test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); <--- Todo
+    test_optional<A, std::optional, std_nullopt>("std::optional for general class");
+    test_optional<A, alg::optional, alg_nullopt>("alg::optional for general class");
+    test_optional<B, std::optional, std_nullopt>("std::optional for non-default-constructible");
+    test_optional<B, alg::optional, alg_nullopt>("alg::optional for non-default-constructible");
+//  test_optional<C, std::optional, std_nullopt>("std::optional for non-copy-constructible");
+//  test_optional<C, alg::optional, alg_nullopt>("alg::optional for non-copy-constructible");
+//  test_optional<D, std::optional, std_nullopt>("std::optional for non-copy-assignable");
+//  test_optional<D, alg::optional, alg_nullopt>("alg::optional for non-copy-assignable");
 
-    // The failure in the last case above, is likely, to be solved 
-    // by changing implementation of optional from value into ptr.
+//  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
+//  test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); 
 }
 

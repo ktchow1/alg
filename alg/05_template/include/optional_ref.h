@@ -1,16 +1,23 @@
 #pragma once
+#include<cstring>    // for std::memcmp
 #include<optional>
 #include<functional> // for std::reference_wrapper
 
 
 
-// ********************************************************************* //
-// Reference wrapper should support the following :
+// ************************* //
+// *** Reference wrapper *** //
+// ************************* //
+// Should support the following :
 // * construct T from reference_wrapper<T>
 // * reference_wrapper<const T> pointing to reference_wrapper<T>     
 // * reference_wrapper<BASE>    pointing to reference_wrapper<DERIVED> 
 // * reference_wrapper<callable> and invoked by ref(a,b,c...)
-// ********************************************************************* //
+//
+// 2 main access functions : 
+// reference_wrapper<T>::get()                                  <--- for reading / writing to reference variable
+// reference_wrapper<T>::operator=(const reference_wrapper<T>&) <--- for re-binding to another reference variable
+//
 namespace alg
 {
       
@@ -22,7 +29,6 @@ namespace alg
 
         template<typename U>
         friend class reference_wrapper; // declare reference_wrapper<U> as friend
-
 
     public:
         template<typename U>
@@ -50,7 +56,6 @@ namespace alg
             return *this;
         }
 
-
     public:
         // conversion operator (to T&, NOT to T)
         constexpr operator T&() const noexcept
@@ -70,10 +75,10 @@ namespace alg
             return *m_ptr(std::forward<ARGS>(args)...);
         }
 
-
     private: 
         T* m_ptr; 
     };
+
 
     template<typename T> 
     auto ref(T& t)
@@ -93,15 +98,20 @@ namespace alg
 // **************** //
 // *** Optional *** //
 // **************** //
+// 3 main access functions : 
+// optional<T>::operator*()                        <--- for reading / writing to owned variable
+// optional<T>::operator=(const T&)                <--- for re-binding to new instance (i.e. destruct curent instance and construct new one) 
+// optional<T>::operator=(const std::optional<T>&) <--- for re-binding to new instance (i.e. destruct curent instance and construct new one) 
+//
 namespace alg
 {
-    struct nullopt_t {};
+    struct    nullopt_t {};
     constexpr nullopt_t nullopt{}; 
 }
+
 // no namespace
 using std_nullopt = std::integral_constant<std::nullopt_t, std::nullopt>;
 using alg_nullopt = std::integral_constant<alg::nullopt_t, alg::nullopt>;
-
 
 namespace alg
 {
@@ -113,8 +123,9 @@ namespace alg
         {
         }
 
-        optional(const T& t) : m_flag(true), m_value(t)
+        optional(const T& t) : m_flag(true) 
         {
+            new (m_impl) T{t};
         }
 
 //      template<typename...ARGS>
@@ -122,15 +133,13 @@ namespace alg
 //      {
             // Do not provide this constructor, 
             // otherwise it hides copy-constructor 
-            // and fail my test (why is that?) 
-            // Because it can convert to bool 
-            // and construct struct A in test?
 //      }
 
         optional(const nullopt_t&) : m_flag(false)
         {
         }
 
+        // Trivial copyable by memcpy
         optional(const optional<T>&) = default;
         optional<T>& operator=(const optional<T>&) = default;
         optional(optional<T>&&) = default;
@@ -138,12 +147,11 @@ namespace alg
 
        
     public:
-        // please replace by spaceship operator
         bool operator==(const optional<T>& rhs) const noexcept 
         {
             if (m_flag && rhs.m_flag)
             {
-                return m_value == rhs.m_value;
+                return (std::memcmp(m_impl, rhs.m_impl, sizeof(T)) == 0);
             }
             else
             {
@@ -156,17 +164,28 @@ namespace alg
             return m_flag;
         }
 
-        const T& operator *() const noexcept { return  m_value; }
-        const T* operator->() const noexcept { return &m_value; }
-        T& operator *()             noexcept { return  m_value; }
-        T* operator->()             noexcept { return &m_value; }
+        const T& operator *() const noexcept { return *get_ptr(); }
+        const T* operator->() const noexcept { return  get_ptr(); }
+        T& operator *()             noexcept { return *get_ptr(); }
+        T* operator->()             noexcept { return  get_ptr(); }
 
+    private:
+        constexpr const T* get_ptr() const
+        {
+            return reinterpret_cast<const T*>(m_impl);
+        }
+
+        constexpr T* get_ptr()
+        {
+            return reinterpret_cast<T*>(m_impl);
+        }
 
     private:
         bool m_flag;
-        T m_value;
+        char m_impl[sizeof(T)];
     };
     
+
     template<typename T, typename...ARGS> 
     auto make_optional(ARGS&&...args)
     {
