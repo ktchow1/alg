@@ -12,11 +12,17 @@ namespace alg
     // * reference_wrapper<BASE>    pointing to reference_wrapper<DERIVED> 
     // * reference_wrapper<callable> and invoked by ref(a,b,c...)
       
-    template<typename T> class reference_wrapper
+    template<typename T> 
+    class reference_wrapper
     {
     public:
         using type = T;
 
+        template<typename U>
+        friend class reference_wrapper; // declare reference_wrapper<U> as friend
+
+
+    public:
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper(U& u) : m_ptr(&u)
@@ -42,6 +48,8 @@ namespace alg
             return *this;
         }
 
+
+    public:
         // conversion operator (to T&, NOT to T)
         constexpr operator T&() const noexcept
         {
@@ -53,12 +61,15 @@ namespace alg
             return *m_ptr;
         }
 
-        // std::reference_wrapper<T> of callable T should support operator().
+        // if T is callable, operator() will invoke T
+        template<typename...ARGS>
+        decltype(auto) operator()(ARGS&&...args) const
+        {
+            return *m_ptr(std::forward<ARGS>(args)...);
+        }
 
-    public: 
-        // Todo - should be private, but don't know how to grant friendship
-        // from alg::reference_wrapper<T> 
-        //   to alg::reference_wrapper<U> 
+
+    private: 
         T* m_ptr; 
     };
 
@@ -88,7 +99,8 @@ using alg_nullopt = std::integral_constant<alg::nullopt_t, alg::nullopt>;
 
 namespace alg
 {
-    template<typename T> class optional
+    template<typename T> 
+    class optional
     {
     public:
         optional() : m_flag(false)
