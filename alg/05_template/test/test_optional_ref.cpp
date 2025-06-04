@@ -224,9 +224,20 @@ void test_reference(const std::string& test_name)
 
     // ************** //
     // *** Rebind *** //
-    // ************** // <--- todo 
+    // ************** //
     {
+        auto rx0 =  ref(x);
+        auto ry0 = cref(y);
+        assert(&rx0.get() == &x);
+        assert(&ry0.get() == &x);
 
+        T z{90,91,92};
+        rx0 =  ref(z);
+        ry0 = cref(z);
+        assert(&rx0.get() != &x);
+        assert(&ry0.get() != &x);
+        assert(&rx0.get() == &z);
+        assert(&ry0.get() == &z);
     }
 
   

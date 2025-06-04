@@ -4,13 +4,15 @@
 
 
 
+// ********************************************************************* //
+// Reference wrapper should support the following :
+// * construct T from reference_wrapper<T>
+// * reference_wrapper<const T> pointing to reference_wrapper<T>     
+// * reference_wrapper<BASE>    pointing to reference_wrapper<DERIVED> 
+// * reference_wrapper<callable> and invoked by ref(a,b,c...)
+// ********************************************************************* //
 namespace alg
 {
-    // Reference wrapper should support the following :
-    // * construct T from reference_wrapper<T>
-    // * reference_wrapper<const T> pointing to reference_wrapper<T>     
-    // * reference_wrapper<BASE>    pointing to reference_wrapper<DERIVED> 
-    // * reference_wrapper<callable> and invoked by ref(a,b,c...)
       
     template<typename T> 
     class reference_wrapper
@@ -87,6 +89,10 @@ namespace alg
 }
 
 
+
+// **************** //
+// *** Optional *** //
+// **************** //
 namespace alg
 {
     struct nullopt_t {};
@@ -154,6 +160,7 @@ namespace alg
         const T* operator->() const noexcept { return &m_value; }
         T& operator *()             noexcept { return  m_value; }
         T* operator->()             noexcept { return &m_value; }
+
 
     private:
         bool m_flag;
