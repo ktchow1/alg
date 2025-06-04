@@ -161,7 +161,7 @@ namespace alg
         {
             if (m_flag)
             {
-                new (m_impl) T{*rhs}; // <--- this is why T must be copy-constructible if this constructor is called
+                new (m_impl) T{*rhs}; 
             }
         }
 
@@ -177,8 +177,8 @@ namespace alg
         // ***************** //
         // *** Rebinding *** //
         // ***************** //
-        optional<T>& operator=(const optional<T>&) = default;
-        optional<T>& operator=(optional<T>&&) = default;
+        optional<T>& operator=(const optional<T>&) = default; // <--- Todo
+        optional<T>& operator=(optional<T>&&) = default;      // <--- Todo
 
         template<typename...ARGS>
         T& emplace(ARGS&&...args) 
