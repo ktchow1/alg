@@ -48,6 +48,10 @@ namespace alg
         {
         }
 
+    public:
+        // **************************** //
+        // *** Rebinding and access *** //
+        // **************************** //
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper<T>& operator=(const reference_wrapper<U>& rhs) 
@@ -56,19 +60,19 @@ namespace alg
             return *this;
         }
 
-    public:
-        // conversion operator (to T&, NOT to T)
-        constexpr operator T&() const noexcept
-        {
-            return *m_ptr;
-        }
-
         constexpr T& get() const noexcept
         {
             return *m_ptr;
         }
 
-        // if T is callable, operator() will invoke T
+    public:
+        // Conversion operator (to T&, NOT to T)
+        constexpr operator T&() const noexcept
+        {
+            return *m_ptr;
+        }
+
+        // If T is callable, allow operator().
         template<typename...ARGS>
         decltype(auto) operator()(ARGS&&...args) const
         {
@@ -118,6 +122,8 @@ namespace alg
     template<typename T> 
     class optional
     {
+        static_assert(!std::is_reference_v<T>, "optional<T&> is illegal");
+
     public:
         optional() : m_flag(false)
         {
@@ -132,25 +138,52 @@ namespace alg
             new (m_impl) T{t};
         }
 
-        ~optional()
+        optional(T&& t) : m_flag(true) 
+        {
+            new (m_impl) T{std::move(t)};
+        }
+
+       ~optional()
         {
             reset();
         }
 
-        optional(const optional<T>&) = default;
-        optional(optional<T>&&) = default;
+        // *********************************************************************** //
+        // Why can't we declare =default for 
+        // * copy / move constructor
+        // * copy / move assignment
+        //
+        // because default implementation is memcpy, without T::T{} construction,
+        // when the optional goes out of scope, it will call ~T() on destruction,
+        // resulting in construction / destruction mismatch.
+        // ********************************************************************** //
+        optional(const optional<T>& rhs) : m_flag(rhs.m_flag)
+        {
+            if (m_flag)
+            {
+                new (m_impl) T{*rhs}; // <--- this is why T must be copy-constructible if this constructor is called
+            }
+        }
+
+        optional(optional<T>&& rhs) : m_flag(rhs.m_flag)
+        {
+            if (m_flag)
+            {
+                new (m_impl) T{std::move(*rhs)};
+            }
+        }
 
     public:
-        // ****************** //
-        // *** Re-binding *** //
-        // ****************** //
+        // ***************** //
+        // *** Rebinding *** //
+        // ***************** //
         optional<T>& operator=(const optional<T>&) = default;
         optional<T>& operator=(optional<T>&&) = default;
 
         template<typename...ARGS>
         T& emplace(ARGS&&...args) 
         {
-            // Destruct existing
+            // Destruct old instance
             reset(); 
 
             // Construct new instance
@@ -161,11 +194,20 @@ namespace alg
         }
        
     public:
+        // ************** //
+        // *** Access *** //
+        // ************** //
+        const T& operator *() const noexcept { return *get_ptr(); }
+        const T* operator->() const noexcept { return  get_ptr(); }
+        T& operator *()             noexcept { return *get_ptr(); }
+        T* operator->()             noexcept { return  get_ptr(); }
+
+    public:
         bool operator==(const optional<T>& rhs) const noexcept 
         {
             if (m_flag && rhs.m_flag)
             {
-                return (std::memcmp(m_impl, rhs.m_impl, sizeof(T)) == 0);
+                return std::memcmp(m_impl, rhs.m_impl, sizeof(T)) == 0;
             }
             else
             {
@@ -173,15 +215,11 @@ namespace alg
             }
         } 
 
+        // Conversion operator
         operator bool() const 
         {
             return m_flag;
         }
-
-        const T& operator *() const noexcept { return *get_ptr(); }
-        const T* operator->() const noexcept { return  get_ptr(); }
-        T& operator *()             noexcept { return *get_ptr(); }
-        T* operator->()             noexcept { return  get_ptr(); }
 
     private:
         constexpr const T* get_ptr() const
