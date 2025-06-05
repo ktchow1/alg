@@ -454,12 +454,11 @@ void test_optional_and_reference()
     test_optional<A, alg::optional, alg_nullopt>("alg::optional for general class");
     test_optional<B, std::optional, std_nullopt>("std::optional for non-default-constructible");
     test_optional<B, alg::optional, alg_nullopt>("alg::optional for non-default-constructible");
-//  test_optional<C, std::optional, std_nullopt>("std::optional for non-copy-constructible");
-//  test_optional<C, alg::optional, alg_nullopt>("alg::optional for non-copy-constructible");
-//  test_optional<D, std::optional, std_nullopt>("std::optional for non-copy-assignable");
-//  test_optional<D, alg::optional, alg_nullopt>("alg::optional for non-copy-assignable");
+    // do not support 
+    // * non-copy-constructible, like C
+    // * non-copy-assignable,    like D
 
-//  test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
-//  test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); 
+    test_optional_reference<std::reference_wrapper, std::optional>("std::optional of std::reference");
+    test_optional_reference<alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference"); 
 }
 
