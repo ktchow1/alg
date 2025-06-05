@@ -208,8 +208,45 @@ namespace alg
     // *** function pointer as     type-template-parameter  (TTP) *** //
     // *** function pointer as non-type-template-parameter (NTTP) *** //
     // ************************************************************** //
+    // invoke_fct__TTP0   : FCT_PTR is deduced from 1st input argument                        (support lambda)
+    // invoke_fct__TTP1   : FCT_PTR is provided by caller as     type-template-paremeter (cant support lambda) 
+    // invoke_fct_NTTP0/1 : FCT_PTR is provided by caller as non-type-template-paremeter  
+    // invoke_fct__TTP0/1 : can work with fct pointers having different signatures
+    // invoke_fct_NTTP0/1 : can work with fct pointers having specific signature only
+    // 
+    namespace fct_space
+    {
+        std::string fct1(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 1000); }
+        std::string fct2(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 2000); }
+        std::uint32_t fct3(std::uint32_t n, std::uint32_t m) { return n + m + 3000; }
+        std::uint32_t fct4(std::uint32_t n, std::uint32_t m) { return n + m + 4000; }
+        std::string fct5() { return "aaaa"; }
+        std::string fct6() { return "bbbb"; }
+    }
 
+    template<typename FCT_PTR, typename...ARGS> 
+    auto invoke_fct_TTP0(FCT_PTR fct_ptr, ARGS&&... args) // use 1st arg to deduce FCT_PTR 
+    {
+        return (*fct_ptr)(std::forward<ARGS>(args)...);
+    }
 
+    template<auto FCT_PTR, typename...ARGS> 
+    auto invoke_fct_TTP1(ARGS&&... args)  
+    {
+        return (*FCT_PTR)(std::forward<ARGS>(args)...);
+    }
+
+    template<std::uint32_t (*fct_ptr)(std::uint32_t, std::uint32_t), typename...ARGS>
+    auto invoke_fct_NTTP0(ARGS&&... args)  
+    {
+        return (*fct_ptr)(std::forward<ARGS>(args)...);
+    }
+
+    template<std::string (*fct_ptr)()> 
+    auto invoke_fct_NTTP1()  
+    {
+        return (*fct_ptr)();
+    }
 
 
 
@@ -217,12 +254,8 @@ namespace alg
     // *** member pointer as     type-template-parameter  (TTP) *** //
     // *** member pointer as non-type-template-parameter (NTTP) *** //
     // ************************************************************ //
-    // invoker_ TTP0   : passes member pointer as     input argument
-    // invoker_ TTP1   : passes member pointer as     type-template-paremeter  
-    // invoker_NTTP0/1 : passes member pointer as non-type-template-parameter
-    // invoker_ TTP0/1 : can work with member pointers having different signatures
-    // invoker_NTTP0/1 : can work with member pointers having specific signature only
-      
+    // See remark for FCT_PTR
+    //
     struct fct_group
     {
         std::string fct1(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 1000); }
@@ -235,28 +268,28 @@ namespace alg
 
 
     template<typename MEM_PTR, typename...ARGS> 
-    auto invoker_TTP0(MEM_PTR mem_ptr, ARGS&&... args) 
+    auto invoke_mem_TTP0(MEM_PTR mem_ptr, ARGS&&... args) 
     {
         fct_group x;
         return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
     template<auto MEM_PTR, typename...ARGS> 
-    auto invoker_TTP1(ARGS&&... args)  
+    auto invoke_mem_TTP1(ARGS&&... args)  
     {
         fct_group x;
         return (x.*MEM_PTR)(std::forward<ARGS>(args)...);
     }
 
     template<std::uint32_t (fct_group::* mem_ptr)(std::uint32_t, std::uint32_t), typename...ARGS>
-    auto invoker_NTTP0(ARGS&&... args)  
+    auto invoke_mem_NTTP0(ARGS&&... args)  
     {
         fct_group x;
         return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
     template<std::string (fct_group::* mem_ptr)()> 
-    auto invoker_NTTP1()  
+    auto invoke_mem_NTTP1()  
     {
         fct_group x;
         return (x.*mem_ptr)();
