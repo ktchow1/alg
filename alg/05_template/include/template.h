@@ -20,6 +20,8 @@ namespace alg
         std::uint32_t overload = 0;
     }
 
+
+
     // ************************* //
     // *** function template *** //
     // ************************* //
@@ -36,6 +38,7 @@ namespace alg
     }
 
 
+
     // ************************************* //
     // *** Abbreviated function template *** //
     // ************************************* //
@@ -43,6 +46,7 @@ namespace alg
     {
         auto temp = std::forward<decltype(y)>(y); // <--- how universal reference can be forwarded
     }
+
 
 
     // ********************** //
@@ -85,6 +89,7 @@ namespace alg
         global::overload = 3;
     }
 
+
     // *** specialization *** //
     template<typename T, typename U>
     struct class_template<T,U,std::string>
@@ -115,11 +120,13 @@ namespace alg
         global::overload = 4;
     }
 
+
     // *** deduction guide *** //
     template<typename T, typename U>
     class_template(const T&, const U&) -> class_template<T,U,int>;         // <--- deduction guide A
     template<typename T>
     class_template(const T&) -> class_template<T,std::string,std::string>; // <--- deduction guide B
+
 
 
     // ***************************** //
@@ -161,6 +168,7 @@ namespace alg
     }
 
 
+
     // ************************* //
     // *** variable template *** //
     // ************************* //
@@ -176,11 +184,13 @@ namespace alg
     template<typename T> std::vector<T> variable_template2 = {1,2,3,4,5};
 
 
+
     // ********************** //
     // *** alias template *** //
     // ********************** //
     // Does not allow specialization
     template<typename C> using alias_template = typename C::value_type;
+
 
 
     // ************************* // 
@@ -193,45 +203,51 @@ namespace alg
     };
 
 
+
+    // ************************************************************** //
+    // *** function pointer as     type-template-parameter  (TTP) *** //
+    // *** function pointer as non-type-template-parameter (NTTP) *** //
+    // ************************************************************** //
+
+
+
+
+
     // ************************************************************ //
     // *** member pointer as     type-template-parameter  (TTP) *** //
     // *** member pointer as non-type-template-parameter (NTTP) *** //
     // ************************************************************ //
-    // invoker_TTP       passes member pointer as input argument.
-    // invoker_NTTP0/1/2 passes member pointer as template parameter NTTP.
-    //
-    // invoker_TTP     can work with member pointers having different signatures.
-    // invoker_NTTP0/1 can work with member pointers having identical signature only.
-    // invoker_NTTP2   can work with member pointers having different signatures, replacing clumsy signatures with "auto".
-    //
+    // invoker_ TTP0   : passes member pointer as     input argument
+    // invoker_ TTP1   : passes member pointer as     type-template-paremeter  
+    // invoker_NTTP0/1 : passes member pointer as non-type-template-parameter
+    // invoker_ TTP0/1 : can work with member pointers having different signatures
+    // invoker_NTTP0/1 : can work with member pointers having specific signature only
+      
     struct fct_group
     {
         std::string fct1(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 1000); }
         std::string fct2(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 2000); }
-        std::string fct3(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 3000); }
-
+        std::uint32_t fct3(std::uint32_t n, std::uint32_t m) { return n + m + 3000; }
         std::uint32_t fct4(std::uint32_t n, std::uint32_t m) { return n + m + 4000; }
-        std::uint32_t fct5(std::uint32_t n, std::uint32_t m) { return n + m + 5000; }
-        std::uint32_t fct6(std::uint32_t n, std::uint32_t m) { return n + m + 6000; }
-
-        std::string fct7() { return "abcde"; }
-        std::string fct8() { return "klmno"; }
-        std::string fct9() { return "pqrst"; }
+        std::string fct5() { return "aaaa"; }
+        std::string fct6() { return "bbbb"; }
     };
 
 
-    //                +--- type template parameter for member pointer
-    //                v
-    template<typename T, typename...ARGS>                        
-    auto invoker_TTP(T mem_ptr, ARGS&&... args) 
+    template<typename MEM_PTR, typename...ARGS> 
+    auto invoker_TTP0(MEM_PTR mem_ptr, ARGS&&... args) 
     {
         fct_group x;
         return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
+    template<auto MEM_PTR, typename...ARGS> 
+    auto invoker_TTP1(ARGS&&... args)  
+    {
+        fct_group x;
+        return (x.*MEM_PTR)(std::forward<ARGS>(args)...);
+    }
 
-    //                                   +--- non type template parameter for member pointer
-    //                                   v
     template<std::uint32_t (fct_group::* mem_ptr)(std::uint32_t, std::uint32_t), typename...ARGS>
     auto invoker_NTTP0(ARGS&&... args)  
     {
@@ -239,9 +255,6 @@ namespace alg
         return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
-
-    //                                 +--- non type template parameter for member pointer
-    //                                 v
     template<std::string (fct_group::* mem_ptr)()> 
     auto invoker_NTTP1()  
     {
@@ -249,13 +262,6 @@ namespace alg
         return (x.*mem_ptr)();
     }
 
-
-    template<auto mem_ptr, typename...ARGS> 
-    auto invoker_NTTP2(ARGS&&... args)  
-    {
-        fct_group x;
-        return (x.*mem_ptr)(std::forward<ARGS>(args)...);
-    }
 
 
     // **************************************************** //

@@ -154,7 +154,7 @@ int main()
 //  test_metaprog();
     test_optional_and_reference();
 //  test_shared_ptr();
-//  test_template(); 
+    test_template(); 
 //  test_template_specialization(); 
 //  test_traits();
 //  test_tuple_idx_seq();

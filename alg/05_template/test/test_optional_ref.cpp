@@ -138,7 +138,7 @@ template
 <
     typename  T,                                      //  T is constructed from 3 integers
     typename DT,                                      // DT is derived class of T
-    template<typename> typename reference_wrapper,    // reference wrapper under test
+    template<typename> typename reference_wrapper,    // reference wrapper 
     reference_wrapper<      T>(* ref)(      T&),      // factory 
     reference_wrapper<const T>(*cref)(const T&)       // factory
 >
@@ -330,6 +330,7 @@ void test_optional(const std::string& test_name)
     optional<T> oa2(T{20,21,22});                   // direct initializtion
     optional<T> oa3 = T{30,31,32};                  // copy initialization
     optional<T> oa4;                                // factory
+    
     if constexpr (std::is_same_v<optional<T>, std::optional<T>>)
     {
         oa4 = std::make_optional<T>(40_u32,41_u32,42_u32);  
@@ -337,7 +338,7 @@ void test_optional(const std::string& test_name)
     if constexpr (std::is_same_v<optional<T>, alg::optional<T>>)
     {
         oa4 = alg::make_optional<T>(40_u32,41_u32,42_u32);  
-    }
+    } 
   
     assert(oa0 == nullopt::value);
     assert(!oa0);
