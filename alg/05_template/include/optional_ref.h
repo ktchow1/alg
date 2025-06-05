@@ -31,6 +31,9 @@ namespace alg
         friend class reference_wrapper; // declare reference_wrapper<U> as friend
 
     public:
+        // ********************************** //
+        // *** Constructor and destructor *** //
+        // ********************************** //
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper(U& u) : m_ptr(&u)
@@ -42,6 +45,10 @@ namespace alg
             m_ptr = nullptr;
         } 
         
+    public:
+        // ************************ //
+        // *** Copy constructor *** //
+        // ************************ //
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper(const reference_wrapper<U>& rhs) : m_ptr(rhs.m_ptr)
@@ -125,6 +132,9 @@ namespace alg
         static_assert(!std::is_reference_v<T>, "optional<T&> is illegal");
 
     public:
+        // ********************************** //
+        // *** Constructor and destructor *** //
+        // ********************************** //
         optional() : m_flag(false)
         {
         }
@@ -148,6 +158,7 @@ namespace alg
             reset();
         }
 
+    public:
         // *********************************************************************** //
         // Why can't we declare =default for 
         // * copy / move constructor
@@ -177,8 +188,36 @@ namespace alg
         // ***************** //
         // *** Rebinding *** //
         // ***************** //
-        optional<T>& operator=(const optional<T>&) = default; // <--- Todo
-        optional<T>& operator=(optional<T>&&) = default;      // <--- Todo
+        // Rebinding with assignment may result in null value.
+        // Rebinding with emplace must result in valid value.
+        //
+        optional<T>& operator=(const optional<T>& rhs) 
+        {
+            if (this != &rhs)
+            {
+                // Destruct old instance
+                reset(); 
+
+                // Construct new instance
+                m_flag = rhs.m_flag;
+                if (m_flag) new (m_impl) T{*rhs};
+            }
+            return *this;
+        }
+
+        optional<T>& operator=(optional<T>&& rhs) 
+        {
+            if (this != &rhs)
+            {
+                // Destruct old instance
+                reset(); 
+
+                // Construct new instance
+                m_flag = rhs.m_flag;
+                if (m_flag) new (m_impl) T{std::move(*rhs)}; // <--- note : move(*rhs), NOT move(rhs)
+            }
+            return *this;
+        }
 
         template<typename...ARGS>
         T& emplace(ARGS&&...args) 
@@ -203,6 +242,12 @@ namespace alg
         T* operator->()             noexcept { return  get_ptr(); }
 
     public:
+        // Conversion operator
+        operator bool() const 
+        {
+            return m_flag;
+        }
+
         bool operator==(const optional<T>& rhs) const noexcept 
         {
             if (m_flag && rhs.m_flag)
@@ -214,12 +259,6 @@ namespace alg
                 return m_flag == rhs.m_flag;
             }
         } 
-
-        // Conversion operator
-        operator bool() const 
-        {
-            return m_flag;
-        }
 
     private:
         constexpr const T* get_ptr() const
