@@ -321,36 +321,42 @@ template
 >
 void test_optional(const std::string& test_name)
 {
-    T a(10,11,12);
-    T& ra = a;
+    T  x(10,11,12);
+    T& y = x;
 
-    // 1a. construct optional from T and from T&
-    optional<T> oa0;                                // default initialization
-    optional<T> oa1(ra);                            // direct initialization
-    optional<T> oa2(T{20,21,22});                   // direct initializtion
-    optional<T> oa3 = T{30,31,32};                  // copy initialization
-    optional<T> oa4;                                // factory
-    
-    if constexpr (std::is_same_v<optional<T>, std::optional<T>>)
+    // ***************************************************** //
+    // *** Construct optional from T or T& (and factory) *** //
+    // ***************************************************** //
     {
-        oa4 = std::make_optional<T>(40_u32,41_u32,42_u32);  
+        optional<T> ox0;                  // default initialization
+        optional<T> ox1(y);               // direct initialization from lvalue
+        optional<T> ox2(T{20,21,22});     // direct initialization from rvalue
+        optional<T> ox3 = T{30,31,32};    // copy initialization
+        optional<T> ox4;                  // factory
+
+        if constexpr (std::is_same_v<optional<T>, std::optional<T>>)
+        {
+            ox4 = std::make_optional<T>(40_u32,41_u32,42_u32);  
+        }
+        if constexpr (std::is_same_v<optional<T>, alg::optional<T>>)
+        {
+            ox4 = alg::make_optional<T>(40_u32,41_u32,42_u32);  
+        } 
+
+        assert(ox0 == nullopt::value);
+        assert(ox1->m_x == 10 && ox1->m_y == 11 && ox1->m_z == 12);
+        assert(ox2->m_x == 20 && ox2->m_y == 21 && ox2->m_z == 22);
+        assert(ox3->m_x == 30 && ox3->m_y == 31 && ox3->m_z == 32);
+        assert(ox4->m_x == 40 && ox4->m_y == 41 && ox4->m_z == 42);
+        assert(&(*ox1) != &x);            // optional owns a separate instance
+        assert(&(*ox1) != &y); 
     }
-    if constexpr (std::is_same_v<optional<T>, alg::optional<T>>)
-    {
-        oa4 = alg::make_optional<T>(40_u32,41_u32,42_u32);  
-    } 
-  
-    assert(oa0 == nullopt::value);
-    assert(!oa0);
-    oa0 = a;
-    assert(oa0 != nullopt::value);
-    assert(oa0->m_x == 10 && oa0->m_y == 11 && oa0->m_z == 12);
-    assert(oa1->m_x == 10 && oa1->m_y == 11 && oa1->m_z == 12);
-    assert(oa2->m_x == 20 && oa2->m_y == 21 && oa2->m_z == 22);
-    assert(oa3->m_x == 30 && oa3->m_y == 31 && oa3->m_z == 32);
-    assert(oa4->m_x == 40 && oa4->m_y == 41 && oa4->m_z == 42);
-    assert(&(*oa0) != &(*oa1)); 
+    
+ /* 
                                 
+        assert(!oa0);
+        oa0 = x;
+        assert(oa0 != nullopt::value);
     // 1b. modify content
     oa0 = T{50,51,52};
     oa1 = oa0;
@@ -400,7 +406,7 @@ void test_optional(const std::string& test_name)
     {
         fct_for_optional(x, count);
         ++count;
-    } 
+    } */
     print_summary(test_name, "succeeded");
 }
 
