@@ -217,9 +217,9 @@ void test_reference(const std::string& test_name)
     }
 
 
-    // ************************* //
-    // *** Modify and rebind *** //
-    // ************************* //
+    // ************** //
+    // *** Modify *** //
+    // ************** //
     {
         auto rx0 =  ref(x);
         auto ry0 = cref(y);
@@ -324,6 +324,7 @@ void test_optional(const std::string& test_name)
     T  x(10,11,12);
     T& y = x;
 
+
     // ***************************************************** //
     // *** Construct optional from T or T& (and factory) *** //
     // ***************************************************** //
@@ -343,6 +344,11 @@ void test_optional(const std::string& test_name)
             ox4 = alg::make_optional<T>(40_u32,41_u32,42_u32);  
         } 
 
+        assert(!ox0);
+        assert(ox1);
+        assert(ox2);
+        assert(ox3);
+        assert(ox4);
         assert(ox0 == nullopt::value);
         assert(ox1->m_x == 10 && ox1->m_y == 11 && ox1->m_z == 12);
         assert(ox2->m_x == 20 && ox2->m_y == 21 && ox2->m_z == 22);
@@ -352,6 +358,44 @@ void test_optional(const std::string& test_name)
         assert(&(*ox1) != &y); 
     }
     
+
+    // *************************************** //
+    // *** Construct T or T& from optional *** //
+    // *************************************** //
+    {
+        optional<T> ox(x);
+        T  x0 = *ox;
+        T& x1 = *ox;
+
+        assert(&x0 != &x);
+        assert(&x1 != &x);
+        assert(&x0 != &(*ox));
+        assert(&x1 == &(*ox));
+        assert(x0.m_x == 10 && x0.m_y == 11 && x0.m_z == 12);
+        assert(x1.m_x == 10 && x1.m_y == 11 && x1.m_z == 12);
+    }
+
+
+    // **************************************** //
+    // *** Construct optional from optional *** //
+    // **************************************** //
+    {
+        optional<T> ox(x);
+        optional<T> ox0{ox};
+        optional<T> ox1{std::move(ox)};
+
+        assert(ox0);
+        assert(ox1);
+        assert(&(*ox0) != &x);
+        assert(&(*ox1) != &x);
+        assert(ox0->m_x == 10 && ox0->m_y == 11 && ox0->m_z == 12);
+        assert(ox1->m_x == 10 && ox1->m_y == 11 && ox1->m_z == 12);
+    }
+
+
+    // ************** //
+    // *** Modify *** //
+    // ************** //
  /* 
                                 
         assert(!oa0);
@@ -367,30 +411,15 @@ void test_optional(const std::string& test_name)
     assert(oa0 == nullopt::value);
     assert(!oa0);
   
-    // 2a. construct T from optional 
-//  T a1(oa1);   // compile error
 
-    T a1(*oa1);
-    assert(&a1 != &(*oa1));
 
-    // 2b. construct T& from optional 
-    T& a2(*oa1);  
-    assert(&a2 == &(*oa1));
+    // ************** //
+    // *** Rebind *** //
+    // ************** //
 
-    // 3. construct optional from optional
-    optional<T> oa5{oa1};
-    optional<T> oa6{std::move(oa1)};
-    assert(oa1); // still valid
-    assert(oa1->m_x == 50 && oa1->m_y == 51 && oa1->m_z == 52);
-    assert(oa2->m_x == 20 && oa2->m_y == 21 && oa2->m_z == 22);
-    assert(oa3->m_x == 30 && oa3->m_y == 31 && oa3->m_z == 32);
-    assert(oa4->m_x == 40 && oa4->m_y == 41 && oa4->m_z == 42);
-    assert(oa5->m_x == 50 && oa5->m_y == 51 && oa5->m_z == 52);
-    assert(oa6->m_x == 50 && oa6->m_y == 51 && oa6->m_z == 52);
-    assert(&(*oa5) != &(*oa1));
-    assert(&(*oa6) != &(*oa1));
-
-    // 4a. used in vector
+    // *********************** //
+    // *** Usage in vector *** //
+    // *********************** //
     std::vector<optional<T>> vec;
     vec.push_back(oa0);
     vec.push_back(oa1);
@@ -415,8 +444,11 @@ void test_optional(const std::string& test_name)
 // ************************** // 
 // *** Optional reference *** //
 // ************************** // 
-template<template<typename> typename reference_wrapper,
-         template<typename> typename optional>
+template
+<
+    template<typename> typename reference_wrapper,
+    template<typename> typename optional
+>
 void test_optional_reference(const std::string& test_name) 
 {
 //  optional<A&> ora; // compile error
