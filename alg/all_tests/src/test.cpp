@@ -27,6 +27,8 @@ void test_cast();
 void test_constexpr();
 void test_constexpr_array();
 void test_constexpr_map();
+void test_deduce_auto();
+void test_deduce_decltype();
 void test_exception();
 void test_literal();
 void test_memory_allocator();
@@ -132,6 +134,8 @@ int main()
 //  test_constexpr();
 //  test_constexpr_array();
 //  test_constexpr_map();
+    test_deduce_auto();
+    test_deduce_decltype();
 //  test_exception();
 //  test_literal();
 //  test_memory_allocator();
