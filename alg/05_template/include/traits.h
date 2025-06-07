@@ -42,7 +42,7 @@ namespace alg
 // ********************** //
 // *** Runtime traits *** //
 // ********************** //
-// Inspired by Maven interview : 
+// Inspired by Maven : 
 // * objective is given by hardcoded approach
 // * please re-implement in variadic approach
 //

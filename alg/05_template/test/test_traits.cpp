@@ -48,7 +48,7 @@ void test_simple_traits()
 
 void test_runtime_traits()
 {
-    // Maven interview : runtime traits
+    // Maven : runtime traits
     auto p0 = alg::value2type_hardcoded_runtime<1,2,4,8,16>::create( 1);       
     auto p1 = alg::value2type_hardcoded_runtime<1,2,4,8,16>::create( 2);
     auto p2 = alg::value2type_hardcoded_runtime<1,2,4,8,16>::create( 3);
