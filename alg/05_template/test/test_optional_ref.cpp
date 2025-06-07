@@ -350,10 +350,10 @@ void test_optional(const std::string& test_name)
         assert(ox3);
         assert(ox4);
         assert(ox0 == nullopt::value);
-        assert(ox1->m_x == 10 && ox1->m_y == 11 && ox1->m_z == 12);
-        assert(ox2->m_x == 20 && ox2->m_y == 21 && ox2->m_z == 22);
-        assert(ox3->m_x == 30 && ox3->m_y == 31 && ox3->m_z == 32);
-        assert(ox4->m_x == 40 && ox4->m_y == 41 && ox4->m_z == 42);
+        assert((*ox1 == T{10,11,12}));
+        assert((*ox2 == T{20,21,22}));
+        assert((*ox3 == T{30,31,32}));
+        assert((*ox4 == T{40,41,42}));
         assert(&(*ox1) != &x);            // optional owns a separate instance
         assert(&(*ox1) != &y); 
     }
@@ -371,8 +371,8 @@ void test_optional(const std::string& test_name)
         assert(&x1 != &x);
         assert(&x0 != &(*ox));
         assert(&x1 == &(*ox));
-        assert(x0.m_x == 10 && x0.m_y == 11 && x0.m_z == 12);
-        assert(x1.m_x == 10 && x1.m_y == 11 && x1.m_z == 12);
+        assert((x0 == T{10,11,12}));
+        assert((x1 == T{10,11,12}));
     }
 
 
@@ -388,8 +388,8 @@ void test_optional(const std::string& test_name)
         assert(ox1);
         assert(&(*ox0) != &x);
         assert(&(*ox1) != &x);
-        assert(ox0->m_x == 10 && ox0->m_y == 11 && ox0->m_z == 12);
-        assert(ox1->m_x == 10 && ox1->m_y == 11 && ox1->m_z == 12);
+        assert((*ox0 == T{10,11,12}));
+        assert((*ox1 == T{10,11,12}));
     }
 
 
@@ -397,6 +397,7 @@ void test_optional(const std::string& test_name)
     // *** Modify *** //
     // ************** //
     {
+        optional<T> ox(x);
     }
  /* 
                                 
