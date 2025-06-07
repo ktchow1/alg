@@ -64,18 +64,6 @@ bool compare_address(const reference_wrapper<const T>& rx, const T& x)
     return &rx.get() == &x;
 }
 
-template<typename OPT>
-void fct_for_optional(const OPT& oa, std::uint32_t count)
-{
-    if      (count == 0) assert(!oa);
-    else if (count == 1) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
-    else if (count == 2) assert(oa && oa->m_x == 20 && oa->m_y == 21 && oa->m_z == 22);
-    else if (count == 3) assert(oa && oa->m_x == 30 && oa->m_y == 31 && oa->m_z == 32);
-    else if (count == 4) assert(oa && oa->m_x == 40 && oa->m_y == 41 && oa->m_z == 42);
-    else if (count == 5) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
-    else if (count == 6) assert(oa && oa->m_x == 50 && oa->m_y == 51 && oa->m_z == 52);
-}
-
 
 
 // ************************ //
@@ -398,46 +386,57 @@ void test_optional(const std::string& test_name)
     // ************** //
     {
         optional<T> ox(x);
-    }
- /* 
-                                
-        assert(!oa0);
-        oa0 = x;
-        assert(oa0 != nullopt::value);
+        auto old_address = &(*ox);
+        ox->m_x = 50;
+        ox->m_y = 51;
+        ox->m_z = 52; 
 
-        oa0 = T{50,51,52};
-        oa1 = oa0;
-        assert(oa0->m_x == 50 && oa0->m_y == 51 && oa0->m_z == 52);
-        assert(oa1->m_x == 50 && oa1->m_y == 51 && oa1->m_z == 52);
-        
-        oa0 = nullopt::value;
-        assert(oa0 == nullopt::value);
-        assert(!oa0);
-  
+        assert((  x == T{10,11,12})); 
+        assert((*ox == T{50,51,52}));
+        assert((&(*ox) == old_address));
+    }
 
 
     // ************** //
     // *** Rebind *** //
     // ************** //
+    {
+        optional<T> ox(x);
+        auto old_address = &(*ox);
+        ox = T{50,51,52};
+
+        assert((  x == T{10,11,12})); 
+        assert((*ox == T{50,51,52}));
+        assert((&(*ox) == old_address)); // unchanged, since it is not implemented as T*
+
+        ox = nullopt::value;
+        assert(ox == nullopt::value);
+        assert(!ox);
+    }
+        
 
     // *********************** //
     // *** Usage in vector *** //
     // *********************** //
     std::vector<optional<T>> vec;
-    vec.push_back(oa0);
-    vec.push_back(oa1);
-    vec.push_back(oa2);
-    vec.push_back(oa3);
-    vec.push_back(oa4);
-    vec.push_back(oa5);
-    vec.push_back(oa6);
-
-    std::uint32_t count = 0;
-    for(const auto& x:vec) 
+    for(std::uint32_t n=0; n!=5; ++n)
     {
-        fct_for_optional(x, count);
-        ++count;
-    } */
+        if constexpr (std::is_same_v<optional<T>, std::optional<T>>)
+        {
+            vec.push_back(std::make_optional<T>(10*(n+1), 10*(n+1)+1, 10*(n+1)+2));  
+        }
+        if constexpr (std::is_same_v<optional<T>, alg::optional<T>>)
+        {
+            vec.push_back(alg::make_optional<T>(10*(n+1), 10*(n+1)+1, 10*(n+1)+2));  
+        }
+    }
+
+    std::uint32_t temp = 10;
+    for(const auto& ox:vec)
+    {
+        assert((*ox == T{temp, temp+1, temp+2}));
+        temp += 10;
+    }
     print_summary(test_name, "succeeded");
 }
 
