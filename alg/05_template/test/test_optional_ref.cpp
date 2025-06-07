@@ -449,26 +449,43 @@ template
 <
     typename T,
     template<typename> typename reference_wrapper,
-    template<typename> typename optional
+    template<typename> typename optional,
+    typename nullopt
 >
 void test_optional_reference(const std::string& test_name) 
 {
-//  optional<T&> ora; // compile error
-    optional<reference_wrapper<T>> ora;
+    optional<reference_wrapper<T>> orx;
+    T x0{10,11,12};
+    T x1{20,21,22};
 
-    // 1. can be null
-    assert(!ora);
 
-    T a0{10,11,12};
-    ora = reference_wrapper<T>(a0);
-    assert(ora);
-    assert(ora->get().m_x == 10 && ora->get().m_y == 11 && ora->get().m_z == 12);
+    // Support nullity
+    assert(!orx);
 
-    // 2. can be re-assigned
-    T a1{20,21,22};
-    ora = reference_wrapper<T>(a1);
-    assert(ora);
-    assert(ora->get().m_x == 20 && ora->get().m_y == 21 && ora->get().m_z == 22);
+    // Support rebind
+    orx = reference_wrapper<T>(x0);
+    assert(orx);
+    assert(( orx->get() == T{10,11,12}));
+    assert((&orx->get() == &x0));
+
+    // Support rebind again
+    orx = reference_wrapper<T>(x1);
+    assert(orx);
+    assert(( orx->get() == T{20,21,22}));
+    assert((&orx->get() == &x1));
+
+    // Support modifying value
+    orx->get().m_x = 30;
+    orx->get().m_y = 31;
+    orx->get().m_z = 32;
+    assert(orx);
+    assert((         x1 == T{30,31,32}));
+    assert(( orx->get() == T{30,31,32}));
+    assert((&orx->get() == &x1));
+
+    // Support rebind to null
+    orx = nullopt::value;
+    assert(!orx);
 
     print_summary(test_name, "succeeded");
 }
@@ -498,9 +515,9 @@ void test_optional_and_reference()
     // * non-copy-constructible, like C
     // * non-copy-assignable,    like D
 
-    test_optional_reference<A,std::reference_wrapper, std::optional>("std::optional of std::reference for general class");
-    test_optional_reference<A,alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference for general class"); 
-    test_optional_reference<B,std::reference_wrapper, std::optional>("std::optional of std::reference for non-default-constructible");
-    test_optional_reference<B,alg::reference_wrapper, alg::optional>("alg::optioanl of alg::reference for non-default-constructible"); 
+    test_optional_reference<A,std::reference_wrapper, std::optional, std_nullopt>("std::optional of std::reference for general class");
+    test_optional_reference<A,alg::reference_wrapper, alg::optional, alg_nullopt>("alg::optioanl of alg::reference for general class"); 
+    test_optional_reference<B,std::reference_wrapper, std::optional, std_nullopt>("std::optional of std::reference for non-default-constructible");
+    test_optional_reference<B,alg::reference_wrapper, alg::optional, alg_nullopt>("alg::optioanl of alg::reference for non-default-constructible"); 
 }
 
