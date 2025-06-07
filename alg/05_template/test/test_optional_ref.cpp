@@ -396,20 +396,22 @@ void test_optional(const std::string& test_name)
     // ************** //
     // *** Modify *** //
     // ************** //
+    {
+    }
  /* 
                                 
         assert(!oa0);
         oa0 = x;
         assert(oa0 != nullopt::value);
-    // 1b. modify content
-    oa0 = T{50,51,52};
-    oa1 = oa0;
-    assert(oa0->m_x == 50 && oa0->m_y == 51 && oa0->m_z == 52);
-    assert(oa1->m_x == 50 && oa1->m_y == 51 && oa1->m_z == 52);
-    
-    oa0 = nullopt::value;
-    assert(oa0 == nullopt::value);
-    assert(!oa0);
+
+        oa0 = T{50,51,52};
+        oa1 = oa0;
+        assert(oa0->m_x == 50 && oa0->m_y == 51 && oa0->m_z == 52);
+        assert(oa1->m_x == 50 && oa1->m_y == 51 && oa1->m_z == 52);
+        
+        oa0 = nullopt::value;
+        assert(oa0 == nullopt::value);
+        assert(!oa0);
   
 
 
@@ -429,7 +431,6 @@ void test_optional(const std::string& test_name)
     vec.push_back(oa5);
     vec.push_back(oa6);
 
-    // 4b. used in function
     std::uint32_t count = 0;
     for(const auto& x:vec) 
     {
