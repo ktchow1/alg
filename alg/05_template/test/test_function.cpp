@@ -37,18 +37,23 @@ struct N_ary_functor
     std::string operator()(int, int) const 
     { 
         ++N_ary_functor_count;
-        return "xxx"; 
+        return "yyy"; 
     }
 };
 
 
-// *******************************************//
-// Objective : function class that can wrap :
+// ********************************* //
+// Objective - Test these classes :
+// * alg::simple_function and 
+// * alg::function
+//      
+// for binding :
 // * function pointer
-// * functor
+// * functor (rvalue) 
+// * functor (lvalue) 
 // * lambda 
-// *******************************************//
-void test_simple_function()
+// ********************************* //
+void test_alg_simple_function()
 {
     nullary_functor f;
     std::vector<alg::simple_function> fs; 
@@ -83,7 +88,7 @@ void test_simple_function()
 }
   
 
-void test_general_function()
+void test_alg_function()
 {
     N_ary_functor f;
     std::vector<alg::function<std::string,int,int>> fs; 
@@ -95,7 +100,7 @@ void test_general_function()
     fs.push_back([](int,int) -> std::string
     {
         ++N_ary_lambda_count;
-        return "xxx"; 
+        return "zzz"; 
     });
 
     // using simple_function type
@@ -105,7 +110,7 @@ void test_general_function()
     alg::function<std::string,int,int> f3([](int,int) -> std::string
     {
         ++N_ary_lambda_count;
-        return "xxx"; 
+        return "zzz"; 
     });
     fs.push_back(f0); 
     fs.push_back(f1);
@@ -116,13 +121,30 @@ void test_general_function()
     assert(N_ary_function_count == 2);
     assert(N_ary_functor_count == 4);
     assert(N_ary_lambda_count == 2);
+
+    assert(fs[0](123,123) == "xxx");
+    assert(fs[1](123,123) == "yyy");
+    assert(fs[2](123,123) == "yyy");
+    assert(fs[3](123,123) == "zzz");
     print_summary("alg::function - N-ary returning R", "succeeded");
 }
 
 
-// ******************************************** //
-// *** Binding to template or std::function *** //
-// ******************************************** //
+
+// ********************************* //
+// Objective - Test these :
+// * template parameter
+// * std::function
+//      
+// for binding :
+// * function pointer
+// * functor (rvalue) 
+// * functor (lvalue) 
+// * lambda 
+// * std::bind function
+// * std::bind object member
+// * std::bind this object member
+// ********************************* //
 template<typename T, typename F>
 auto invoke_as_template_para(T x, T y, F fct)
 {
@@ -136,7 +158,7 @@ auto invoke_as_std_function(T x, T y, std::function<U(T,T)> fct)
 }
 
 
-void test_binding_function()
+void test_std_function()
 {
     N_ary_functor f;
 
@@ -149,13 +171,13 @@ void test_binding_function()
     auto s3 = invoke_as_template_para(1, 2, [](int,int) -> std::string
     {
         ++N_ary_lambda_count;
-        return "xxx"; 
+        return "zzz"; 
     });
 
     assert(s0 == std::string{"xxx"});
-    assert(s1 == std::string{"xxx"});
-    assert(s2 == std::string{"xxx"});
-    assert(s3 == std::string{"xxx"});
+    assert(s1 == std::string{"yyy"});
+    assert(s2 == std::string{"yyy"});
+    assert(s3 == std::string{"zzz"});
 
 
     // ************************ //
@@ -171,13 +193,13 @@ void test_binding_function()
     auto s7 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{[](int,int) -> std::string
     {
         ++N_ary_lambda_count;
-        return "xxx"; 
+        return "zzz"; 
     }});
 
     assert(s4 == std::string{"xxx"});
-    assert(s5 == std::string{"xxx"});
-    assert(s6 == std::string{"xxx"});
-    assert(s7 == std::string{"xxx"});
+    assert(s5 == std::string{"yyy"});
+    assert(s6 == std::string{"yyy"});
+    assert(s7 == std::string{"zzz"});
 
 
     // Alternatively ...
@@ -187,13 +209,13 @@ void test_binding_function()
     auto sB = invoke_as_std_function<int,std::string>(1, 2, [](int,int) -> std::string
     {
         ++N_ary_lambda_count;
-        return "xxx"; 
+        return "zzz"; 
     });
 
     assert(s8 == std::string{"xxx"});
-    assert(s9 == std::string{"xxx"});
-    assert(sA == std::string{"xxx"});
-    assert(sB == std::string{"xxx"});
+    assert(s9 == std::string{"yyy"});
+    assert(sA == std::string{"yyy"});
+    assert(sB == std::string{"zzz"});
 
     print_summary("std::function - binding", "succeeded");
 }
@@ -209,7 +231,7 @@ void test_binding_function()
 // - given 3rd arg,         it deduces F = N_ary_functor                for s2
 // - given 3rd arg,         it deduces F = lambda ...                   for s3
 //
-// Why r4-s7 cannot compile?
+// Why r4-r7 cannot compile?
 // - compiler cannot deduce U from template function instantiation
 // - given 1st and 2nd arg, it deduces T = int 
 // - given 3rd arg,         it cannot match std::function<U(T,T) with std::string (*)(int,int)   for r4
@@ -227,8 +249,8 @@ void test_binding_function()
 
 void test_function()
 {
-    test_simple_function();
-    test_general_function();
-    test_binding_function();
+    test_alg_simple_function();
+    test_alg_function();
+    test_std_function();
 }
 
