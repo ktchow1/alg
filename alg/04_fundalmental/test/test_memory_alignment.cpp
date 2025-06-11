@@ -117,8 +117,8 @@ using C3210   = quad_class<std::uint64_t, std::uint32_t, std::uint16_t,  std::ui
 
 void test_memory_alignment()
 {
-    check_bi_class<A01>(2,4,0,2);
-    check_bi_class<A10>(2,4,0,2);
+    check_bi_class<A01>(2, 4, 0, 2);
+    check_bi_class<A10>(2, 4, 0, 2);
 
     check_tri_class<B012>(4,  8, 0, 2, 4);
     check_tri_class<B021>(4, 12, 0, 4, 8);
