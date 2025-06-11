@@ -1,7 +1,8 @@
 #pragma once
-#include<cstring>    // for std::memcmp
+#include<cstring>     // for std::memcmp
 #include<optional>
-#include<functional> // for std::reference_wrapper
+#include<functional>  // for std::reference_wrapper
+#include<type_traits> // for std::aligned_storage
 
 
 
@@ -145,12 +146,12 @@ namespace alg
 
         optional(const T& t) : m_flag(true) 
         {
-            new (m_impl) T{t};
+            new (&m_impl) T{t};
         }
 
         optional(T&& t) : m_flag(true) 
         {
-            new (m_impl) T{std::move(t)};
+            new (&m_impl) T{std::move(t)};
         }
 
        ~optional()
@@ -172,7 +173,7 @@ namespace alg
         {
             if (m_flag)
             {
-                new (m_impl) T{*rhs}; 
+                new (&m_impl) T{*rhs}; 
             }
         }
 
@@ -180,7 +181,7 @@ namespace alg
         {
             if (m_flag)
             {
-                new (m_impl) T{std::move(*rhs)};
+                new (&m_impl) T{std::move(*rhs)};
             }
         }
 
@@ -200,7 +201,7 @@ namespace alg
 
                 // Construct new instance
                 m_flag = rhs.m_flag;
-                if (m_flag) new (m_impl) T{*rhs};
+                if (m_flag) new (&m_impl) T{*rhs};
             }
             return *this;
         }
@@ -214,7 +215,7 @@ namespace alg
 
                 // Construct new instance
                 m_flag = rhs.m_flag;
-                if (m_flag) new (m_impl) T{std::move(*rhs)}; // <--- note : move(*rhs), NOT move(rhs)
+                if (m_flag) new (&m_impl) T{std::move(*rhs)}; // <--- note : move(*rhs), NOT move(rhs)
             }
             return *this;
         }
@@ -227,7 +228,7 @@ namespace alg
 
             // Construct new instance
             m_flag = true;
-            new (m_impl) T{std::forward<ARGS>(args)...};
+            new (&m_impl) T{std::forward<ARGS>(args)...};
 
             return *get_ptr();
         }
@@ -252,7 +253,7 @@ namespace alg
         {
             if (m_flag && rhs.m_flag)
             {
-                return std::memcmp(m_impl, rhs.m_impl, sizeof(T)) == 0;
+                return std::memcmp(&m_impl, &rhs.m_impl, sizeof(T)) == 0;
             }
             else
             {
@@ -263,12 +264,12 @@ namespace alg
     private:
         constexpr const T* get_ptr() const
         {
-            return reinterpret_cast<const T*>(m_impl);
+            return reinterpret_cast<const T*>(&m_impl);
         }
 
         constexpr T* get_ptr()
         {
-            return reinterpret_cast<T*>(m_impl);
+            return reinterpret_cast<T*>(&m_impl);
         }
 
         void reset()
@@ -282,7 +283,8 @@ namespace alg
 
     private:
         bool m_flag;
-        char m_impl[sizeof(T)];
+        std::aligned_storage<sizeof(T), alignof(T)>::type m_impl; // note : no namespace for keyword sizeof, alignof
+    //  char m_impl[sizeof(T)];                                   // note : this is ok, but no good enough
     };
     
 
@@ -296,4 +298,20 @@ namespace alg
     }
 }
 
+// ************** //
+// *** Remark *** //
+// ************** //
+//
+// If we implement std::optional<T> :
+// * with std::aligned_storage<sizeof(t), alignof(T)> m_impl, instead of ...
+// * with char m_impl[sizeof(T)]
+//
+// then we need to :
+// * access with "&impl", instead of ...
+// * access with  "impl"
+//
+// in all the following situations : 
+// * placement new
+// * reinterpret_cast
+// * std::memcpy
 

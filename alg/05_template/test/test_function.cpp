@@ -6,12 +6,27 @@
 #include<utility.h>
 
 std::uint32_t nullary_function_count = 0;
-std::uint32_t nullary_functor_count = 0;
-std::uint32_t nullary_lambda_count = 0;
-std::uint32_t N_ary_function_count = 0;
-std::uint32_t N_ary_functor_count = 0;
-std::uint32_t N_ary_lambda_count = 0;
+std::uint32_t nullary_functor_count  = 0;
+std::uint32_t nullary_lambda_count   = 0;
+std::uint32_t N_ary_function_count   = 0;
+std::uint32_t N_ary_functor_count    = 0;
+std::uint32_t N_ary_lambda_count     = 0;
+std::uint32_t N1_ary_function_count  = 0;
+std::uint32_t N1_ary_functor_count   = 0;
+std::uint32_t N1_ary_member_count    = 0;
 
+void reset_counters()
+{
+    nullary_function_count = 0;
+    nullary_functor_count  = 0;
+    nullary_lambda_count   = 0;
+    N_ary_function_count   = 0;
+    N_ary_functor_count    = 0;
+    N_ary_lambda_count     = 0;
+    N1_ary_function_count  = 0;
+    N1_ary_functor_count   = 0;
+    N1_ary_member_count    = 0;
+}
 
 void nullary_function() 
 { 
@@ -40,6 +55,28 @@ struct N_ary_functor
         return "yyy"; 
     }
 };
+
+std::string N1_ary_function(int, int, const std::string& str) 
+{
+    ++N1_ary_function_count;
+    return str; 
+}
+
+struct N1_ary_functor
+{
+    std::string operator()(int, int, const std::string& str) const 
+    { 
+        ++N1_ary_functor_count;
+        return str; 
+    }
+
+    std::string process(int, int, const std::string& str) const 
+    { 
+        ++N1_ary_member_count;
+        return str; 
+    }
+};
+
 
 
 // ********************************* //
@@ -82,8 +119,8 @@ void test_alg_simple_function()
 
     for(const auto& f:fs) f();    
     assert(nullary_function_count == 2);
-    assert(nullary_functor_count == 4);
-    assert(nullary_lambda_count == 2);
+    assert(nullary_functor_count  == 4);
+    assert(nullary_lambda_count   == 2);
     print_summary("alg::simple_function - nullary returning void", "succeeded");
 }
   
@@ -119,13 +156,17 @@ void test_alg_function()
 
     for(const auto& f:fs) f(123,123);    
     assert(N_ary_function_count == 2);
-    assert(N_ary_functor_count == 4);
-    assert(N_ary_lambda_count == 2);
+    assert(N_ary_functor_count  == 4);
+    assert(N_ary_lambda_count   == 2);
 
     assert(fs[0](123,123) == "xxx");
     assert(fs[1](123,123) == "yyy");
     assert(fs[2](123,123) == "yyy");
     assert(fs[3](123,123) == "zzz");
+    assert(fs[4](123,123) == "xxx");
+    assert(fs[5](123,123) == "yyy");
+    assert(fs[6](123,123) == "yyy");
+    assert(fs[7](123,123) == "zzz");
     print_summary("alg::function - N-ary returning R", "succeeded");
 }
 
@@ -142,17 +183,17 @@ void test_alg_function()
 // * functor (lvalue) 
 // * lambda 
 // * std::bind function
-// * std::bind object member
-// * std::bind this object member
+// * std::bind functor
+// * std::bind class member
 // ********************************* //
 template<typename T, typename F>
-auto invoke_as_template_para(T x, T y, F fct)
+auto invoke_as_template_para(T x, T y, const F& fct)
 {
     return fct(x,y);
 }
 
 template<typename T, typename U>
-auto invoke_as_std_function(T x, T y, std::function<U(T,T)> fct)
+auto invoke_as_std_function(T x, T y, const std::function<U(T,T)>& fct)
 {
     return fct(x,y);
 }
@@ -161,69 +202,110 @@ auto invoke_as_std_function(T x, T y, std::function<U(T,T)> fct)
 void test_std_function()
 {
     N_ary_functor f;
+    N1_ary_functor f1;
+    reset_counters();
 
-    // ***************************** //
-    // *** as template parameter *** //
-    // ***************************** //
-    auto s0 = invoke_as_template_para(1, 2, &N_ary_function);   
-    auto s1 = invoke_as_template_para(1, 2, N_ary_functor{});
-    auto s2 = invoke_as_template_para(1, 2, f);           
-    auto s3 = invoke_as_template_para(1, 2, [](int,int) -> std::string
+    // ************************** //
+    // *** template parameter *** //
+    // ************************** //
     {
-        ++N_ary_lambda_count;
-        return "zzz"; 
-    });
+        // Part 1
+        auto s0 = invoke_as_template_para(1, 2, &N_ary_function);   
+        auto s1 = invoke_as_template_para(1, 2, N_ary_functor{});
+        auto s2 = invoke_as_template_para(1, 2, f);           
+        auto s3 = invoke_as_template_para(1, 2, [](int,int) -> std::string                      { ++N_ary_lambda_count;  return "zzz"; });
+        auto s4 = invoke_as_template_para(1, 2, std::bind(&N1_ary_function,                       std::placeholders::_1, std::placeholders::_2, "uuu"));
+        auto s5 = invoke_as_template_para(1, 2, std::bind(&N1_ary_functor::process, std::ref(f1), std::placeholders::_1, std::placeholders::_2, "vvv"));
+        auto s6 = invoke_as_template_para(1, 2, std::bind(                          std::ref(f1), std::placeholders::_1, std::placeholders::_2, "www"));
 
-    assert(s0 == std::string{"xxx"});
-    assert(s1 == std::string{"yyy"});
-    assert(s2 == std::string{"yyy"});
-    assert(s3 == std::string{"zzz"});
+        assert(N_ary_function_count  == 1);
+        assert(N_ary_functor_count   == 2);
+        assert(N_ary_lambda_count    == 1);
+        assert(N1_ary_function_count == 1);
+        assert(N1_ary_functor_count  == 1);
+        assert(N1_ary_member_count   == 1);
+
+        assert(s0 == std::string{"xxx"});
+        assert(s1 == std::string{"yyy"});
+        assert(s2 == std::string{"yyy"});
+        assert(s3 == std::string{"zzz"});
+        assert(s4 == std::string{"uuu"});
+        assert(s5 == std::string{"vvv"});
+        assert(s6 == std::string{"www"});
+    }
 
 
-    // ************************ //
-    // *** as std::function *** //
-    // ************************ //
-//  auto r4 = invoke_as_std_function(1, 2, &N_ary_function);                 // cannot compile
-//  auto r5 = invoke_as_std_function(1, 2, N_ary_functor{});                 // cannot compile
-//  auto r6 = invoke_as_std_function(1, 2, f);                               // cannot compile
-//  auto r7 = invoke_as_std_function(1, 2, [](int,int) -> std::string ...    // cannot compile
-    auto s4 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{&N_ary_function});   
-    auto s5 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{N_ary_functor{}});
-    auto s6 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{f});           
-    auto s7 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{[](int,int) -> std::string
+    // ********************* //
+    // *** std::function *** //
+    // ********************* //
     {
-        ++N_ary_lambda_count;
-        return "zzz"; 
-    }});
+        // Part 2A
+    //  auto s0 = invoke_as_std_function(1, 2, &N_ary_function);                 // cannot compile
+    //  auto s1 = invoke_as_std_function(1, 2, N_ary_functor{});                 // cannot compile
+    //  auto s2 = invoke_as_std_function(1, 2, f);                               // cannot compile
+    //  auto s3 = invoke_as_std_function(1, 2, [](int,int) -> std::string ...    // cannot compile
+      
+        // Part 2B
+        auto s0 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{&N_ary_function});   
+        auto s1 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{N_ary_functor{}});
+        auto s2 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{f});           
+        auto s3 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{[](int,int) -> std::string                      { ++N_ary_lambda_count;  return "zzz"; }});
+        auto s4 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{std::bind(&N1_ary_function,                       std::placeholders::_1, std::placeholders::_2, "uuu")});
+        auto s5 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{std::bind(&N1_ary_functor::process, std::ref(f1), std::placeholders::_1, std::placeholders::_2, "vvv")});
+        auto s6 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{std::bind(                          std::ref(f1), std::placeholders::_1, std::placeholders::_2, "www")});
+                                               
+        assert(N_ary_function_count  == 2);
+        assert(N_ary_functor_count   == 4);
+        assert(N_ary_lambda_count    == 2);
+        assert(N1_ary_function_count == 2);
+        assert(N1_ary_functor_count  == 2);
+        assert(N1_ary_member_count   == 2);
 
-    assert(s4 == std::string{"xxx"});
-    assert(s5 == std::string{"yyy"});
-    assert(s6 == std::string{"yyy"});
-    assert(s7 == std::string{"zzz"});
+        assert(s0 == std::string{"xxx"});
+        assert(s1 == std::string{"yyy"});
+        assert(s2 == std::string{"yyy"});
+        assert(s3 == std::string{"zzz"});
+        assert(s4 == std::string{"uuu"});
+        assert(s5 == std::string{"vvv"});
+        assert(s6 == std::string{"www"});
+    }
 
 
-    // Alternatively ...
-    auto s8 = invoke_as_std_function<int,std::string>(1, 2, &N_ary_function);   
-    auto s9 = invoke_as_std_function<int,std::string>(1, 2, N_ary_functor{});
-    auto sA = invoke_as_std_function<int,std::string>(1, 2, f);           
-    auto sB = invoke_as_std_function<int,std::string>(1, 2, [](int,int) -> std::string
+    // ***************************************************** //
+    // *** std::function (providing template parameters) *** //
+    // ***************************************************** //
     {
-        ++N_ary_lambda_count;
-        return "zzz"; 
-    });
+        auto s0 = invoke_as_std_function<int,std::string>(1, 2, &N_ary_function);   
+        auto s1 = invoke_as_std_function<int,std::string>(1, 2, N_ary_functor{});
+        auto s2 = invoke_as_std_function<int,std::string>(1, 2, f);           
+        auto s3 = invoke_as_std_function<int,std::string>(1, 2, [](int,int) -> std::string                      { ++N_ary_lambda_count;  return "zzz"; });
+        auto s4 = invoke_as_std_function<int,std::string>(1, 2, std::bind(&N1_ary_function,                       std::placeholders::_1, std::placeholders::_2, "uuu"));
+        auto s5 = invoke_as_std_function<int,std::string>(1, 2, std::bind(&N1_ary_functor::process, std::ref(f1), std::placeholders::_1, std::placeholders::_2, "vvv"));
+        auto s6 = invoke_as_std_function<int,std::string>(1, 2, std::bind(                          std::ref(f1), std::placeholders::_1, std::placeholders::_2, "www"));
 
-    assert(s8 == std::string{"xxx"});
-    assert(s9 == std::string{"yyy"});
-    assert(sA == std::string{"yyy"});
-    assert(sB == std::string{"zzz"});
+        assert(N_ary_function_count  == 3);
+        assert(N_ary_functor_count   == 6);
+        assert(N_ary_lambda_count    == 3);
+        assert(N1_ary_function_count == 3);
+        assert(N1_ary_functor_count  == 3);
+        assert(N1_ary_member_count   == 3);
 
+        assert(s0 == std::string{"xxx"});
+        assert(s1 == std::string{"yyy"});
+        assert(s2 == std::string{"yyy"});
+        assert(s3 == std::string{"zzz"});
+        assert(s4 == std::string{"uuu"});
+        assert(s5 == std::string{"vvv"});
+        assert(s6 == std::string{"www"});
+
+    }
     print_summary("std::function - binding", "succeeded");
 }
 
 // *************************************************************************************************************************************** //
 // In the above ...
 //
-// Why s0-s3 can compile? Because
+// Why part 1 can compile? Because
 // - compiler can deduce both T and F from template function instantiation 
 // - given 1st and 2nd arg, it deduces T = int 
 // - given 3rd arg,         it deduces F = std::string (*)(int,int)     for s0
@@ -231,19 +313,19 @@ void test_std_function()
 // - given 3rd arg,         it deduces F = N_ary_functor                for s2
 // - given 3rd arg,         it deduces F = lambda ...                   for s3
 //
-// Why r4-r7 cannot compile?
+// Why part 2A cannot compile?
 // - compiler cannot deduce U from template function instantiation
 // - given 1st and 2nd arg, it deduces T = int 
-// - given 3rd arg,         it cannot match std::function<U(T,T) with std::string (*)(int,int)   for r4
-// - given 3rd arg,         it cannot match std::function<U(T,T) with N_ary_functor              for r5
-// - given 3rd arg,         it cannot match std::function<U(T,T) with N_ary_functor              for r6
-// - given 3rd arg,         it cannot match std::function<U(T,T) with lambda ...                 for r7
+// - given 3rd arg,         it cannot match std::function<U(T,T) with std::string (*)(int,int)   for s0
+// - given 3rd arg,         it cannot match std::function<U(T,T) with N_ary_functor              for s1
+// - given 3rd arg,         it cannot match std::function<U(T,T) with N_ary_functor              for s2
+// - given 3rd arg,         it cannot match std::function<U(T,T) with lambda ...                 for s3
 //
-// Why s4-s7 can compile?
-// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s4
-// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s5
-// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s6
-// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s7
+// Why part 2B can compile?
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s0
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s1
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s2
+// - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s3
 // *************************************************************************************************************************************** //
 
 

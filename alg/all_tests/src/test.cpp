@@ -31,6 +31,7 @@ void test_deduce_auto();
 void test_deduce_decltype();
 void test_exception();
 void test_literal();
+void test_memory_alignment();
 void test_memory_allocator();
 void test_memory_deleter();
 void test_memory_new_operator();
@@ -138,6 +139,7 @@ int main()
 //  test_deduce_decltype();
 //  test_exception();
 //  test_literal();
+    test_memory_alignment();
 //  test_memory_allocator();
 //  test_memory_deleter();
 //  test_memory_new_operator();
@@ -154,7 +156,7 @@ int main()
 //
 //  banner("05_template");
 //  test_array();
-    test_function();
+//  test_function();
 //  test_metaprog();
 //  test_optional_and_reference();
 //  test_shared_ptr();

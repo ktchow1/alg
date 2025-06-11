@@ -105,9 +105,11 @@ This is controversal, and c++ compiler treats this as illegal.
 // ********************** //
 // *** Implementation *** //
 // ********************** //
-std::reference_wrapper<T> implemented as T*                  no dynamic allocation, just pointing to variable
-std::optional<T>          implemented as char[sizeof(T)]     no dynamic allocation, allow non-default-constructible T
-std::optional<T> can't be implemented as T*                  as it involves dynamic allocation
-std::optional<T> can't be implemented as T                   as it requires default-constructiblility of T
-std::vector<T>            implemented as T*                  as it involves dynamic allocation anyway
+std::reference_wrapper<T> implemented as T*                     no dynamic allocation, just pointing to variable
+std::optional<T> can't be implemented as T                      as it requires default-constructiblility of T
+std::optional<T> can't be implemented as T*                     as it involves dynamic allocation
+std::optional<T>          implemented as char[sizeof(T)]        no dynamic allocation, allow non-default-constructible T
+std::optional<T>          implemented as std::aligned_storage   no dynamic allocation, allow non-default-constructible T
+std::vector<T>            implemented as T*                     as it involves dynamic allocation anyway
 
+However char[sizeof(T)] does not take care of T's alignment in various cpu, which may result in UB (undefined behaviour).
