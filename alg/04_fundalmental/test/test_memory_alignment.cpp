@@ -41,7 +41,39 @@ template<typename T0, typename T1>                           struct   bi_class {
 template<typename T0, typename T1, typename T2>              struct  tri_class { T0 m0; T1 m1; T2 m2;        };
 template<typename T0, typename T1, typename T2, typename T3> struct quad_class { T0 m0; T1 m1; T2 m2; T3 m3; };
 
+template<typename POD>
+void check_bi_class(std::uint32_t align, std::uint32_t size, std::uint32_t m0, std::uint32_t m1)
+{
+    POD x;
 
+    assert(alignof(POD) == align);
+    assert( sizeof(POD) == size);
+    assert((std::uint64_t)(&x.m0) - (std::uint64_t)(&x) == m0);
+    assert((std::uint64_t)(&x.m1) - (std::uint64_t)(&x) == m1);
+}
+
+template<typename POD>
+void check_tri_class()
+{
+    POD x;
+    std::cout << "\nalignof = " << alignof(POD) 
+               << ", sizeof = " <<  sizeof(POD)
+               << ", m0 = "     << (std::uint64_t)(&x.m0) - (std::uint64_t)(&x)
+               << ", m1 = "     << (std::uint64_t)(&x.m1) - (std::uint64_t)(&x)
+               << ", m2 = "     << (std::uint64_t)(&x.m2) - (std::uint64_t)(&x);
+}
+
+template<typename POD>
+void check_quad_class()
+{
+    POD x;
+    std::cout << "\nalignof = " << alignof(POD) 
+               << ", sizeof = " <<  sizeof(POD)
+               << ", m0 = "     << (std::uint64_t)(&x.m0) - (std::uint64_t)(&x)
+               << ", m1 = "     << (std::uint64_t)(&x.m1) - (std::uint64_t)(&x)
+               << ", m2 = "     << (std::uint64_t)(&x.m2) - (std::uint64_t)(&x)
+               << ", m3 = "     << (std::uint64_t)(&x.m3) - (std::uint64_t)(&x);
+}
 
 using A01     =   bi_class<std:: uint8_t, std::uint16_t>;
 using A10     =   bi_class<std::uint16_t, std:: uint8_t>;
@@ -83,49 +115,42 @@ using C3210   = quad_class<std::uint64_t, std::uint32_t, std::uint16_t,  std::ui
 
 void test_memory_alignment()
 {
-    std::cout << "\nbi_class";
-    std::cout << "\n" << alignof(A01)  << " " << sizeof(A01);
-    std::cout << "\n" << alignof(A10)  << " " << sizeof(A10);
+    check_bi_class<A01>(2,4,0,2);
+    check_bi_class<A10>(2,4,0,2);
 
-    std::cout << "\ntri_class";
-    std::cout << "\n" << alignof(B012) << " " << sizeof(B012);
-    std::cout << "\n" << alignof(B021) << " " << sizeof(B021);
-    std::cout << "\n" << alignof(B102) << " " << sizeof(B102);
-    std::cout << "\n" << alignof(B120) << " " << sizeof(B120);
-    std::cout << "\n" << alignof(B201) << " " << sizeof(B201);
-    std::cout << "\n" << alignof(B210) << " " << sizeof(B210);
+    check_tri_class<B012>();
+    check_tri_class<B021>();
+    check_tri_class<B102>();
+    check_tri_class<B120>();
+    check_tri_class<B201>();
+    check_tri_class<B210>();
 
-    std::cout << "\nquad_class";
-    std::cout << "\n" << alignof(C0123) << " " << sizeof(C0123);
-    std::cout << "\n" << alignof(C0132) << " " << sizeof(C0132);
-    std::cout << "\n" << alignof(C0213) << " " << sizeof(C0213);
-    std::cout << "\n" << alignof(C0231) << " " << sizeof(C0231);
-    std::cout << "\n" << alignof(C0312) << " " << sizeof(C0312);
-    std::cout << "\n" << alignof(C0321) << " " << sizeof(C0321);
+    check_quad_class<C0123>();
+    check_quad_class<C0132>();
+    check_quad_class<C0213>();
+    check_quad_class<C0231>();
+    check_quad_class<C0312>();
+    check_quad_class<C0321>();
                          
-    std::cout << "\nquad_class";
-    std::cout << "\n" << alignof(C1023) << " " << sizeof(C1023);
-    std::cout << "\n" << alignof(C1032) << " " << sizeof(C1032);
-    std::cout << "\n" << alignof(C1203) << " " << sizeof(C1203);
-    std::cout << "\n" << alignof(C1230) << " " << sizeof(C1230);
-    std::cout << "\n" << alignof(C1302) << " " << sizeof(C1302);
-    std::cout << "\n" << alignof(C1320) << " " << sizeof(C1320);
+    check_quad_class<C1023>();
+    check_quad_class<C1032>();
+    check_quad_class<C1203>();
+    check_quad_class<C1230>();
+    check_quad_class<C1302>();
+    check_quad_class<C1320>();
                          
-    std::cout << "\nquad_class";
-    std::cout << "\n" << alignof(C2013) << " " << sizeof(C2013);
-    std::cout << "\n" << alignof(C2031) << " " << sizeof(C2031);
-    std::cout << "\n" << alignof(C2103) << " " << sizeof(C2103);
-    std::cout << "\n" << alignof(C2130) << " " << sizeof(C2130);
-    std::cout << "\n" << alignof(C2301) << " " << sizeof(C2301);
-    std::cout << "\n" << alignof(C2310) << " " << sizeof(C2310);
+    check_quad_class<C2013>();
+    check_quad_class<C2031>();
+    check_quad_class<C2103>();
+    check_quad_class<C2130>();
+    check_quad_class<C2301>();
+    check_quad_class<C2310>();
                          
-    std::cout << "\nquad_class";
-    std::cout << "\n" << alignof(C3012) << " " << sizeof(C3012);
-    std::cout << "\n" << alignof(C3021) << " " << sizeof(C3021);
-    std::cout << "\n" << alignof(C3102) << " " << sizeof(C3102);
-    std::cout << "\n" << alignof(C3120) << " " << sizeof(C3120);
-    std::cout << "\n" << alignof(C3201) << " " << sizeof(C3201);
-    std::cout << "\n" << alignof(C3210) << " " << sizeof(C3210);
-
+    check_quad_class<C3012>();
+    check_quad_class<C3021>();
+    check_quad_class<C3102>();
+    check_quad_class<C3120>();
+    check_quad_class<C3201>();
+    check_quad_class<C3210>();
     print_summary("memory alignment for POD", "succeeded");
 }
