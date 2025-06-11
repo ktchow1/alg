@@ -47,32 +47,34 @@ void check_bi_class(std::uint32_t align, std::uint32_t size, std::uint32_t m0, s
     POD x;
 
     assert(alignof(POD) == align);
-    assert( sizeof(POD) == size);
+    assert( sizeof(POD) ==  size);
     assert((std::uint64_t)(&x.m0) - (std::uint64_t)(&x) == m0);
     assert((std::uint64_t)(&x.m1) - (std::uint64_t)(&x) == m1);
 }
 
 template<typename POD>
-void check_tri_class()
+void check_tri_class(std::uint32_t align, std::uint32_t size, std::uint32_t m0, std::uint32_t m1, std::uint32_t m2)
 {
     POD x;
-    std::cout << "\nalignof = " << alignof(POD) 
-               << ", sizeof = " <<  sizeof(POD)
-               << ", m0 = "     << (std::uint64_t)(&x.m0) - (std::uint64_t)(&x)
-               << ", m1 = "     << (std::uint64_t)(&x.m1) - (std::uint64_t)(&x)
-               << ", m2 = "     << (std::uint64_t)(&x.m2) - (std::uint64_t)(&x);
+
+    assert(alignof(POD) == align);
+    assert( sizeof(POD) ==  size);
+    assert((std::uint64_t)(&x.m0) - (std::uint64_t)(&x) == m0);
+    assert((std::uint64_t)(&x.m1) - (std::uint64_t)(&x) == m1);
+    assert((std::uint64_t)(&x.m2) - (std::uint64_t)(&x) == m2);
 }
 
 template<typename POD>
-void check_quad_class()
+void check_quad_class(std::uint32_t align, std::uint32_t size, std::uint32_t m0, std::uint32_t m1, std::uint32_t m2, std::uint32_t m3)
 {
     POD x;
-    std::cout << "\nalignof = " << alignof(POD) 
-               << ", sizeof = " <<  sizeof(POD)
-               << ", m0 = "     << (std::uint64_t)(&x.m0) - (std::uint64_t)(&x)
-               << ", m1 = "     << (std::uint64_t)(&x.m1) - (std::uint64_t)(&x)
-               << ", m2 = "     << (std::uint64_t)(&x.m2) - (std::uint64_t)(&x)
-               << ", m3 = "     << (std::uint64_t)(&x.m3) - (std::uint64_t)(&x);
+
+    assert(alignof(POD) == align);
+    assert( sizeof(POD) ==  size);
+    assert((std::uint64_t)(&x.m0) - (std::uint64_t)(&x) == m0);
+    assert((std::uint64_t)(&x.m1) - (std::uint64_t)(&x) == m1);
+    assert((std::uint64_t)(&x.m2) - (std::uint64_t)(&x) == m2);
+    assert((std::uint64_t)(&x.m3) - (std::uint64_t)(&x) == m3);
 }
 
 using A01     =   bi_class<std:: uint8_t, std::uint16_t>;
@@ -118,39 +120,40 @@ void test_memory_alignment()
     check_bi_class<A01>(2,4,0,2);
     check_bi_class<A10>(2,4,0,2);
 
-    check_tri_class<B012>();
-    check_tri_class<B021>();
-    check_tri_class<B102>();
-    check_tri_class<B120>();
-    check_tri_class<B201>();
-    check_tri_class<B210>();
+    check_tri_class<B012>(4,  8, 0, 2, 4);
+    check_tri_class<B021>(4, 12, 0, 4, 8);
+    check_tri_class<B102>(4,  8, 0, 2, 4);
+    check_tri_class<B120>(4, 12, 0, 4, 8);
+    check_tri_class<B201>(4,  8, 0, 4, 6);
+    check_tri_class<B210>(4,  8, 0, 4, 6);
 
-    check_quad_class<C0123>();
-    check_quad_class<C0132>();
-    check_quad_class<C0213>();
-    check_quad_class<C0231>();
-    check_quad_class<C0312>();
-    check_quad_class<C0321>();
+    check_quad_class<C0123>(8, 16, 0, 2,  4,  8);
+    check_quad_class<C0132>(8, 24, 0, 2,  8, 16);
+    check_quad_class<C0213>(8, 24, 0, 4,  8, 16);
+    check_quad_class<C0231>(8, 24, 0, 4,  8, 16);
+    check_quad_class<C0312>(8, 24, 0, 8, 16, 20);
+    check_quad_class<C0321>(8, 24, 0, 8, 16, 20);
                          
-    check_quad_class<C1023>();
-    check_quad_class<C1032>();
-    check_quad_class<C1203>();
-    check_quad_class<C1230>();
-    check_quad_class<C1302>();
-    check_quad_class<C1320>();
+    check_quad_class<C1023>(8, 16, 0, 2,  4,  8);
+    check_quad_class<C1032>(8, 24, 0, 2,  8, 16);
+    check_quad_class<C1203>(8, 24, 0, 4,  8, 16);
+    check_quad_class<C1230>(8, 24, 0, 4,  8, 16);
+    check_quad_class<C1302>(8, 24, 0, 8, 16, 20);
+    check_quad_class<C1320>(8, 24, 0, 8, 16, 20);
                          
-    check_quad_class<C2013>();
-    check_quad_class<C2031>();
-    check_quad_class<C2103>();
-    check_quad_class<C2130>();
-    check_quad_class<C2301>();
-    check_quad_class<C2310>();
+    check_quad_class<C2013>(8, 16, 0, 4,  6,  8);
+    check_quad_class<C2031>(8, 24, 0, 4,  8, 16);
+    check_quad_class<C2103>(8, 16, 0, 4,  6,  8);
+    check_quad_class<C2130>(8, 24, 0, 4,  8, 16);
+    check_quad_class<C2301>(8, 24, 0, 8, 16, 18);
+    check_quad_class<C2310>(8, 24, 0, 8, 16, 18);
                          
-    check_quad_class<C3012>();
-    check_quad_class<C3021>();
-    check_quad_class<C3102>();
-    check_quad_class<C3120>();
-    check_quad_class<C3201>();
-    check_quad_class<C3210>();
+    check_quad_class<C3012>(8, 16, 0, 8, 10, 12);
+    check_quad_class<C3021>(8, 24, 0, 8, 12, 16);
+    check_quad_class<C3102>(8, 16, 0, 8, 10, 12);
+    check_quad_class<C3120>(8, 24, 0, 8, 12, 16);
+    check_quad_class<C3201>(8, 16, 0, 8, 12, 14);
+    check_quad_class<C3210>(8, 16, 0, 8, 12, 14);
+
     print_summary("memory alignment for POD", "succeeded");
 }
