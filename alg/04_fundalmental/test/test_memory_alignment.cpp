@@ -123,6 +123,11 @@ using C8241   = quad_class<std::uint64_t, std::uint16_t, std::uint32_t, std:: ui
 using C8412   = quad_class<std::uint64_t, std::uint32_t, std:: uint8_t, std::uint16_t>;
 using C8421   = quad_class<std::uint64_t, std::uint32_t, std::uint16_t,  std::uint8_t>;
 
+
+using A11     =   bi_class<std::uint8_t, std::uint8_t>;
+using B111    =  tri_class<std::uint8_t, std::uint8_t, std::uint8_t>;
+using C1111   = quad_class<std::uint8_t, std::uint8_t, std::uint8_t, std::uint8_t>;
+
 void test_memory_alignment()
 {
     check_bi_class<A12>(2, 4, 0, 2);
@@ -162,6 +167,10 @@ void test_memory_alignment()
     check_quad_class<C8241>(8, 24, 0, 8, 12, 16);
     check_quad_class<C8412>(8, 16, 0, 8, 12, 14);
     check_quad_class<C8421>(8, 16, 0, 8, 12, 14);
+
+    check_bi_class<A11>(1, 2, 0, 1);
+    check_tri_class<B111>(1, 3, 0, 1, 2);
+    check_quad_class<C1111>(1, 4, 0, 1, 2, 3);
 
     print_summary("memory alignment for POD", "succeeded");
 }

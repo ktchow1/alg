@@ -11,6 +11,7 @@
 //
 // Needs 2 helper traits :
 // * find_max_size
+// * find_max_align
 // * find_type_index
 //
 //
@@ -33,6 +34,28 @@ namespace alg
     struct find_max_size<T>
     {
         static constexpr std::size_t value = sizeof(T);
+    };
+}
+
+
+namespace alg
+{
+    template<typename...Ts> // interface
+    struct find_max_align
+    {
+        static constexpr std::size_t value = 0;
+    };
+
+    template<typename T, typename...Ts> // recursion
+    struct find_max_align<T,Ts...>
+    {
+        static constexpr std::size_t value = std::max(alignof(T), find_max_align<Ts...>::value);
+    };
+
+    template<typename T> // boundary
+    struct find_max_align<T>
+    {
+        static constexpr std::size_t value = alignof(T);
     };
 }
 
@@ -69,8 +92,14 @@ namespace alg
     {
     public:
 
-    private:
 
+
+
+    private:
+        std::aligned_storage<find_max_size <Ts...>::value, 
+                             find_max_align<Ts...>::value> m_storage; 
+        
+        std::size_t m_index = sizeof...(Ts);  
     };
 
 }

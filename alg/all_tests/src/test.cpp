@@ -140,7 +140,7 @@ int main()
 //  test_deduce_decltype();
 //  test_exception();
 //  test_literal();
-//  test_memory_alignment();
+    test_memory_alignment();
 //  test_memory_allocator();
 //  test_memory_deleter();
 //  test_memory_new_operator();
