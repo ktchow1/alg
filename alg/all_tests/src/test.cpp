@@ -61,6 +61,7 @@ void test_type_erasure();
 void test_type_erasure_example();
 void test_unique_ptr();
 void test_variadic();
+void test_variant();
 void test_variant_basic();
 void test_variant_overloading_lambda();  
 void test_variant_visit();
@@ -169,16 +170,17 @@ int main()
 //  test_type_erasure();
 //  test_unique_ptr();
     test_variadic(); 
-//  test_variant_basic();  
-//  test_variant_overloading_lambda();  
-//  test_variant_visit(); 
+    test_variant();                       // alg::variant
+//  test_variant_basic();                 // std::variant
+//  test_variant_overloading_lambda();    // std::variant + alg::overloading_lambda
+//  test_variant_visit();                 // std::variant
 //
 //  banner("06_threading");
 //  test_thread_create();
 //  test_thread_stop_source();
 //  test_thread_timing();
 //  test_spinlock_mutex();
-//  test_shared_mutex();   // <--- THIS TEST MAY RARELY FAIL, PLEASE CHECK
+//  test_shared_mutex();                  // <--- THIS TEST MAY RARELY FAIL, PLEASE CHECK
 //  test_semaphore();
 //  test_singleton();
 //  test_synchronization();
