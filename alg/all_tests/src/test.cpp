@@ -139,7 +139,7 @@ int main()
 //  test_deduce_decltype();
 //  test_exception();
 //  test_literal();
-    test_memory_alignment();
+//  test_memory_alignment();
 //  test_memory_allocator();
 //  test_memory_deleter();
 //  test_memory_new_operator();
@@ -168,7 +168,7 @@ int main()
 //  test_type_erasure_example();
 //  test_type_erasure();
 //  test_unique_ptr();
-//  test_variadic(); 
+    test_variadic(); 
 //  test_variant_basic();  
 //  test_variant_overloading_lambda();  
 //  test_variant_visit(); 

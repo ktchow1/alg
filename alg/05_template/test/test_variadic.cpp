@@ -4,6 +4,7 @@
 #include<string>
 #include<traits.h>
 #include<variadic.h>
+#include<variadic_example.h>
 #include<utility.h>
 
 
@@ -138,10 +139,46 @@ void test_other_variadic()
 }
 
 
+// ********************** //
+// *** Other variadic *** //
+// ********************** //
+void test_ffwk_variadic_example()
+{
+    std::string a{"aaa01"};
+    std::string b{"bbb02"};
+    std::string c{"ccc03"};
+    std::string A{"AAA01"};
+    std::string B{"BBB02"};
+    std::string C{"CCC03"};
+
+    auto f = [](const std::string& str)
+    {
+        if (str.back() == '3') return true;
+        else                   return false;
+    };
+
+    alg::string_selector s0(f,a,b,c,A,B);
+    alg::string_selector s1(f,a,b,c,A,B,C);
+
+    std::cout << "\ndesc = " << s0.get_description_format0();
+    std::cout << "\ndesc = " << s0.get_description_format1();
+    std::cout << "\ndesc = " << s1.get_description_format0();
+    std::cout << "\ndesc = " << s1.get_description_format1();
+
+    assert(s0.get_description_format0() == "select_one_of.aaa01.bbb02.ccc03.AAA01.BBB02");
+    assert(s0.get_description_format1() == "select_one_of:aaa01.bbb02.ccc03.AAA01.BBB02");
+    assert(s1.get_description_format0() == "select_one_of.aaa01.bbb02.ccc03.AAA01.BBB02.CCC03");
+    assert(s1.get_description_format1() == "select_one_of:aaa01.bbb02.ccc03.AAA01.BBB02.CCC03");
+
+    print_summary("variadic - ffwk example", "succeeded");
+}
+
+
 void test_variadic()
 {
     test_parameter_pack_expansion();
     test_parameter_pack_nested_expansion();
     test_fold_expansion();
     test_other_variadic();
+    test_ffwk_variadic_example();
 }
