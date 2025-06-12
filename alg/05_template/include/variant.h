@@ -133,7 +133,7 @@ namespace alg
 // *************** //
 // *** Concept *** //
 // *************** //
-// cannot be declared inside class
+// Cannot be declared inside class
 
 namespace alg
 {
@@ -146,9 +146,37 @@ namespace alg
 // ************************** //
 // *** Runtime dispatcher *** //
 // ************************** //
+// Same technique as Maven in traits.h
+
 namespace alg
 {
+    template<typename...Ts>
+    struct runtime_dispatcher; // interface
+
+    template<typename T, typename...Ts>
+    struct runtime_dispatcher<T,Ts...> // recursion
+    {
+        static void destroy(std::size_t index, void* ptr)
+        {
+            if (index == 0)
+            {
+
+            }
+            else
+            {
+            }
+        }
+
+        static void copy(std::size_t index, const void* from_ptr, void* to_ptr)
+        {
+        }
+
+        static void move(std::size_t index, void* from_ptr, void* to_ptr)
+        {
+        }
+    };
 }
+
 
 
 

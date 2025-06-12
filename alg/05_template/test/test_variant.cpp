@@ -54,7 +54,12 @@ void test_variant()
     static_assert( alg::one_of<B,A,B,C,D,E>, "incorrect alg::one_of");
     static_assert( alg::one_of<C,A,B,C,D,E>, "incorrect alg::one_of");
     static_assert( alg::one_of<D,A,B,C,D,E>, "incorrect alg::one_of");
-    print_summary("variant - alg::variant (helper)", "succeeded");
+    print_summary("variant - alg::variant (traits and concept)", "succeeded");
+
+
+
+    print_summary("variant - alg::variant (runtime dispatcher)", "succeeded");
+
 
 
     std::variant<A,B,C,D,E> v;
