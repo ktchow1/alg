@@ -61,12 +61,12 @@ namespace alg
             return m_desc1;
         }
 
-        const std::string& get_str() const
+        const std::string& get_string() const
         {
             return *m_selected_ptr;
         }
 
-        std::string& get_str() 
+        std::string& get_string() 
         {
             return *m_selected_ptr;
         }

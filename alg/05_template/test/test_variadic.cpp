@@ -160,15 +160,19 @@ void test_ffwk_variadic_example()
     alg::string_selector s0(f,a,b,c,A,B);
     alg::string_selector s1(f,a,b,c,A,B,C);
 
-    std::cout << "\ndesc = " << s0.get_description_format0();
-    std::cout << "\ndesc = " << s0.get_description_format1();
-    std::cout << "\ndesc = " << s1.get_description_format0();
-    std::cout << "\ndesc = " << s1.get_description_format1();
-
     assert(s0.get_description_format0() == "select_one_of.aaa01.bbb02.ccc03.AAA01.BBB02");
     assert(s0.get_description_format1() == "select_one_of:aaa01.bbb02.ccc03.AAA01.BBB02");
     assert(s1.get_description_format0() == "select_one_of.aaa01.bbb02.ccc03.AAA01.BBB02.CCC03");
     assert(s1.get_description_format1() == "select_one_of:aaa01.bbb02.ccc03.AAA01.BBB02.CCC03");
+    assert(s0.get_string() == "ccc03");
+    assert(s1.get_string() == "ccc03");
+
+    s1.get_string() = "ddd04";
+    alg::string_selector s2(f,a,b,c,A,B,C);
+
+    assert(s2.get_description_format0() == "select_one_of.aaa01.bbb02.ddd04.AAA01.BBB02.CCC03");
+    assert(s2.get_description_format1() == "select_one_of:aaa01.bbb02.ddd04.AAA01.BBB02.CCC03");
+    assert(s2.get_string() == "CCC03");
 
     print_summary("variadic - ffwk example", "succeeded");
 }
