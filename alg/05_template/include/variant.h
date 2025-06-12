@@ -5,14 +5,14 @@
 
 
 
-// ********************** //
-// *** Variant helper *** //
-// ********************** //
-// Helper traits :
+// ********************* //
+// *** Useful traits *** //
+// ********************* //
+// Useful traits :
 // * max_size
 // * max_align
 // * type_index
-// * type_of
+// * type_of (NOT used)
 
 
 namespace alg
@@ -85,6 +85,33 @@ namespace alg
 
 namespace alg
 {
+    // **************** // 
+    // *** NOT USED *** //
+    // **************** // 
+    // alg::type_of is not used in alg::variant, because it is compile time dispatch of :
+    // * destructor         
+    // * copy constructor   
+    // * move constructor   
+    //
+    //
+    // This is compile time dispatch (with constexpr N).
+    //
+    //    using T = typename alg::type_of<N,A,B,C,D>::type;
+    //    reinterpret_cast<T*>(m_ptr)->~T();
+    //
+    // This is runtime dispatch (with member m_index).
+    //
+    //    if (m_index == 0) reinterpret_cast<A*>(m_ptr)->~A();
+    //    if (m_index == 1) reinterpret_cast<B*>(m_ptr)->~B();
+    //    if (m_index == 2) reinterpret_cast<C*>(m_ptr)->~C();
+    //    if (m_index == 3) reinterpret_cast<D*>(m_ptr)->~D();
+    //
+    //
+    // Solution : 
+    // * use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
+    //
+    //
+
     template<std::size_t N, typename...Ts> // interface
     struct type_of;
 
@@ -116,12 +143,20 @@ namespace alg
 
 
 
+// ************************** //
+// *** Runtime dispatcher *** //
+// ************************** //
+namespace alg
+{
+}
+
+
+
 // *************** //
 // *** Variant *** //
 // *************** //
 namespace alg
 {
-
     template<typename...Ts>
     class variant
     {
@@ -142,11 +177,12 @@ namespace alg
         }
 
 
-
-    private:
-        void reset()
+    public:
+        std::size_t index() const noexcept // return sizeof...(Ts) means nullity
         {
+            return m_index;
         }
+
 
     private:
         std::aligned_storage<max_size <Ts...>::value, 
@@ -156,3 +192,18 @@ namespace alg
     };
 
 }
+
+
+
+// ****************** //
+// *** Comparison *** //
+// ****************** //
+//
+// method       |    Ts                        runtime vs compile       speed
+// -------------+----------------------------------------------------------------------------------------------
+// std::tuple   |    set of unrelated types    compile time dispatch    linear if-else scan (in compile time)
+// std::variant |    set of unrelated types    runtime dispatch         linear if-else scan
+// type-erasure |    set of unrelated types    runtime dispatch         N levels of redirection
+// polymorphism |    set of derived types      runtime dispatch         2 levels of redirection
+//
+//

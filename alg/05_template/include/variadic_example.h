@@ -79,7 +79,7 @@ namespace alg
             ((ss << "." << strs), ...); 
             return ss.str();
         }
-
+                                                                       //              v--- here is the difference
         static std::string generate_description_format1(STRS&... strs) // select_one_of:s0.s1.s2.s3
         {
             bool first = true;

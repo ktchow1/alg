@@ -59,6 +59,5 @@ void test_variant()
 
     std::variant<A,B,C,D,E> v;
 
-
     print_summary("variant - alg::variant", "succeeded");
 }
