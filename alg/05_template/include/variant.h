@@ -1,37 +1,36 @@
 #pragma once
 #include<cstdint>
+#include<limits>
 #include<type_traits> // for std::aligned_storage
 
 
 
-// *************** //
-// *** Variant *** //
-// *************** //
-// Variant is like a generalized optional, which can take value of one of the union-type.
-//
-// Needs 2 helper traits :
-// * find_max_size
-// * find_max_align
-// * find_type_index
-//
-//
+// ********************** //
+// *** Variant helper *** //
+// ********************** //
+// Helper traits :
+// * max_size
+// * max_align
+// * type_index
+// * type_of
+
 
 namespace alg
 {
     template<typename...Ts> // interface
-    struct find_max_size 
+    struct max_size 
     {
         static constexpr std::size_t value = 0;
     };
 
     template<typename T, typename...Ts> // recursion
-    struct find_max_size<T,Ts...>
+    struct max_size<T,Ts...>
     {
-        static constexpr std::size_t value = std::max(sizeof(T), find_max_size<Ts...>::value);
+        static constexpr std::size_t value = std::max(sizeof(T), max_size<Ts...>::value);
     };
 
     template<typename T> // boundary
-    struct find_max_size<T>
+    struct max_size<T>
     {
         static constexpr std::size_t value = sizeof(T);
     };
@@ -41,19 +40,19 @@ namespace alg
 namespace alg
 {
     template<typename...Ts> // interface
-    struct find_max_align
+    struct max_align
     {
         static constexpr std::size_t value = 0;
     };
 
     template<typename T, typename...Ts> // recursion
-    struct find_max_align<T,Ts...>
+    struct max_align<T,Ts...>
     {
-        static constexpr std::size_t value = std::max(alignof(T), find_max_align<Ts...>::value);
+        static constexpr std::size_t value = std::max(alignof(T), max_align<Ts...>::value);
     };
 
     template<typename T> // boundary
-    struct find_max_align<T>
+    struct max_align<T>
     {
         static constexpr std::size_t value = alignof(T);
     };
@@ -62,42 +61,96 @@ namespace alg
 
 namespace alg
 {
-    template<std::size_t N, typename TARGET, typename...Ts> // interface
-    struct find_type_index_impl;
+    template<typename TARGET, typename...Ts> // interface
+    struct type_index;
 
-    template<std::size_t N, typename TARGET, typename T, typename...Ts> // recursion
-    struct find_type_index_impl<N,TARGET,T,Ts...>
+    template<typename TARGET, typename T, typename...Ts> // recursion
+    struct type_index<TARGET,T,Ts...>
     {
-        static constexpr std::size_t value = std::is_same_v<TARGET,T>? 0 : 1+find_type_index_impl<N,TARGET,Ts...>::value;
+        static constexpr std::size_t value = std::is_same_v<TARGET,T>? 0 : 1+type_index<TARGET,Ts...>::value;
     };
 
-    template<std::size_t N, typename TARGET> // boundary
-    struct find_type_index_impl<N,TARGET>
+    template<typename TARGET> // boundary 
+    struct type_index<TARGET>
     {
-        static constexpr std::size_t value = N;
+        static constexpr std::size_t value = 0; 
     };
 
-    template<typename TARGET, typename...Ts>
-    struct find_type_index
-    {
-        static constexpr std::size_t value = find_type_index_impl<sizeof...(Ts),TARGET,Ts...>::value;
-    };
+    // For type that does not exist, 
+    // it will return 1 + 1 + 1 + ...... + 1 + 0
+    //                <-------------------->
+    //                sizeof...(Ts) number of 1s
 }
 
 
 namespace alg
 {
+    template<std::size_t N, typename...Ts> // interface
+    struct type_of;
+
+    template<std::size_t N, typename T, typename...Ts> // recursion
+    struct type_of<N,T,Ts...>
+    {
+        using type = type_of<N-1,Ts...>::type;
+    };
+
+    template<typename T, typename...Ts> // boundary 
+    struct type_of<0,T,Ts...>
+    {
+        using type = T;
+    };
+}
+
+
+
+// *************** //
+// *** Concept *** //
+// *************** //
+// cannot be declared inside class
+
+namespace alg
+{
+    template<typename T, typename...Ts>
+    concept one_of = (std::same_as<T,Ts> || ...);
+}
+
+
+
+// *************** //
+// *** Variant *** //
+// *************** //
+namespace alg
+{
+
     template<typename...Ts>
     class variant
     {
     public:
+        variant() = default;
+        
+        template<typename T> requires one_of<T,Ts...>
+        variant(const T& t) : m_index(type_index<T,Ts...>::value)
+        {
+            new (&m_impl) T{t};
 
+        }
+
+        template<typename T> requires one_of<T,Ts...>
+        variant(T&& t) : m_index(type_index<T,Ts...>::value)
+        {
+            new (&m_impl) T{std::move(t)};
+        }
 
 
 
     private:
-        std::aligned_storage<find_max_size <Ts...>::value, 
-                             find_max_align<Ts...>::value> m_storage; 
+        void reset()
+        {
+        }
+
+    private:
+        std::aligned_storage<max_size <Ts...>::value, 
+                             max_align<Ts...>::value> m_impl; 
         
         std::size_t m_index = sizeof...(Ts);  
     };
