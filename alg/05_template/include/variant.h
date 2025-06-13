@@ -228,14 +228,14 @@ namespace alg
         template<typename T> requires one_of<T,Ts...>
         variant(const T& t) : m_index(type_index<T,Ts...>::value)
         {
-            new (&m_impl) T{t};
+            new (m_impl) T{t};
 
         }
 
         template<typename T> requires one_of<T,Ts...>
         variant(T&& t) : m_index(type_index<T,Ts...>::value)
         {
-            new (&m_impl) T{std::move(t)};
+            new (m_impl) T{std::move(t)};
         }
 
 
@@ -247,10 +247,10 @@ namespace alg
 
 
     private:
-        std::aligned_storage<max_size <Ts...>::value, 
-                             max_align<Ts...>::value> m_impl; 
-        
-        std::size_t m_index = sizeof...(Ts);  
+        alignas(max_align<Ts...>) std::byte m_impl[max_size<Ts...>::value]; 
+
+    private:
+        std::size_t m_index = monostate;  
     };
 
 }

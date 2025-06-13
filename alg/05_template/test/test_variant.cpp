@@ -9,15 +9,27 @@ struct A{ std::uint8_t  m;  };
 struct B{ std::uint16_t m;  };
 struct C{ std::uint32_t m;  };
 struct D{ std::uint64_t m;  };
-struct E
-{ 
-    E()         { state = 0; }
-   ~E()         { state = 1; }
-    E(const E&) { state = 2; }
-    E(E&&)      { state = 3; }
+struct E{ std::uint64_t m0; 
+          std::uint64_t m1; };
 
-    std::uint64_t m0; 
-    std::uint64_t m1; 
+struct X
+{ 
+    X()         { state = 0; }
+   ~X()         { state = 1; }
+    X(const X&) { state = 2; }
+    X(X&&)      { state = 3; }
+
+    std::uint32_t m[16];
+};
+
+struct Y
+{ 
+    Y()         { state = 4; }
+   ~Y()         { state = 5; }
+    Y(const Y&) { state = 6; }
+    Y(Y&&)      { state = 7; }
+
+    std::uint32_t m[16];
 };
 
 
@@ -70,20 +82,35 @@ void test_variant_traits()
 
 void test_variant_runtime_dispatcher()
 {
-    alg::runtime_dispatcher<A,B,C,D,E> dispatcher;
-    std::byte bytes0[sizeof(E)];
-    std::byte bytes1[sizeof(E)];
+    alg::runtime_dispatcher<A,B,X,C,D,Y,E> dispatcher;
+    std::byte bytes0[std::max(sizeof(X), sizeof(Y))];
+    std::byte bytes1[sizeof(X)];
 
-    new (bytes0) E();
-    assert(state == 0);
-    dispatcher.copy(4, bytes0, bytes1);
-    assert(state == 2);
-    dispatcher.destroy(4, bytes0);
-    assert(state == 1);
-    dispatcher.move(4, bytes1, bytes0);
+    new (bytes0) X();
+    std::size_t pos = 2;
+
+    assert(state == 0); // construct
+    dispatcher.copy(pos, bytes0, bytes1);
+    assert(state == 2); // construct
+    dispatcher.destroy(pos, bytes0);
+    assert(state == 1); // destruct
+    dispatcher.move(pos, bytes1, bytes0);
     assert(state == 3);
-    dispatcher.destroy(4, bytes0);
-    assert(state == 1);
+    dispatcher.destroy(pos, bytes0);
+    assert(state == 1); // destruct
+
+    new (bytes0) Y();
+    pos = 5;
+
+    assert(state == 4); // construct
+    dispatcher.copy(pos, bytes0, bytes1);
+    assert(state == 6); // construct
+    dispatcher.destroy(pos, bytes0);
+    assert(state == 5); // destruct
+    dispatcher.move(pos, bytes1, bytes0);
+    assert(state == 7);
+    dispatcher.destroy(pos, bytes0);
+    assert(state == 5); // destruct
 
     try                      
     {  
