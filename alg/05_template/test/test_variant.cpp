@@ -85,6 +85,15 @@ void test_variant_runtime_dispatcher()
     dispatcher.destroy(4, bytes0);
     assert(state == 1);
 
+    try                      
+    {  
+        dispatcher.destroy(100, bytes0);     
+    }
+    catch(std::exception& e)
+    {
+        state = 4;        
+    }
+    assert(state == 4);
     print_summary("variant - alg::variant (runtime dispatcher)", "succeeded");
 }
 
