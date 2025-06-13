@@ -226,23 +226,44 @@ namespace alg
         variant() = default;
         
         template<typename T> requires one_of<T,Ts...>
-        variant(const T& t) : m_index(type_index<T,Ts...>::value)
+        variant(const T& t) : m_index(type_index<T,Ts...>::value) // Note : This is not copy constructor.
         {
             new (m_impl) T{t};
 
         }
 
         template<typename T> requires one_of<T,Ts...>
-        variant(T&& t) : m_index(type_index<T,Ts...>::value)
+        variant(T&& t) : m_index(type_index<T,Ts...>::value) // Note : This is not move constructor.
         {
             new (m_impl) T{std::move(t)};
         }
+
+    public:
+        // ******************************************** //
+        // *** copy & move - constructor assignment *** //
+        // ******************************************** //
+        variant(const variant<Ts...>& rhs)
+        {
+
+        }
+        
+
+
+
+
 
 
     public:
         std::size_t index() const noexcept // return sizeof...(Ts) means nullity
         {
             return m_index;
+        }
+
+
+        template<typename T>
+        bool is_type() const
+        {
+            return true;
         }
 
 
