@@ -76,42 +76,17 @@ namespace alg
         static constexpr std::size_t value = 0; 
     };
 
+    // ******************************************** //
     // For type that does not exist, 
     // it will return 1 + 1 + 1 + ...... + 1 + 0
     //                <-------------------->
     //                sizeof...(Ts) number of 1s
+    // ******************************************** //
 }
 
 
 namespace alg
 {
-    // **************** // 
-    // *** NOT USED *** //
-    // **************** // 
-    // alg::type_of is not used in alg::variant, because it is compile time dispatch of :
-    // * destructor         
-    // * copy constructor   
-    // * move constructor   
-    //
-    //
-    // This is compile time dispatch (with constexpr N).
-    //
-    //    using T = typename alg::type_of<N,A,B,C,D>::type;
-    //    reinterpret_cast<T*>(m_ptr)->~T();
-    //
-    // This is runtime dispatch (with member m_index).
-    //
-    //    if (m_index == 0) reinterpret_cast<A*>(m_ptr)->~A();
-    //    if (m_index == 1) reinterpret_cast<B*>(m_ptr)->~B();
-    //    if (m_index == 2) reinterpret_cast<C*>(m_ptr)->~C();
-    //    if (m_index == 3) reinterpret_cast<D*>(m_ptr)->~D();
-    //
-    //
-    // Solution : 
-    // * use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
-    //
-    //
-
     template<std::size_t N, typename...Ts> // interface
     struct type_of;
 
@@ -126,6 +101,40 @@ namespace alg
     {
         using type = T;
     };
+
+    // *************************** // 
+    // *** type_of is NOT USED *** //
+    // *************************** // 
+    // alg::type_of is not used in alg::variant, because it is compile time dispatch of :
+    // * destructor         
+    // * copy constructor   
+    // * move constructor   
+    //
+    //
+    // This is compile time dispatch (with constexpr N).
+    //
+    //    using T = typename alg::type_of<N,A,B,C,D>::type;
+    //
+    //    reinterpret_cast<T*>(m_ptr)->~T();                                           // for destroy
+    //    new (m_ptr) T          (*reinterpret_cast<T*>(rhs_ptr));                     // for copy construct
+    //    new (m_ptr) T(std::move(*reinterpret_cast<T*>(rhs_ptr)));                    // for move construct
+    //
+    // This is runtime dispatch (with member m_index).
+    //
+    //    if (m_index == 0) reinterpret_cast<A*>(m_ptr)->~A();                         // for destroy
+    //    if (m_index == 1) reinterpret_cast<B*>(m_ptr)->~B();
+    //    if (m_index == 2) reinterpret_cast<C*>(m_ptr)->~C();
+    //    if (m_index == 0) new (m_ptr) A(*reinterpret_cast<A*>(rhs_ptr));             // for copy construct
+    //    if (m_index == 1) new (m_ptr) B(*reinterpret_cast<B*>(rhs_ptr));
+    //    if (m_index == 2) new (m_ptr) C(*reinterpret_cast<C*>(rhs_ptr));
+    //    if (m_index == 0) new (m_ptr) A(std::move(*reinterpret_cast<A*>(rhs_ptr)));  // for move construct
+    //    if (m_index == 1) new (m_ptr) B(std::move(*reinterpret_cast<B*>(rhs_ptr)));
+    //    if (m_index == 2) new (m_ptr) C(std::move(*reinterpret_cast<C*>(rhs_ptr)));
+    //
+    //
+    // Solution : Use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
+    // * it uses runtime dispatch
+    // * it uses variadic, hence no need to list all cases with if-else 
 }
 
 
@@ -150,33 +159,55 @@ namespace alg
 
 namespace alg
 {
+    // *** interface *** //
     template<typename...Ts>
-    struct runtime_dispatcher; // interface
+    struct runtime_dispatcher; 
+    
 
+    // *** recursion *** //
     template<typename T, typename...Ts>
-    struct runtime_dispatcher<T,Ts...> // recursion
+    struct runtime_dispatcher<T,Ts...> 
     {
         static void destroy(std::size_t index, void* ptr)
         {
-            if (index == 0)
-            {
-
-            }
-            else
-            {
-            }
+            if (index != 0)  runtime_dispatcher<Ts...>::destroy(index-1, ptr); 
+            else             reinterpret_cast<T*>(ptr)->~T(); 
         }
 
         static void copy(std::size_t index, const void* from_ptr, void* to_ptr)
         {
+            if (index != 0)  runtime_dispatcher<Ts...>::copy(index-1, from_ptr, to_ptr); 
+            else             new (to_ptr) T(*reinterpret_cast<const T*>(from_ptr)); 
         }
 
         static void move(std::size_t index, void* from_ptr, void* to_ptr)
         {
+            if (index != 0)  runtime_dispatcher<Ts...>::move(index-1, from_ptr, to_ptr);
+            else             new (to_ptr) T(std::move(*reinterpret_cast<T*>(from_ptr)));
+        }
+    };
+
+
+    // *** boundary *** //
+    template<>
+    struct runtime_dispatcher<> 
+    {
+        static void destroy(std::size_t index, void* ptr)
+        {
+            throw std::runtime_error("index in runtime_dispatcher exceeds number of args");
+        }
+
+        static void copy(std::size_t index, const void* from_ptr, void* to_ptr)
+        {
+            throw std::runtime_error("index in runtime_dispatcher exceeds number of args");
+        }
+
+        static void move(std::size_t index, void* from_ptr, void* to_ptr)
+        {
+            throw std::runtime_error("index in runtime_dispatcher exceeds number of args");
         }
     };
 }
-
 
 
 

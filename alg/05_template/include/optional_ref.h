@@ -283,8 +283,9 @@ namespace alg
 
     private:
         bool m_flag;
-        std::aligned_storage<sizeof(T), alignof(T)>::type m_impl; // note : no namespace for keyword sizeof, alignof
-    //  char m_impl[sizeof(T)];                                   // note : this is ok, but no good enough
+    //  char m_impl[sizeof(T)];                                   // this is ok, but not consider memory alignment, may not work in other CPU
+        std::aligned_storage<sizeof(T), alignof(T)>::type m_impl; // this is deprecated in C++23
+    //  alignas(T) std::byte m_impl[sizeof(T)];                   // this is the best option
     };
     
 

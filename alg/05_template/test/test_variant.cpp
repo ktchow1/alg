@@ -3,19 +3,28 @@
 #include<variant.h>
 #include<utility.h>
 
+std::uint32_t state = 0;
 
 struct A{ std::uint8_t  m;  };
 struct B{ std::uint16_t m;  };
 struct C{ std::uint32_t m;  };
 struct D{ std::uint64_t m;  };
-struct E{ std::uint64_t m0; 
-          std::uint64_t m1; };
+struct E
+{ 
+    E()         { state = 0; }
+   ~E()         { state = 1; }
+    E(const E&) { state = 2; }
+    E(E&&)      { state = 3; }
+
+    std::uint64_t m0; 
+    std::uint64_t m1; 
+};
 
 
 // ******************************* //
 // *** Testing of alg::variant *** //
 // ******************************* //
-void test_variant()
+void test_variant_traits()
 {
     static_assert(alg::max_size<A,A,A,B,A,A>::value ==  2, "incorrect alg::max_size");
     static_assert(alg::max_size<A,A,C,B,A,A>::value ==  4, "incorrect alg::max_size");
@@ -55,14 +64,43 @@ void test_variant()
     static_assert( alg::one_of<C,A,B,C,D,E>, "incorrect alg::one_of");
     static_assert( alg::one_of<D,A,B,C,D,E>, "incorrect alg::one_of");
     print_summary("variant - alg::variant (traits and concept)", "succeeded");
+}
 
 
+
+void test_variant_runtime_dispatcher()
+{
+    alg::runtime_dispatcher<A,B,C,D,E> dispatcher;
+    std::byte bytes0[sizeof(E)];
+    std::byte bytes1[sizeof(E)];
+
+    new (bytes0) E();
+    assert(state == 0);
+    dispatcher.copy(4, bytes0, bytes1);
+    assert(state == 2);
+    dispatcher.destroy(4, bytes0);
+    assert(state == 1);
+    dispatcher.move(4, bytes1, bytes0);
+    assert(state == 3);
+    dispatcher.destroy(4, bytes0);
+    assert(state == 1);
 
     print_summary("variant - alg::variant (runtime dispatcher)", "succeeded");
+}
 
 
 
+void test_variant_full_test()
+{
     std::variant<A,B,C,D,E> v;
-
     print_summary("variant - alg::variant", "succeeded");
+}
+
+
+
+void test_variant()
+{
+    test_variant_traits();
+    test_variant_runtime_dispatcher();
+    test_variant_full_test();
 }
