@@ -220,6 +220,9 @@ namespace alg
     class variant
     {
     public:
+        static constexpr std::size_t monostate = sizeof...(Ts);
+
+    public:
         variant() = default;
         
         template<typename T> requires one_of<T,Ts...>

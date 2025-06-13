@@ -27,6 +27,7 @@ namespace alg
 {
 
     template<typename PREDICATE, typename...STRS>
+    requires (std::same_as<STRS, std::string> && ...)
     class string_selector
     {
     public:
