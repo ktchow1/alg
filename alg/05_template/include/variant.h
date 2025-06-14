@@ -212,6 +212,22 @@ namespace alg
 // *************** //
 // *** Variant *** //
 // *************** //
+// List of constructors / desstructor / assignment : 
+//
+// 1. Contruct default
+// 2. Destruct default                                        <--- dispatch to runtime_dispatcher::destroy
+//
+// 3. Construct  |
+//    -----------+--------------------------------------- 
+//    copy from  |  lvalue T     lvalue variant<Ts...>        <--- dispatch to runtime_dispatcher::copy  
+//    move from  |  rvalue T     rvalue variant<Ts...>        <--- dispatch to runtime_dispatcher::move
+//                           
+// 4. Rebinding  |           
+//    -----------+--------------------------------------- 
+//    copy from  |  lvalue T     lvalue variant<Ts...>        <--- dispatch to runtime_dispatcher::copy   
+//    move from  |  rvalue T     rvalue variant<Ts...>        <--- dispatch to runtime_dispatcher::move   
+//
+  
 namespace alg
 {
     template<typename...Ts>
@@ -223,13 +239,15 @@ namespace alg
     public:
         variant() = default;
         
-        template<typename T> requires one_of<T,Ts...>
+        template<typename T> 
+        requires one_of<T,Ts...>
         variant(const T& x) : m_index(type_index<T,Ts...>::value) // Note : This is not copy constructor.
         {
             new (m_impl) T{x};
         }
 
-        template<typename T> requires one_of<T,Ts...>
+        template<typename T> 
+        requires one_of<T,Ts...>
         variant(T&& x) : m_index(type_index<T,Ts...>::value) // Note : This is not move constructor.
         {
             new (m_impl) T{std::move(x)};
@@ -265,10 +283,10 @@ namespace alg
         }
 
 
-        // ***************** //
-        // *** Rebinding *** //
-        // ***************** //
-        variant<Ts...> operator=(const variant<Ts...>& rhs) 
+        // ****************************** //
+        // *** Rebinding with variant *** //
+        // ****************************** //
+        variant<Ts...>& operator=(const variant<Ts...>& rhs) 
         {
             if (this != &rhs)
             {
@@ -282,20 +300,20 @@ namespace alg
                 m_index = rhs.m_index;
                 if (m_index != monostate)
                 {
-                    runtime_dispatcher<Ts...>::copy(m_index, m_impl);
+                    runtime_dispatcher<Ts...>::copy(m_index, rhs.m_impl, m_impl);
                 }
             }
             return *this;
         }
 
-        variant<Ts...> operator=(variant<Ts...>&& rhs)
+        variant<Ts...>& operator=(variant<Ts...>&& rhs)
         {
             if (this != &rhs)
             {
                 // Destruct old instance
                 if (m_index != monostate)
                 {
-                    runtime_dispatcher<Ts...>::destroy(m_index, rhs.m_impl, m_impl);
+                    runtime_dispatcher<Ts...>::destroy(m_index, m_impl);
                 }
 
                 // Construct new instance
@@ -305,6 +323,42 @@ namespace alg
                     runtime_dispatcher<Ts...>::move(m_index, rhs.m_impl, m_impl);
                 }
             }
+            return *this;
+        }
+
+
+        // ************************ //
+        // *** Rebinding with T *** //
+        // ************************ //
+        template<typename T>
+        requires one_of<T,Ts...>
+        variant<Ts...>& operator=(const T& rhs) 
+        {
+            // Destruct old instance
+            if (m_index != monostate)
+            {
+                runtime_dispatcher<Ts...>::destroy(m_index, m_impl);
+            }
+
+            // Construct new instance
+            m_index = type_index<T,Ts...>::value;
+            runtime_dispatcher<Ts...>::copy(m_index, &rhs, m_impl);
+            return *this;
+        }
+
+        template<typename T>
+        requires one_of<T,Ts...>
+        variant<Ts...>& operator=(T&& rhs) 
+        {
+            // Destruct old instance
+            if (m_index != monostate)
+            {
+                runtime_dispatcher<Ts...>::destroy(m_index, m_impl);
+            }
+
+            // Construct new instance
+            m_index = type_index<T,Ts...>::value;
+            runtime_dispatcher<Ts...>::move(m_index, &rhs, m_impl);
             return *this;
         }
 

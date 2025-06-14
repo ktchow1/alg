@@ -130,8 +130,10 @@ void test_variant_runtime_dispatcher()
 void test_variant_full_test()
 {
     using var_type = alg::variant<A,B,C,X,Y>;
+    X x;
+    Y y;
 
-    // Empty
+    // Default construct
     {
         var_type v;
         assert((v.index() == var_type::monostate));
@@ -143,9 +145,40 @@ void test_variant_full_test()
         try { v.get<3>(); } catch(...) { state = 102; }
         assert(state = 102);
     }
-    // Constructed from T
+
+    // Constructed from T and rebinding
     {
         var_type v(X{});
+        assert((v.index() == 3));
+        assert(v.is_type<X>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 100);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 100);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 103);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 104);
+
+        v = y;
+        assert(state == 6); // rebine - dispatch to Y's copy constructor
+        assert((v.index() == 4));
+        assert(v.is_type<Y>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 101);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 102);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 102);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 102);
+
+        v = std::move(x);
+        assert(state == 3); // rebine - dispatch to X's move constructor
         assert((v.index() == 3));
         assert(v.is_type<X>());
 
