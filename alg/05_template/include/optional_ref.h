@@ -32,29 +32,31 @@ namespace alg
         friend class reference_wrapper; // declare reference_wrapper<U> as friend
 
     public:
-        // ********************************** //
-        // *** Constructor and destructor *** //
-        // ********************************** //
+        // ******************* //
+        // *** Constructor *** //
+        // ******************* //
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper(U& u) : m_ptr(&u)
         {
         }
 
+
+    public:
+        // ******************************* //
+        // *** Destroy, copy (no move) *** //
+        // ******************************* //
        ~reference_wrapper() 
         {
             m_ptr = nullptr;
         } 
-        
-    public:
-        // ************************ //
-        // *** Copy constructor *** //
-        // ************************ //
+
         template<typename U>
         requires std::convertible_to<U*,T*>
         reference_wrapper(const reference_wrapper<U>& rhs) : m_ptr(rhs.m_ptr)
         {
         }
+
 
     public:
         // **************************** //
@@ -73,6 +75,7 @@ namespace alg
             return *m_ptr;
         }
 
+
     public:
         // Conversion operator (to T&, NOT to T)
         constexpr operator T&() const noexcept
@@ -86,6 +89,7 @@ namespace alg
         {
             return *m_ptr(std::forward<ARGS>(args)...);
         }
+
 
     private: 
         T* m_ptr; 
@@ -133,9 +137,9 @@ namespace alg
         static_assert(!std::is_reference_v<T>, "optional<T&> is illegal");
 
     public:
-        // ********************************** //
-        // *** Constructor and destructor *** //
-        // ********************************** //
+        // ******************* //
+        // *** Constructor *** //
+        // ******************* //
         optional() : m_flag(false)
         {
         }
@@ -154,13 +158,11 @@ namespace alg
             new (&m_impl) T{std::move(t)};
         }
 
-       ~optional()
-        {
-            reset();
-        }
 
     public:
-        // *********************************************************************** //
+        // *************************** //
+        // *** Destroy, copy, move *** //
+        // *************************** //
         // Why can't we declare =default for 
         // * copy / move constructor
         // * copy / move assignment
@@ -168,7 +170,13 @@ namespace alg
         // because default implementation is memcpy, without T::T{} construction,
         // when the optional goes out of scope, it will call ~T() on destruction,
         // resulting in construction / destruction mismatch.
-        // ********************************************************************** //
+        //
+
+       ~optional()
+        {
+            reset();
+        }
+
         optional(const optional<T>& rhs) : m_flag(rhs.m_flag)
         {
             if (m_flag)
@@ -184,6 +192,7 @@ namespace alg
                 new (&m_impl) T{std::move(*rhs)};
             }
         }
+
 
     public:
         // ***************** //
@@ -232,6 +241,7 @@ namespace alg
 
             return *get_ptr();
         }
+
        
     public:
         // ************** //
@@ -241,6 +251,7 @@ namespace alg
         const T* operator->() const noexcept { return  get_ptr(); }
         T& operator *()             noexcept { return *get_ptr(); }
         T* operator->()             noexcept { return  get_ptr(); }
+
 
     public:
         // Conversion operator
@@ -261,6 +272,7 @@ namespace alg
             }
         } 
 
+
     private:
         constexpr const T* get_ptr() const
         {
@@ -280,6 +292,7 @@ namespace alg
                 get_ptr()->~T(); // reverse placement new
             }
         }
+
 
     private:
         bool m_flag;
