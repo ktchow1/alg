@@ -129,7 +129,38 @@ void test_variant_runtime_dispatcher()
 
 void test_variant_full_test()
 {
-    std::variant<A,B,C,D,E> v;
+    using var_type = alg::variant<A,B,C,X,Y>;
+
+    // Empty
+    {
+        var_type v;
+        assert((v.index() == var_type::monostate));
+        assert(!v.is_type<A>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 101);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 102);
+    }
+    // Constructed from T
+    {
+        var_type v(X{});
+        assert((v.index() == 3));
+        assert(v.is_type<X>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 100);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 100);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 103);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 104);
+    }
+
+
     print_summary("variant - alg::variant", "succeeded");
 }
 

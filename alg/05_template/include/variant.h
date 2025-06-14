@@ -227,7 +227,6 @@ namespace alg
         variant(const T& x) : m_index(type_index<T,Ts...>::value) // Note : This is not copy constructor.
         {
             new (m_impl) T{x};
-
         }
 
         template<typename T> requires one_of<T,Ts...>
@@ -245,7 +244,7 @@ namespace alg
         {
             if (m_index != monostate)
             {
-                runtime_dispatcher<Ts...>::destroymove(m_index, m_impl);
+                runtime_dispatcher<Ts...>::destroy(m_index, m_impl);
             }
         }
 
