@@ -220,10 +220,10 @@ namespace alg
 // *************** //
 // *** Variant *** //
 // *************** //
-// List of constructors / desstructor / assignment : 
+// List of 11 constructor / desstructor / assignment / emplace : 
 //
-// 1. Contruct default
-// 2. Destruct default                                        <--- dispatch to runtime_dispatcher::destroy
+// 1. Construct default                                       <--- dispatch to new T{}
+// 2. Destruct  default                                       <--- dispatch to runtime_dispatcher::destroy
 //
 // 3. Construct  |
 //    -----------+--------------------------------------- 
@@ -234,6 +234,7 @@ namespace alg
 //    -----------+--------------------------------------- 
 //    copy from  |  lvalue T     lvalue variant<Ts...>        <--- dispatch to runtime_dispatcher::copy   
 //    move from  |  rvalue T     rvalue variant<Ts...>        <--- dispatch to runtime_dispatcher::move   
+//    emplace    |  ARGS...                                   <--- dispatch to new T{args...}
 //
   
 namespace alg
@@ -263,9 +264,9 @@ namespace alg
 
 
     public:
-        // *********************************************************** //
-        // *** Destroy, copy, move - that needs runtime_dispatcher *** //
-        // *********************************************************** //
+        // *************************** //
+        // *** Destroy, copy, move *** //
+        // *************************** //
        ~variant()
         {
             if (m_index != monostate)
@@ -368,6 +369,25 @@ namespace alg
             m_index = type_index<T,Ts...>::value;
             runtime_dispatcher<Ts...>::move(m_index, &rhs, m_impl);
             return *this;
+        }
+
+
+        // ****************************** //
+        // *** Rebinding with emplace *** //
+        // ****************************** //
+        template<typename T, typename...ARGS>
+        requires one_of<T,Ts...>
+        void emplace(ARGS&&...args)
+        {
+            // Destruct old instance
+            if (m_index != monostate)
+            {
+                runtime_dispatcher<Ts...>::destroy(m_index, m_impl);
+            }
+
+            // Construct new instance
+            m_index = type_index<T,Ts...>::value;
+            new (m_impl) T{std::forward<ARGS>(args)...};
         }
 
 

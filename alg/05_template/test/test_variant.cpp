@@ -18,7 +18,12 @@ struct X
    ~X()         { state = 1; }
     X(const X&) { state = 2; }
     X(X&&)      { state = 3; }
-
+    X(std::uint32_t a, 
+      std::uint32_t b, 
+      std::uint32_t c)
+    {
+        state = 10;
+    }
     std::uint32_t m[16];
 };
 
@@ -135,7 +140,7 @@ void test_variant_full_test()
     V vx{x};
     V vy{y};
 
-    // Default construct
+    // Default construct and rebind with emplace
     {
         V v;
         assert((v.index() == V::monostate));
@@ -146,6 +151,21 @@ void test_variant_full_test()
         assert(state = 101);
         try { v.get<3>(); } catch(...) { state = 102; }
         assert(state = 102);
+        
+        v.emplace<X>(std::uint32_t{11}, std::uint32_t{12}, std::uint32_t{13});
+        assert(state == 10); // rebine - dispatch to X's trinary constructor
+        assert((v.index() == 3));
+        assert(v.is_type<X>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 100);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 100);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 103);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 104);
     }
 
     // Constructed from T and rebind with T
