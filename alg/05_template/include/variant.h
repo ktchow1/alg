@@ -12,7 +12,7 @@
 // * max_size
 // * max_align
 // * type_index
-// * type_of (NOT used)
+// * type_of
 
 
 namespace alg
@@ -101,40 +101,6 @@ namespace alg
     {
         using type = T;
     };
-
-    // *************************** // 
-    // *** type_of is NOT USED *** //
-    // *************************** // 
-    // alg::type_of is not used in alg::variant, because it is compile time dispatch of :
-    // * destructor         
-    // * copy constructor   
-    // * move constructor   
-    //
-    //
-    // This is compile time dispatch (with constexpr N).
-    //
-    //    using T = typename alg::type_of<N,A,B,C,D>::type;
-    //
-    //    reinterpret_cast<T*>(m_ptr)->~T();                                           // for destroy
-    //    new (m_ptr) T          (*reinterpret_cast<T*>(rhs_ptr));                     // for copy construct
-    //    new (m_ptr) T(std::move(*reinterpret_cast<T*>(rhs_ptr)));                    // for move construct
-    //
-    // This is runtime dispatch (with member m_index).
-    //
-    //    if (m_index == 0) reinterpret_cast<A*>(m_ptr)->~A();                         // for destroy
-    //    if (m_index == 1) reinterpret_cast<B*>(m_ptr)->~B();
-    //    if (m_index == 2) reinterpret_cast<C*>(m_ptr)->~C();
-    //    if (m_index == 0) new (m_ptr) A(*reinterpret_cast<A*>(rhs_ptr));             // for copy construct
-    //    if (m_index == 1) new (m_ptr) B(*reinterpret_cast<B*>(rhs_ptr));
-    //    if (m_index == 2) new (m_ptr) C(*reinterpret_cast<C*>(rhs_ptr));
-    //    if (m_index == 0) new (m_ptr) A(std::move(*reinterpret_cast<A*>(rhs_ptr)));  // for move construct
-    //    if (m_index == 1) new (m_ptr) B(std::move(*reinterpret_cast<B*>(rhs_ptr)));
-    //    if (m_index == 2) new (m_ptr) C(std::move(*reinterpret_cast<C*>(rhs_ptr)));
-    //
-    //
-    // Solution : Use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
-    // * it uses runtime dispatch
-    // * it uses variadic, hence no need to list all cases with if-else 
 }
 
 
@@ -155,7 +121,39 @@ namespace alg
 // ************************** //
 // *** Runtime dispatcher *** //
 // ************************** //
-// Same technique as Maven in traits.h
+//
+// alg::type_of cannot be used in alg::variant to dispatch :
+// * destructor         
+// * copy constructor   
+// * move constructor   
+// because alg::type_of is a compile time traits.
+//
+//
+// This is compile time dispatch (with constexpr N).
+//
+//    using T = typename alg::type_of<N,A,B,C,D>::type;
+//
+//    reinterpret_cast<T*>(m_ptr)->~T();                                           // for destroy
+//    new (m_ptr) T          (*reinterpret_cast<T*>(rhs_ptr));                     // for copy construct
+//    new (m_ptr) T(std::move(*reinterpret_cast<T*>(rhs_ptr)));                    // for move construct
+//
+// This is runtime dispatch (with member m_index).
+//
+//    if (m_index == 0) reinterpret_cast<A*>(m_ptr)->~A();                         // for destroy
+//    if (m_index == 1) reinterpret_cast<B*>(m_ptr)->~B();
+//    if (m_index == 2) reinterpret_cast<C*>(m_ptr)->~C();
+//    if (m_index == 0) new (m_ptr) A(*reinterpret_cast<A*>(rhs_ptr));             // for copy construct
+//    if (m_index == 1) new (m_ptr) B(*reinterpret_cast<B*>(rhs_ptr));
+//    if (m_index == 2) new (m_ptr) C(*reinterpret_cast<C*>(rhs_ptr));
+//    if (m_index == 0) new (m_ptr) A(std::move(*reinterpret_cast<A*>(rhs_ptr)));  // for move construct
+//    if (m_index == 1) new (m_ptr) B(std::move(*reinterpret_cast<B*>(rhs_ptr)));
+//    if (m_index == 2) new (m_ptr) C(std::move(*reinterpret_cast<C*>(rhs_ptr)));
+//
+//
+// Solution : Use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
+// * it uses runtime dispatch
+// * it uses variadic, hence no need to list all cases with if-else 
+//
 
 namespace alg
 {
@@ -322,6 +320,26 @@ namespace alg
         bool is_type() const
         {
             return type_index<T,Ts...>::value == m_index;
+        }
+
+        template<typename T>
+        T& get()
+        {
+            if (is_type<T>())
+            {
+                return *reinterpret_cast<T*>(m_impl);
+            }
+            throw std::runtime_error("getting invalid type from variant");
+        }
+
+        template<std::size_t N>
+        typename type_of<N,Ts...>::type& get()
+        {
+            if (N == m_index && N < monostate)
+            {
+                return *reinterpret_cast<typename type_of<N,Ts...>::type*>(m_impl);
+            }
+            throw std::runtime_error("getting invalid type from variant");
         }
 
 
