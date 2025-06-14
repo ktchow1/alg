@@ -129,14 +129,16 @@ void test_variant_runtime_dispatcher()
 
 void test_variant_full_test()
 {
-    using var_type = alg::variant<A,B,C,X,Y>;
+    using V = alg::variant<A,B,C,X,Y>;
     X x;
     Y y;
+    V vx{x};
+    V vy{y};
 
     // Default construct
     {
-        var_type v;
-        assert((v.index() == var_type::monostate));
+        V v;
+        assert((v.index() == V::monostate));
         assert(!v.is_type<A>());
 
         state = 100;
@@ -146,9 +148,9 @@ void test_variant_full_test()
         assert(state = 102);
     }
 
-    // Constructed from T and rebinding
+    // Constructed from T and rebind with T
     {
-        var_type v(X{});
+        V v(X{});
         assert((v.index() == 3));
         assert(v.is_type<X>());
 
@@ -193,7 +195,52 @@ void test_variant_full_test()
         assert(state = 104);
     }
 
+    // Constructed from variant<Ts...> and rebind with variant<Ts...>
+    {
+        V v(vx);
+        assert((v.index() == 3));
+        assert(v.is_type<X>());
 
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 100);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 100);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 103);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 104);
+
+        v = vy;
+        assert(state == 6); // rebine - dispatch to Y's copy constructor
+        assert((v.index() == 4));
+        assert(v.is_type<Y>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 101);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 102);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 102);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 102);
+
+        v = std::move(vx);
+        assert(state == 3); // rebine - dispatch to X's move constructor
+        assert((v.index() == 3));
+        assert(v.is_type<X>());
+
+        state = 100;
+        try { v.get<X>(); } catch(...) { state = 101; }
+        assert(state = 100);
+        try { v.get<3>(); } catch(...) { state = 102; }
+        assert(state = 100);
+        try { v.get<Y>(); } catch(...) { state = 103; }
+        assert(state = 103);
+        try { v.get<4>(); } catch(...) { state = 104; }
+        assert(state = 104);
+    }
     print_summary("variant - alg::variant", "succeeded");
 }
 

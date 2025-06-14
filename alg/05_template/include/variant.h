@@ -121,12 +121,25 @@ namespace alg
 // ************************** //
 // *** Runtime dispatcher *** //
 // ************************** //
+// Dispatch means the way to forward the implementation from :
+// * constructor             of variant<Ts...>
+// * destructor              of variant<Ts...>
+// * copy / move constructor of variant<Ts...>
+// * copy / move assignment  of variant<Ts...>
 //
-// alg::type_of cannot be used in alg::variant to dispatch :
-// * destructor         
-// * copy constructor   
-// * move constructor   
-// because alg::type_of is a compile time traits.
+// to :
+// * destructor       of T 
+// * copy constructor of T 
+// * move constructor of T 
+//   where T is one of Ts...
+//
+//
+//
+// Problem  : Cannot use alg::type_of to dispatch because alg::type_of is a compile time traits.
+// Solution : Use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
+// * it uses runtime dispatch, which depends on m_index
+// * it uses variadic, hence no need to list all cases Ts... with if-else 
+//
 //
 //
 // This is compile time dispatch (with constexpr N).
@@ -148,11 +161,6 @@ namespace alg
 //    if (m_index == 0) new (m_ptr) A(std::move(*reinterpret_cast<A*>(rhs_ptr)));  // for move construct
 //    if (m_index == 1) new (m_ptr) B(std::move(*reinterpret_cast<B*>(rhs_ptr)));
 //    if (m_index == 2) new (m_ptr) C(std::move(*reinterpret_cast<C*>(rhs_ptr)));
-//
-//
-// Solution : Use alg::runtime_dispatcher, which is the same approach as Maven, see 05_template/include/traits.h 
-// * it uses runtime dispatch
-// * it uses variadic, hence no need to list all cases with if-else 
 //
 
 namespace alg
