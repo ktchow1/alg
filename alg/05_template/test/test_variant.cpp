@@ -55,7 +55,8 @@ void test_variant_traits()
     static_assert(alg::type_index<E,A,B,C,D,E>::value == 4, "incorrect alg::type_index");
     static_assert(alg::type_index<C,A,B,C,D,C>::value == 2, "incorrect alg::type_index");
     static_assert(alg::type_index<C,A,C,C,D,C>::value == 1, "incorrect alg::type_index");
-    static_assert(alg::type_index<C,A,A,A,A,A>::value == 5, "incorrect alg::type_index"); // absent type
+    static_assert(alg::type_index<X,A,B,C,D,E>::value == alg::variant<A,B,C,D,E>::monostate, "incorrect alg::type_index"); // absent type
+    static_assert(alg::type_index<Y,A,B,C,D,E>::value == alg::variant<A,B,C,D,E>::monostate, "incorrect alg::type_index"); // absent type
 
     static_assert(std::is_same_v<alg::type_of<0,A,B,C,D>::type, A>, "incorrect alg::type_of");
     static_assert(std::is_same_v<alg::type_of<1,A,B,C,D>::type, B>, "incorrect alg::type_of");

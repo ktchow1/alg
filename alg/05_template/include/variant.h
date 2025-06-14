@@ -220,37 +220,96 @@ namespace alg
     class variant
     {
     public:
-        static constexpr std::size_t monostate = sizeof...(Ts);
+        static constexpr std::size_t monostate = sizeof...(Ts); // imply that m_impl is NOT constructed yet
 
     public:
         variant() = default;
         
         template<typename T> requires one_of<T,Ts...>
-        variant(const T& t) : m_index(type_index<T,Ts...>::value) // Note : This is not copy constructor.
+        variant(const T& x) : m_index(type_index<T,Ts...>::value) // Note : This is not copy constructor.
         {
-            new (m_impl) T{t};
+            new (m_impl) T{x};
 
         }
 
         template<typename T> requires one_of<T,Ts...>
-        variant(T&& t) : m_index(type_index<T,Ts...>::value) // Note : This is not move constructor.
+        variant(T&& x) : m_index(type_index<T,Ts...>::value) // Note : This is not move constructor.
         {
-            new (m_impl) T{std::move(t)};
+            new (m_impl) T{std::move(x)};
         }
+
 
     public:
-        // ******************************************** //
-        // *** copy & move - constructor assignment *** //
-        // ******************************************** //
-        variant(const variant<Ts...>& rhs)
+        // *********************************************************** //
+        // *** Destroy, copy, move - that needs runtime_dispatcher *** //
+        // *********************************************************** //
+       ~variant()
         {
-
+            if (m_index != monostate)
+            {
+                runtime_dispatcher<Ts...>::destroymove(m_index, m_impl);
+            }
         }
-        
+
+        variant(const variant<Ts...>& rhs) : m_index(rhs.m_index)
+        {
+            if (m_index != monostate)
+            {
+                runtime_dispatcher<Ts...>::copy(m_index, rhs.m_impl, m_impl);
+            }
+        }
+
+        variant(variant<Ts...>&& rhs)
+        {
+            if (m_index != monostate)
+            {
+                runtime_dispatcher<Ts...>::move(m_index, rhs.m_impl, m_impl);
+            }
+        }
 
 
+        // ***************** //
+        // *** Rebinding *** //
+        // ***************** //
+        variant<Ts...> operator=(const variant<Ts...>& rhs) 
+        {
+            if (this != &rhs)
+            {
+                // Destruct old instance
+                if (m_index != monostate)
+                {
+                    runtime_dispatcher<Ts...>::destroy(m_index, m_impl);
+                }
 
+                // Construct new instance
+                m_index = rhs.m_index;
+                if (m_index != monostate)
+                {
+                    runtime_dispatcher<Ts...>::copy(m_index, m_impl);
+                }
+            }
+            return *this;
+        }
 
+        variant<Ts...> operator=(variant<Ts...>&& rhs)
+        {
+            if (this != &rhs)
+            {
+                // Destruct old instance
+                if (m_index != monostate)
+                {
+                    runtime_dispatcher<Ts...>::destroy(m_index, rhs.m_impl, m_impl);
+                }
+
+                // Construct new instance
+                m_index = rhs.m_index;
+                if (m_index != monostate)
+                {
+                    runtime_dispatcher<Ts...>::move(m_index, rhs.m_impl, m_impl);
+                }
+            }
+            return *this;
+        }
 
 
     public:
@@ -259,11 +318,10 @@ namespace alg
             return m_index;
         }
 
-
         template<typename T>
         bool is_type() const
         {
-            return true;
+            return type_index<T,Ts...>::value == m_index;
         }
 
 
@@ -287,6 +345,6 @@ namespace alg
 // std::tuple   |    set of unrelated types    compile time dispatch    linear if-else scan (in compile time)
 // std::variant |    set of unrelated types    runtime dispatch         linear if-else scan
 // type-erasure |    set of unrelated types    runtime dispatch         N levels of redirection
-// polymorphism |    set of derived types      runtime dispatch         2 levels of redirection
+// polymorphism |    set of derived   types    runtime dispatch         2 levels of redirection
 //
 //
