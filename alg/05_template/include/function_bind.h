@@ -31,12 +31,13 @@ namespace alg
 // 
 //
 // The creation of std::function by alg::bind is done in 2 steps (for better readabilty)
-// 1. create alg::bound_function_object, store bound-arguments into std::tuple (why std::tuple? thats the only way to store variadic para pack)
+// 1. create alg::bound_function_object, store bound-arguments into std::tuple 
 // 2. create std::function,            extract bound-arguments from std::tuple and from call-arguments
 //
 // We have different treatments for 2 parameter packs : 
-// 1. 
-
+// 1. bound-arguments are stored by value,     using std::      make_tuple
+// 2.  call-arguments are passed by reference, using std::forward_as_tuple
+//
 
 namespace alg
 {
@@ -44,7 +45,9 @@ namespace alg
     class bound_function_object
     {
     public:
-        bound_function_object(F&& fct, BOUND_ARGS&&...bound_args)
+        bound_function_object(F&& fct, BOUND_ARGS&&...bound_args) 
+                            : m_fct(std::forward<F>(fct))
+                            , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...)
         {
         }
 
