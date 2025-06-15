@@ -264,7 +264,8 @@ namespace alg
         {
             if (m_flag && rhs.m_flag)
             {
-                return std::memcmp(m_impl, rhs.m_impl, sizeof(T)) == 0;
+            //  return std::memcmp(m_impl, rhs.m_impl, sizeof(T)) == 0; // BUG
+                return *get_ptr() == *rhs.get_ptr();                    // should forward to bool T::operator==(const T&) 
             }
             else
             {
