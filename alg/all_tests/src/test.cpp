@@ -49,6 +49,7 @@ void test_timer();
 // *** 05_template *** //
 void test_array();
 void test_function();
+void test_function_bind();
 void test_metaprog();
 void test_optional_and_reference();
 void test_shared_ptr();
@@ -158,6 +159,7 @@ int main()
 //  banner("05_template");
 //  test_array();
 //  test_function();
+    test_function_bind();
 //  test_metaprog();
     test_optional_and_reference();
 //  test_shared_ptr();
