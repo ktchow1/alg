@@ -78,15 +78,15 @@ namespace alg
     }
 
     template<typename...Ts>
-    auto tie(Ts&...ts) noexcept
+    constexpr std::tuple<Ts&...> tie(Ts&...ts) noexcept
     {
-        return std::tuple<Ts&...>{ts...}; 
+        return std::tuple<Ts&...> {ts...}; 
     }
 
     template<typename...Ts>
-    auto forward_as_tuple(Ts&&...ts) noexcept
+    constexpr std::tuple<Ts&&...> forward_as_tuple(Ts&&...ts) noexcept
     {
-        return std::tuple<Ts&&...>{std::forward<Ts>(ts)...}; 
+        return std::tuple<Ts&&...> {std::forward<Ts>(ts)...}; 
     }
 }
 
