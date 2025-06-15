@@ -98,7 +98,7 @@ void test_make_tuple_and_tie() // and structural_binding
     assert(std::get<1>(tup0) == 'a');
     assert(std::get<2>(tup0) == 123); // modify failed
 
-    // case 2 : make_tuple<T&>
+    // case 2 : make_tuple<T&> <--- Todo : we should use std::ref instead
     b = true, c = 'a', i = 123;
     auto tup1 = alg::make_tuple<bool&,char&,int&>(b,c,i);
     assert(std::get<0>(tup1) == true);
@@ -106,7 +106,7 @@ void test_make_tuple_and_tie() // and structural_binding
     assert(std::get<2>(tup1) == 123);
 
     b = false, c = 'b', i = 234;
-    assert(std::get<0>(tup1) == false);
+    assert(std::get<0>(tup1) == false); 
     assert(std::get<1>(tup1) == 'b');
     assert(std::get<2>(tup1) == 234); // modify succeed
 

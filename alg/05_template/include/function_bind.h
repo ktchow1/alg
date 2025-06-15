@@ -27,12 +27,15 @@ namespace alg
 // *  variadic bound-arguments (on calling alg::bind)
 // *  variadic  call-arguments (on calling std::function created by alg::bind)
 // 3. as there are 2 packs, the unpack is a nested variadic parameter unpack 
+//
 // 
 //
 // The creation of std::function by alg::bind is done in 2 steps (for better readabilty)
 // 1. create alg::bound_function_object, store bound-arguments into std::tuple (why std::tuple? thats the only way to store variadic para pack)
 // 2. create std::function,            extract bound-arguments from std::tuple and from call-arguments
 //
+// We have different treatments for 2 parameter packs : 
+// 1. 
 
 
 namespace alg
