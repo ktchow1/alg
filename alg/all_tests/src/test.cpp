@@ -167,7 +167,7 @@ int main()
 //  test_template_specialization(); 
 //  test_traits();
 //  test_tuple_idx_seq();
-//  test_tuple();
+    test_tuple();
 //  test_type_erasure_example();
 //  test_type_erasure();
 //  test_unique_ptr();

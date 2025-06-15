@@ -55,9 +55,10 @@ namespace alg
 // ******************************************************** //
 // *** Start from here, use std::tuple (not alg::tuple) *** //
 // ******************************************************** //
-// Difference between std::make_tuple and std::tie :
-// * std::make_tuple copies element by value
-// * std:tuple takes reference to element 
+// Difference among std::make_tuple / std::tie / std::forward_as_tuple :
+// * std::make_tuple           takes deep copy of element
+// * std::tie                  takes lvalue reference to element 
+// * std::forward_as_tuple     takes universal reference to element
 //
 // Difference between structural binding and std::tie :
 // * structural binding declares new variable, while std::tie binds existing variables
@@ -71,15 +72,21 @@ namespace alg
 namespace alg
 {
     template<typename...Ts>
-    auto make_tuple(const Ts&...ts)
+    constexpr std::tuple<Ts...> make_tuple(const Ts&...ts)
     {
-        return std::tuple<Ts...>{ts...}; 
+        return std::tuple<Ts...> {ts...}; 
     }
 
     template<typename...Ts>
-    auto tie(Ts&...ts)
+    auto tie(Ts&...ts) noexcept
     {
         return std::tuple<Ts&...>{ts...}; 
+    }
+
+    template<typename...Ts>
+    auto forward_as_tuple(Ts&&...ts) noexcept
+    {
+        return std::tuple<Ts&&...>{std::forward<Ts>(ts)...}; 
     }
 }
 

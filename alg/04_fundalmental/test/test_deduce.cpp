@@ -32,7 +32,7 @@
 // ********************** //
 // *** decltype(auto) *** //
 // ********************** //
-// When to use decltype(auto)? When we want to use decltype deduction instead of auto ; 
+// When to use decltype(auto)? When we want to use decltype deduction instead of auto : 
 //
 //    decltype(expression) obj = expression;                
 //    decltype(expression) fct() 
@@ -49,7 +49,14 @@
 //        ... 
 //        return expression; 
 //    } 
-//    
+// 
+// For example : 
+// In alg::bind and 
+//    alg::bound_function_object
+// when we dont know the return type,
+// and  we only know the return expression.   
+//
+//
 
 struct M{      };
 struct X{ M m; };
