@@ -50,6 +50,7 @@ void test_timer();
 void test_array();
 void test_function();
 void test_function_bind();
+void test_function_invoke();
 void test_metaprog();
 void test_optional_and_reference();
 void test_shared_ptr();
@@ -58,6 +59,7 @@ void test_template_specialization();
 void test_traits();
 void test_tuple_idx_seq();
 void test_tuple();
+void test_tuple_factory();
 void test_type_erasure();
 void test_type_erasure_example();
 void test_unique_ptr();
@@ -158,24 +160,26 @@ int main()
 //
 //  banner("05_template");
 //  test_array();
-    test_function();
-    test_function_bind();
+    test_function();                      // for testing alg::function
+    test_function_bind();                 // for testing alg::bind   which makes std::function
+    test_function_invoke();               // for testing alg::invoke which calls std::function
 //  test_metaprog();
 //  test_optional_and_reference();
 //  test_shared_ptr();
     test_template(); 
 //  test_template_specialization(); 
 //  test_traits();
-//  test_tuple_idx_seq();
-    test_tuple();
+//  test_tuple_idx_seq();                 // for testing alg::idx_seq
+    test_tuple();                         // for testing alg::tuple
+    test_tuple_factory();                 // for testing alg::make_tuple which makes std::tuple
 //  test_type_erasure_example();
 //  test_type_erasure();
 //  test_unique_ptr();
 //  test_variadic(); 
-//  test_variant();                       // alg::variant
-//  test_variant_basic();                 // std::variant
-//  test_variant_overloading_lambda();    // std::variant + alg::overloading_lambda
-//  test_variant_visit();                 // std::variant
+//  test_variant();                       // for testing alg::variant
+//  test_variant_basic();                 // for testing std::variant
+//  test_variant_overloading_lambda();    // for testing std::variant + alg::overloading_lambda
+//  test_variant_visit();                 // for testing std::variant visit
 //
 //  banner("06_threading");
 //  test_thread_create();
