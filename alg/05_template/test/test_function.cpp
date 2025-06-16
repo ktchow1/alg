@@ -299,7 +299,7 @@ void test_std_function()
         assert(s6 == std::string{"www"});
 
     }
-    print_summary("std::function - binding", "succeeded");
+    print_summary("std::function - std::bind", "succeeded");
 }
 
 // *************************************************************************************************************************************** //

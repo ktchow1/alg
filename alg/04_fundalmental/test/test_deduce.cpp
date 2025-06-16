@@ -50,12 +50,8 @@
 //        return expression; 
 //    } 
 // 
-// For example : 
-// In alg::bind and 
-//    alg::bound_function_object
-// when we dont know the return type,
-// and  we only know the return expression.   
-//
+// i.e. if we want to preserve const, reference ..., use decltype(auto)
+//      if we want to remove   const, reference ..., use auto
 //
 
 struct M{      };

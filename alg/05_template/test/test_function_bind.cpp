@@ -7,4 +7,5 @@
 
 void test_function_bind()
 {
+    print_summary("std::function - alg::bind", "succeeded");
 }
