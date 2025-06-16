@@ -158,16 +158,16 @@ int main()
 //
 //  banner("05_template");
 //  test_array();
-//  test_function();
+    test_function();
     test_function_bind();
 //  test_metaprog();
 //  test_optional_and_reference();
 //  test_shared_ptr();
-//  test_template(); 
+    test_template(); 
 //  test_template_specialization(); 
 //  test_traits();
 //  test_tuple_idx_seq();
-//  test_tuple();
+    test_tuple();
 //  test_type_erasure_example();
 //  test_type_erasure();
 //  test_unique_ptr();
