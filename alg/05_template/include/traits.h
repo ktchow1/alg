@@ -225,15 +225,7 @@ namespace alg
     template<typename V> 
     constexpr bool is_vec_except_pointer_v = is_vec_except_pointer<V>::type::value;
 
-
-    // is_convertible will be replaced by is_base_of
-    template<typename B> false_type is_inherit_impl(const void*); // general case (no need to implement, used in decltype)
-    template<typename B>  true_type is_inherit_impl(const B*);    // special case (no need to implement, used in decltype)
-    template<typename B, typename D> struct is_inherit : public decltype(is_inherit_impl<B>(std::declval<D*>())) {}; // BUG : compile error without <B>, as special case can bind to any type
-    template<typename B, typename D> constexpr bool is_inherit_v = is_inherit<B,D>::value;
-
   
-
     // **************************** //
     // *** step 4 : conditional *** //
     // **************************** //
@@ -430,7 +422,7 @@ namespace alg
     template<typename B, typename D> 
     struct is_base_of<B,D,decltype(bind_to<B*>(std::declval<D*>()))> : public true_type {};
 
-    // is base of (alternative approach, but cannot compile for private inheritance, due to ERROR in static_cast ???)
+    // is base of (alternative approach)
     template <typename B> std::false_type is_ptr_convertible_to(const void*);
     template <typename B> std::true_type  is_ptr_convertible_to(const B*);
     template <typename B, typename D>
@@ -438,12 +430,18 @@ namespace alg
     {
     };
 
+    // is bsae of (alternative approach)
+    template<typename B> false_type is_inherit_impl(const void*); // general case (no need to implement, used in decltype)
+    template<typename B>  true_type is_inherit_impl(const B*);    // special case (no need to implement, used in decltype)
+    template<typename B, typename D> struct is_inherit : public decltype(is_inherit_impl<B>(std::declval<D*>())) {}; // BUG : compile error without <B>, as special case can bind to any type
+
     // shortcut
     template<typename T>                 constexpr bool is_incrementable_v = is_incrementable<T>::value;
     template<typename T>                 constexpr bool has_value_v        = has_value<T>::value;
     template<typename SRC, typename DST> constexpr bool is_convertible_v   = is_convertible<SRC,DST>::value;
     template<typename B,   typename D>   constexpr bool is_base_of_v       = is_base_of <B,D>::value;
     template<typename B,   typename D>   constexpr bool is_base_of_v2      = is_base_of2<B,D>::value;
+    template<typename B,   typename D>   constexpr bool is_inherit_v       = is_inherit<B,D>::value;
 
 
     // ***************************************** //
