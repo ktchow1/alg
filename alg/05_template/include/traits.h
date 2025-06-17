@@ -410,38 +410,46 @@ namespace alg
     template<typename T>
     struct has_value<T,map_to_default<typename T::value_type>> : public true_type {};
     
+
     // is convertible
     template<typename SRC, typename DST, typename CONSTRAINT = default_type>  
     struct is_convertible : public false_type {};
     template<typename SRC, typename DST> 
     struct is_convertible<SRC,DST,decltype(bind_to<DST>(std::declval<SRC>()))> : public true_type {};
 
-    // is base of
+
+    // is base of (method 0)
     template<typename B, typename D, typename CONSTRAINT = default_type> 
     struct is_base_of : public false_type {}; 
     template<typename B, typename D> 
-    struct is_base_of<B,D,decltype(bind_to<B*>(std::declval<D*>()))> : public true_type {};
+    struct is_base_of<B,D,decltype(bind_to<B*>(static_cast<D*>(nullptr)))> : public true_type {};
 
-    // is base of (alternative approach)
+
+    // is base of (method 1)
+    template<typename B, typename D, typename CONSTRAINT = default_type> 
+    struct is_base_of1 : public false_type {}; 
+    template<typename B, typename D> 
+    struct is_base_of1<B,D,decltype(bind_to<B*>(std::declval<D*>()))> : public true_type {};
+
+
+    // is base of (method 2 & 3)
     template <typename B> std::false_type is_ptr_convertible_to(const void*);
     template <typename B> std::true_type  is_ptr_convertible_to(const B*);
-    template <typename B, typename D>
-    struct is_base_of2 : public decltype(is_ptr_convertible_to<B>(static_cast<D*>(nullptr)))
-    {
-    };
 
-    // is bsae of (alternative approach)
-    template<typename B> false_type is_inherit_impl(const void*); // general case (no need to implement, used in decltype)
-    template<typename B>  true_type is_inherit_impl(const B*);    // special case (no need to implement, used in decltype)
-    template<typename B, typename D> struct is_inherit : public decltype(is_inherit_impl<B>(std::declval<D*>())) {}; // BUG : compile error without <B>, as special case can bind to any type
+    template <typename B, typename D>
+    struct is_base_of2 : public decltype(is_ptr_convertible_to<B>(static_cast<D*>(nullptr))) {};
+    template <typename B, typename D>
+    struct is_base_of3 : public decltype(is_ptr_convertible_to<B>(std::declval<D*>()))       {};
+
 
     // shortcut
     template<typename T>                 constexpr bool is_incrementable_v = is_incrementable<T>::value;
     template<typename T>                 constexpr bool has_value_v        = has_value<T>::value;
     template<typename SRC, typename DST> constexpr bool is_convertible_v   = is_convertible<SRC,DST>::value;
     template<typename B,   typename D>   constexpr bool is_base_of_v       = is_base_of <B,D>::value;
+    template<typename B,   typename D>   constexpr bool is_base_of_v1      = is_base_of1<B,D>::value;
     template<typename B,   typename D>   constexpr bool is_base_of_v2      = is_base_of2<B,D>::value;
-    template<typename B,   typename D>   constexpr bool is_inherit_v       = is_inherit<B,D>::value;
+    template<typename B,   typename D>   constexpr bool is_base_of_v3      = is_base_of3<B,D>::value;
 
 
     // ***************************************** //
