@@ -2,9 +2,17 @@
 #include<tuple>
 
 
-// ******************************************************** //
-// *** Start from here, use std::tuple (not alg::tuple) *** //
-// ******************************************************** //
+// ********************************************************************* //
+// Why do we need 3 similar tuple factory :
+// * std::make_tuple()
+// * std::tie()
+// * std::forward_as_tuple()
+//
+//
+// First of all, consider scalar variable inside of tuple. 
+//
+//
+//
 // Difference among std::make_tuple / std::tie / std::forward_as_tuple :
 // * std::make_tuple           takes deep copy of element
 // * std::tie                  takes lvalue reference to element 
@@ -21,17 +29,17 @@
   
 namespace alg
 {
-//  template<typename...Ts>
-//  constexpr std::tuple<std::decay_t<Ts>...> make_tuple(Ts&&...ts) // if we need to modify ts, use std::ref
-//  {
-//      return std::tuple<std::decay_t<Ts>...> {std::forward<Ts>(ts)...}; 
-//  }
-  
     template<typename...Ts>
-    constexpr std::tuple<Ts...> make_tuple(const Ts&...ts) // incorrect implementation
+    constexpr std::tuple<std::decay_t<Ts>...> make_tuple(Ts&&...ts) // if we need to modify ts, use std::ref
     {
-        return std::tuple<Ts...> {ts...}; 
-    } 
+        return std::tuple<std::decay_t<Ts>...> {std::forward<Ts>(ts)...}; 
+    }
+  
+//  template<typename...Ts>
+//  constexpr std::tuple<Ts...> make_tuple(const Ts&...ts) // incorrect implementation
+//  {
+//      return std::tuple<Ts...> {ts...}; 
+//  } 
 
     template<typename...Ts>
     constexpr std::tuple<Ts&...> tie(Ts&...ts) noexcept

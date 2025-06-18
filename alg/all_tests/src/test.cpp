@@ -170,8 +170,8 @@ int main()
 //  test_template_specialization(); 
 //  test_traits();
 //  test_tuple_idx_seq();                 // for testing alg::idx_seq
-    test_tuple();                         // for testing alg::tuple
-    test_tuple_factory();                 // for testing alg::make_tuple which makes std::tuple
+//  test_tuple();                         // for testing alg::tuple, algorithm to process std::tuple
+    test_tuple_factory();                 // for testing alg::make_tuple, which creates std::tuple
 //  test_type_erasure_example();
 //  test_type_erasure();
 //  test_unique_ptr();
