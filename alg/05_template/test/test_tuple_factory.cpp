@@ -6,6 +6,65 @@
 
 
 
+void why_we_need_3_tuple_factories()
+{ 
+    // Example 1
+    {
+        int i = 123;
+        auto   x = i;     
+        auto&  y = i;    
+        auto&& z = i;   
+        auto&& w = std::move(i); 
+        
+        x = 100; assert(i == 123);
+        y = 200; assert(i == 200);
+        z = 300; assert(i == 300);
+        w = 400; assert(i == 400); // caller bears risk doing that ... 
+    }
+
+    // Example 2
+    assert(toy_example::lvalue_impl_count == 0);
+    assert(toy_example::rvalue_impl_count == 0);
+    
+    {
+        std::uint32_t x = 123;
+
+        toy_example::interface_by_copying(x); 
+        assert(toy_example::lvalue_impl_count == 1);
+        assert(toy_example::rvalue_impl_count == 0);
+        toy_example::interface_by_copying(std::move(x)); 
+        assert(toy_example::lvalue_impl_count == 2);
+        assert(toy_example::rvalue_impl_count == 0);
+        toy_example::interface_by_copying(123); 
+        assert(toy_example::lvalue_impl_count == 3);
+        assert(toy_example::rvalue_impl_count == 0);
+    }
+    {
+        std::uint32_t x = 123;
+
+        toy_example::interface_by_lvalue_reference(x); 
+        assert(toy_example::lvalue_impl_count == 4);
+        assert(toy_example::rvalue_impl_count == 0);
+    //  toy_example::interface_by_lvalue_reference(std::move(x));  // cannot compile for  xvalue
+    //  toy_example::interface_by_lvalue_reference(123);           // cannot compile for prvalue
+    }
+    {
+        std::uint32_t x = 123;
+
+        toy_example::interface_by_perfect_forwarding_reference(x); 
+        assert(toy_example::lvalue_impl_count == 5);
+        assert(toy_example::rvalue_impl_count == 0);
+        toy_example::interface_by_perfect_forwarding_reference(std::move(x)); 
+        assert(toy_example::lvalue_impl_count == 5);
+        assert(toy_example::rvalue_impl_count == 1);
+        toy_example::interface_by_perfect_forwarding_reference(123); 
+        assert(toy_example::lvalue_impl_count == 5);
+        assert(toy_example::rvalue_impl_count == 2);
+    }
+    print_summary("tuple factory - why we need 3 factories?", "succeeded");
+}
+
+
 void test_make_tuple() 
 {
     bool b,b0,b1;
@@ -26,11 +85,11 @@ void test_make_tuple()
 
     // case 2 : make_tuple<std::reference_wrapper<T>> 
     b = true, c = 'a', i = 123;
-    auto tup1 = alg::make_tuple(std::ref(b), std::ref(c), std::ref(i));
-    assert(std::get<0>(tup1).get()== true);
-    assert(std::get<1>(tup1).get()== 'a');
-    assert(std::get<2>(tup1).get()== 123);
-
+    auto tup1 = alg::make_tuple(std::ref(b), std::ref(c), std::ref(i)); // Remark : We can make the assignment
+    assert(std::get<0>(tup1).get()== true);                             // std::tuple<X,Y,Z> = std::tuple<std::reference_wrapper<X>, >
+    assert(std::get<1>(tup1).get()== 'a');                              //                                std::reference_wrapper<Y>,
+    assert(std::get<2>(tup1).get()== 123);                              //                                std::reference_wrapper<Z>>
+                                                                        // because there is conversion operator from reference_wrapper<T> to T.
     b = false, c = 'b', i = 234;
     assert(std::get<0>(tup1).get()== false); 
     assert(std::get<1>(tup1).get()== 'b');
@@ -47,7 +106,7 @@ void test_make_tuple()
     std::get<2>(tup0) = 234;
     assert(b0 == true);
     assert(c0 == 'a');
-    assert(i0 == 123); // tied variables is a temporary tuple, it cannot track source tuple<T> change
+    assert(i0 == 123); // Remark : Tied variables is a temporary tuple, it cannot track source tuple<T> change.
 
     // case 4 : tie to tuple<std::reference_wrapper<T>>
     alg::tie(b1,c1,i1) = tup1;
@@ -60,7 +119,7 @@ void test_make_tuple()
     std::get<2>(tup1).get() = 345;
     assert(b1 == false);
     assert(c1 == 'b');
-    assert(i1 == 234); // tied variables is a temporary tuple, it cannot track source tuple<T&> change
+    assert(i1 == 234); // Remark : Tied variables is a temporary tuple, it cannot track source tuple<T&> change.
 
     // case 5 : structural binding of variables to tuple<T>
     auto [b2,c2,i2] = tup0;
@@ -106,6 +165,7 @@ void test_forward_as_tuple()
 
 void test_tuple_factory()
 {
+    why_we_need_3_tuple_factories();
     test_make_tuple();
     test_tie();
     test_forward_as_tuple();
