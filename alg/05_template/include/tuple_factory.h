@@ -32,11 +32,22 @@ namespace toy_example
     std::uint32_t rvalue_impl_count = 0;
 
     template<typename T> 
-    struct wrapper // mimic std::tuple
+    struct incorrect_wrapper // incorrect mimic of std::tuple, see test for reason
     {
-        T& get() 
+        decltype(auto) get() 
         {
-            return m; 
+            return std::forward<T>(m); 
+        }
+
+        T m;
+    };
+
+    template<typename T> 
+    struct wrapper // correct mimic of std::tuple
+    {
+        decltype(auto) get() 
+        {
+            return static_cast<T>(m); 
         }
 
         T m;
@@ -65,7 +76,7 @@ namespace toy_example
     // *** Given 2 implementations *** //
     // ******************************* //
     template<typename T>
-    void implementation(T& x)
+    void implementation(const T& x)
     {
         ++lvalue_impl_count; 
     }

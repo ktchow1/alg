@@ -5,10 +5,13 @@
 #include<utility.h>
 
 
+struct T {};
 
 void why_we_need_3_tuple_factories()
 { 
-    // Example 1
+    // ***************** //
+    // *** Example 1 *** //
+    // ***************** //
     {
         int i = 123;
         auto   x = i;     
@@ -22,9 +25,36 @@ void why_we_need_3_tuple_factories()
         w = 400; assert(i == 400); // caller bears risk doing that ... 
     }
 
-    // Example 2
-    assert(toy_example::lvalue_impl_count == 0);
-    assert(toy_example::rvalue_impl_count == 0);
+    // ***************** //
+    // *** Example 2 *** //
+    // ***************** //
+    static_assert(std::is_same_v<decltype(std::declval<toy_example::incorrect_wrapper<T>>  ().get()), T&&>, "tuple_factory - type deduction failed"); // Why's that? We want T.
+    static_assert(std::is_same_v<decltype(std::declval<toy_example::incorrect_wrapper<T&>> ().get()), T&>,  "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(std::declval<toy_example::incorrect_wrapper<T&&>>().get()), T&&>, "tuple_factory - type deduction failed");
+
+    static_assert(std::is_same_v<decltype(std::declval<toy_example::wrapper<T>>  ().get()), T>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(std::declval<toy_example::wrapper<T&>> ().get()), T&>,  "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(std::declval<toy_example::wrapper<T&&>>().get()), T&&>, "tuple_factory - type deduction failed");
+
+    T t;
+    static_assert(std::is_same_v<decltype(t),             T>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(T{}),           T>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(std::move(t)),  T&&>, "tuple_factory - type deduction failed");
+
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_copying(t)),                        toy_example::wrapper<T>>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_copying(T{})),                      toy_example::wrapper<T>>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_lvalue_reference(t)),               toy_example::wrapper<T&>>,  "tuple_factory - type deduction failed");
+//  static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_lvalue_reference(T{})),             toy_example::wrapper<T&>>,  "tuple_factory - type deduction failed"); // expected : cannot compile
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_perfect_forwarding_reference(t)),   toy_example::wrapper<T&>>,  "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_perfect_forwarding_reference(T{})), toy_example::wrapper<T&&>>, "tuple_factory - type deduction failed");
+    
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_copying(t)                       .get()), T>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_copying(T{})                     .get()), T>,   "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_lvalue_reference(t)              .get()), T&>,  "tuple_factory - type deduction failed");
+//  static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_lvalue_reference(T{})            .get()), T&>,  "tuple_factory - type deduction failed"); // expected : cannot compile
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_perfect_forwarding_reference(t)  .get()), T&>,  "tuple_factory - type deduction failed");
+    static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_perfect_forwarding_reference(T{}).get()), T&&>, "tuple_factory - type deduction failed");
+
     
     {
         std::uint32_t x = 123;
