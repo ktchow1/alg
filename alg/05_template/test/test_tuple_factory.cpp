@@ -35,7 +35,7 @@ void why_we_need_3_tuple_factories()
         toy_example::interface_by_copying(std::move(x)); 
         assert(toy_example::lvalue_impl_count == 2);
         assert(toy_example::rvalue_impl_count == 0);
-        toy_example::interface_by_copying(123); 
+        toy_example::interface_by_copying(std::uint32_t(123)); 
         assert(toy_example::lvalue_impl_count == 3);
         assert(toy_example::rvalue_impl_count == 0);
     }
@@ -45,8 +45,8 @@ void why_we_need_3_tuple_factories()
         toy_example::interface_by_lvalue_reference(x); 
         assert(toy_example::lvalue_impl_count == 4);
         assert(toy_example::rvalue_impl_count == 0);
-    //  toy_example::interface_by_lvalue_reference(std::move(x));  // cannot compile for  xvalue
-    //  toy_example::interface_by_lvalue_reference(123);           // cannot compile for prvalue
+    //  toy_example::interface_by_lvalue_reference(std::move(x));          // cannot compile for  xvalue
+    //  toy_example::interface_by_lvalue_reference(std::uint32_t(123));    // cannot compile for prvalue
     }
     {
         std::uint32_t x = 123;
@@ -57,7 +57,7 @@ void why_we_need_3_tuple_factories()
         toy_example::interface_by_perfect_forwarding_reference(std::move(x)); 
         assert(toy_example::lvalue_impl_count == 5);
         assert(toy_example::rvalue_impl_count == 1);
-        toy_example::interface_by_perfect_forwarding_reference(123); 
+        toy_example::interface_by_perfect_forwarding_reference(std::uint32_t(123)); 
         assert(toy_example::lvalue_impl_count == 5);
         assert(toy_example::rvalue_impl_count == 2);
     }

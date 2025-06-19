@@ -32,9 +32,9 @@ namespace toy_example
     std::uint32_t rvalue_impl_count = 0;
 
     template<typename T> 
-    struct wrapper 
+    struct wrapper // mimic std::tuple
     {
-        decltype(auto) get() // why auto&& ? 
+        T& get() 
         {
             return m; 
         }
@@ -43,19 +43,19 @@ namespace toy_example
     };
 
     template<typename T>
-    wrapper<std::decay_t<T>> make_wrapper_by_copying(T&& x)
+    wrapper<std::decay_t<T>> make_wrapper_by_copying(T&& x) // mimic std::make_tuple
     {
-        return wrapper<std::decay_t<T>>(x);
+        return wrapper<std::decay_t<T>>(std::forward<T>(x));
     }
 
     template<typename T>
-    wrapper<T&> make_wrapper_by_lvalue_reference(T& x)
+    wrapper<T&> make_wrapper_by_lvalue_reference(T& x) // mimic std::tie
     {
         return wrapper<T&>(x);
     }
 
     template<typename T>
-    wrapper<T&&> make_wrapper_by_perfect_forwarding_reference(T&& x)
+    wrapper<T&&> make_wrapper_by_perfect_forwarding_reference(T&& x) // mimic std::forward_as_tuple
     {
         return wrapper<T&&>(std::forward<T>(x));
     }
@@ -77,9 +77,9 @@ namespace toy_example
     }
 
 
-    // **************************************** //
-    // *** Perfect forwarding (via wrapper) *** //
-    // **************************************** //
+    // *********************** //
+    // *** Mimic std::bind *** //
+    // *********************** //
     // It may look stupid creating a wrapper and passing the member to implementation, 
     // we do so for experiment. This pattern is useful in implementing std::bind.
     // Interface 1&2 cannot achieve perfect forwarding, while interface 3 can.
