@@ -4,6 +4,7 @@
 #include<utility.h>
 
 
+
 // ************ //
 // *** auto *** //
 // ************ //
@@ -52,6 +53,17 @@
 // 
 // i.e. if we want to preserve const, reference ..., use decltype(auto)
 //      if we want to remove   const, reference ..., use auto
+//
+//
+// ******************* //
+// *** 4 questions *** //
+// ******************* //
+// Given an expression, ask 4 questions :
+// * what is the type of the expression?
+// * what is the valueness of the expression?
+// * what function signature can be used to bind the expression?
+// * if the function signature is template / auto, how to deduce the type?
+//
 //
 
 struct M{      };
@@ -129,5 +141,25 @@ void test_deduce_decltype()
     static_assert(std::is_same_v<decltype((px->m )),       M  &>, "incorrect decltype deduce");
     static_assert(std::is_same_v<decltype((pcx->m)), const M  &>, "incorrect decltype deduce");
 
+    // Simple expression for lvalue, xvalue & prvalue
+    static_assert(std::is_same_v<decltype(x           ), X  >,    "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(std::move(x)), X&&>,    "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(X{}         ), X  >,    "incorrect decltype deduce");
+
+    // Complex expression for lvalue, xvalue & prvalue 
+    static_assert(std::is_same_v<decltype((x           )), X &>,  "incorrect decltype deduce"); // <--- decltype(()) keeps & here
+    static_assert(std::is_same_v<decltype((std::move(x))), X&&>,  "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype((X{}         )), X  >,  "incorrect decltype deduce");
+
+    // Valueness check
+    static_assert(!std::is_lvalue_reference_v<decltype( x          )>, "incorrect decltype valueness");
+    static_assert( std::is_lvalue_reference_v<decltype((x         ))>, "incorrect decltype valueness");
+    static_assert(!std::is_lvalue_reference_v<decltype(std::move(x))>, "incorrect decltype valueness");
+    static_assert(!std::is_lvalue_reference_v<decltype( X{}        )>, "incorrect decltype valueness");
+    static_assert(!std::is_rvalue_reference_v<decltype( x          )>, "incorrect decltype valueness");
+    static_assert(!std::is_rvalue_reference_v<decltype((x         ))>, "incorrect decltype valueness");
+    static_assert( std::is_rvalue_reference_v<decltype(std::move(x))>, "incorrect decltype valueness");
+    static_assert(!std::is_rvalue_reference_v<decltype( X{}        )>, "incorrect decltype valueness");
+    
     print_summary("deduce by decltype", "succeeded in compile time");
 }

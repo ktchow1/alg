@@ -4,6 +4,10 @@
 #include<utility.h>
 
 
+
+// ************** //
+// *** Sample *** //
+// ************** //
 class sample
 {
 public:
@@ -50,6 +54,21 @@ void test_return_rvalue()
     alg::rvalue_factory<sample> factory(10,11,12);
     assert(sample::num_instance == 1);
 
+    static_assert(std::is_same_v<decltype(factory.create_const_lvalue()), const sample& >, "rvalue - factory type check failed");
+    static_assert(std::is_same_v<decltype(factory.create_lvalue()),             sample& >, "rvalue - factory type check failed");
+    static_assert(std::is_same_v<decltype(factory.create_xvalue()),             sample&&>, "rvalue - factory type check failed");
+    static_assert(std::is_same_v<decltype(factory.create_prvalue()),            sample  >, "rvalue - factory type check failed");
+
+    // complex expression, should give same result
+    static_assert(std::is_same_v<decltype((factory.create_const_lvalue())), const sample& >, "rvalue - factory type check failed");
+    static_assert(std::is_same_v<decltype((factory.create_lvalue())),             sample& >, "rvalue - factory type check failed");
+    static_assert(std::is_same_v<decltype((factory.create_xvalue())),             sample&&>, "rvalue - factory type check failed");
+    static_assert(std::is_same_v<decltype((factory.create_prvalue())),            sample  >, "rvalue - factory type check failed");
+
+
+    // ******************* //
+    // *** Return type *** //
+    // ******************* //
     const auto& x = factory.create_const_lvalue();
     assert(&x == factory.get_pointer());
     assert(x.m_src == alg::object_source::default_constructed); // refers to m_value inside rvalue_factory
