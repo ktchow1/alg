@@ -47,7 +47,7 @@ int sample::num_instance = 0;
 
 
 // ********************************************* //
-// *** Return rvalue and rvalua as input arg *** //
+// *** Return rvalue and rvalue as input arg *** //
 // ********************************************* //
 void test_return_rvalue()
 {

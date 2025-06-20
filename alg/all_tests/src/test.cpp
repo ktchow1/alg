@@ -29,7 +29,7 @@ void test_constexpr_array();
 void test_constexpr_map();
 void test_deduce_auto();
 void test_deduce_decltype();
-void test_deduce_3_questions();
+void test_deduce_named_vs_unnamed();
 void test_exception();
 void test_literal();
 void test_memory_alignment();
@@ -142,7 +142,7 @@ int main()
 //  test_constexpr_map();
     test_deduce_auto();
     test_deduce_decltype();
-    test_deduce_3_questions();
+    test_deduce_named_vs_unnamed();
 //  test_exception();
 //  test_literal();
 //  test_memory_alignment();

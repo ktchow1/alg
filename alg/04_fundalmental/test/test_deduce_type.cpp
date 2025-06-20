@@ -57,11 +57,15 @@
 //      if we want to remove   const, reference ..., use auto
 //
 
-struct M{      };
-struct X{ M m; };
+namespace toy_example
+{
+    struct M{      };
+    struct X{ M m; };
+}
 
 
 
+using namespace toy_example;
 void test_deduce_auto()
 {
           X    x;
@@ -160,16 +164,16 @@ void test_deduce_decltype()
 
 
 
-// ******************************************** //
-// *** 3 questions about type and valueness *** //
-// ******************************************** //
-// Given an expression, ask 4 questions :
-// * what is the type of the expression?
+// **************************************** //
+// *** Named and unnamed type deduction *** //
+// **************************************** //
+// Given an expression, ask 3 questions :
+// * what is the type      of the expression? 
 // * what is the valueness of the expression?
 // * what function signature can be used to bind the expression?
 //
 // decltype (expression)   = type of the expression literally
-// decltype((expression))  = type of the expression considering the valueness
+// decltype((expression))  = type of the expression considering its valueness
 //
 //                     
 //
@@ -181,55 +185,66 @@ void test_deduce_decltype()
 // unnamed    |   X    |   rvalue     |   f(T&&)    |   X            X    
 // unnamed    |   X&   |   lvalue     |   f(T&)     |   X&           X&   
 // unnamed    |   X&&  |   rvalue     |   f(T&&)    |   X&&          X&&  
-//                                                      ^--- same as column 1
-//
+//                         ^                            ^--- same as column 1
+//                         |
+//                         +--- either lvalue / rvalue (no type here)
 
-X     named_x;
-X&    named_rx  = named_x;
-X&&   named_rrx = std::move(named_x);
-X   unnamed_x()   { return named_x; }
-X&  unnamed_rx()  { return named_x; } 
-X&& unnamed_rrx() { return std::move(named_x); } 
+namespace toy_example
+{
+    X     named_x;
+    X&    named_rx  = named_x;
+    X&&   named_rrx = std::move(named_x);
+    X   unnamed_x()   { return named_x; }
+    X&  unnamed_rx()  { return named_x; } 
+    X&& unnamed_rrx() { return std::move(named_x); } 
 
-std::uint32_t lvalue_count = 0;
-std::uint32_t rvalue_count = 0;
-template<typename T> void fct(T&)  { ++lvalue_count; }
-template<typename T> void fct(T&&) { ++rvalue_count; }
+    std::uint32_t lvalue_count = 0;
+    std::uint32_t rvalue_count = 0;
+    template<typename T> void fct(T&)  { ++lvalue_count; }
+    template<typename T> void fct(T&&) { ++rvalue_count; }
+}
 
 
 
-void test_deduce_3_questions()
+void test_deduce_named_vs_unnamed()
 {
     // 1. type with decltype(), valueness is not considered
-    static_assert(std::is_same_v<decltype(named_x),       X>,   "4 questions failed");
-    static_assert(std::is_same_v<decltype(named_rx),      X&>,  "4 questions failed");
-    static_assert(std::is_same_v<decltype(named_rrx),     X&&>, "4 questions failed");
-    static_assert(std::is_same_v<decltype(unnamed_x()),   X>,   "4 questions failed");
-    static_assert(std::is_same_v<decltype(unnamed_rx()),  X&>,  "4 questions failed");
-    static_assert(std::is_same_v<decltype(unnamed_rrx()), X&&>, "4 questions failed");
+    static_assert(std::is_same_v<decltype(named_x),       X>,   "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(named_rx),      X&>,  "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(named_rrx),     X&&>, "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(unnamed_x()),   X>,   "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(unnamed_rx()),  X&>,  "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(unnamed_rrx()), X&&>, "incorrect decltype deduce");
+
+    static_assert(std::is_same_v<decltype(named_x.m),       M>, "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(named_rx.m),      M>, "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(named_rrx.m),     M>, "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(unnamed_x().m),   M>, "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(unnamed_rx().m),  M>, "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype(unnamed_rrx().m), M>, "incorrect decltype deduce");
 
     // 1. type with decltype (()), valueness is considered
-    static_assert(std::is_same_v<decltype((named_x)),       X&>,  "4 questions failed"); // lvalue is considered
-    static_assert(std::is_same_v<decltype((named_rx)),      X&>,  "4 questions failed");
-    static_assert(std::is_same_v<decltype((named_rrx)),     X&>,  "4 questions failed"); // lvalue is considered
-    static_assert(std::is_same_v<decltype((unnamed_x())),   X>,   "4 questions failed");
-    static_assert(std::is_same_v<decltype((unnamed_rx())),  X&>,  "4 questions failed");
-    static_assert(std::is_same_v<decltype((unnamed_rrx())), X&&>, "4 questions failed");
+    static_assert(std::is_same_v<decltype((named_x)),       X&>,  "incorrect decltype deduce"); // lvalue is considered
+    static_assert(std::is_same_v<decltype((named_rx)),      X&>,  "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype((named_rrx)),     X&>,  "incorrect decltype deduce"); // lvalue is considered
+    static_assert(std::is_same_v<decltype((unnamed_x())),   X>,   "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype((unnamed_rx())),  X&>,  "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype((unnamed_rrx())), X&&>, "incorrect decltype deduce");
 
     // 2. valueness - this part is consistent with decltype(())
-    static_assert( std::is_lvalue_reference_v<decltype((named_x))>,       "4 questions failed");
-    static_assert( std::is_lvalue_reference_v<decltype((named_rx))>,      "4 questions failed");
-    static_assert( std::is_lvalue_reference_v<decltype((named_rrx))>,     "4 questions failed"); 
-    static_assert(!std::is_lvalue_reference_v<decltype((unnamed_x()))>,   "4 questions failed"); // this is non lvalue ref
-    static_assert( std::is_lvalue_reference_v<decltype((unnamed_rx()))>,  "4 questions failed");
-    static_assert(!std::is_lvalue_reference_v<decltype((unnamed_rrx()))>, "4 questions failed");
+    static_assert( std::is_lvalue_reference_v<decltype((named_x))>,       "incorrect decltype deduce");
+    static_assert( std::is_lvalue_reference_v<decltype((named_rx))>,      "incorrect decltype deduce");
+    static_assert( std::is_lvalue_reference_v<decltype((named_rrx))>,     "incorrect decltype deduce"); 
+    static_assert(!std::is_lvalue_reference_v<decltype((unnamed_x()))>,   "incorrect decltype deduce"); // this is non lvalue ref
+    static_assert( std::is_lvalue_reference_v<decltype((unnamed_rx()))>,  "incorrect decltype deduce");
+    static_assert(!std::is_lvalue_reference_v<decltype((unnamed_rrx()))>, "incorrect decltype deduce");
     
-    static_assert(!std::is_rvalue_reference_v<decltype((named_x))>,       "4 questions failed");
-    static_assert(!std::is_rvalue_reference_v<decltype((named_rx))>,      "4 questions failed");
-    static_assert(!std::is_rvalue_reference_v<decltype((named_rrx))>,     "4 questions failed"); 
-    static_assert(!std::is_rvalue_reference_v<decltype((unnamed_x()))>,   "4 questions failed"); // this is also non rvalue ref
-    static_assert(!std::is_rvalue_reference_v<decltype((unnamed_rx()))>,  "4 questions failed");
-    static_assert( std::is_rvalue_reference_v<decltype((unnamed_rrx()))>, "4 questions failed");
+    static_assert(!std::is_rvalue_reference_v<decltype((named_x))>,       "incorrect decltype deduce");
+    static_assert(!std::is_rvalue_reference_v<decltype((named_rx))>,      "incorrect decltype deduce");
+    static_assert(!std::is_rvalue_reference_v<decltype((named_rrx))>,     "incorrect decltype deduce"); 
+    static_assert(!std::is_rvalue_reference_v<decltype((unnamed_x()))>,   "incorrect decltype deduce"); // this is also non rvalue ref
+    static_assert(!std::is_rvalue_reference_v<decltype((unnamed_rx()))>,  "incorrect decltype deduce");
+    static_assert( std::is_rvalue_reference_v<decltype((unnamed_rrx()))>, "incorrect decltype deduce");
 
     // 3. bound by
     fct(  named_x);        assert(lvalue_count == 1 && rvalue_count == 0);
