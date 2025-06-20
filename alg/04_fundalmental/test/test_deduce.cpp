@@ -29,6 +29,8 @@
 // * for complex  xvalue expression        type = reference_collapse<T &&> 
 // * for complex prvalue expression        type = reference_collapse<T   > 
 //
+// see also test_rvalue.cpp : test_3_questions().
+//
 //
 // ********************** //
 // *** decltype(auto) *** //
