@@ -10,52 +10,9 @@ T t;
 
 void why_we_need_3_tuple_factories()
 { 
-    // ******************* //
-    // *** Type deduce *** //
-    // ******************* //
-    {
-        int i = 123;
-        auto   x = i;     
-        auto&  y = i;    
-        auto&& z = i;   
-        auto&& w = std::move(i); 
-        
-        static_assert(std::is_same_v<decltype(x), int>,   "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(y), int&>,  "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(z), int&>,  "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(w), int&&>, "tuple_factory - type check");
-
-        x = 100; assert(i == 123);
-        y = 200; assert(i == 200);
-        z = 300; assert(i == 300);
-        w = 400; assert(i == 400); // caller bears risk doing that ... 
-    
-
-
-
-
-        static_assert(std::is_same_v<decltype(std::get<0>(std::make_tuple(t))),       T&&>, "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(std::get<0>(std::tie(t))),              T&>, "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(t))), T&>, "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(std::move(t)))), T&&>, "tuple_factory - type check");
-        auto t0 = std::make_tuple(t);
-        auto t1 = std::tie(t);
-        auto t2 = std::forward_as_tuple(t);
-        auto t3 = std::forward_as_tuple(std::move(t));
-        static_assert(std::is_same_v<decltype(std::get<0>(t0)), T&>, "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(std::get<0>(t1)), T&>, "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(std::get<0>(t2)), T&>, "tuple_factory - type check");
-        static_assert(std::is_same_v<decltype(std::get<0>(t3)), T&>, "tuple_factory - type check");
-    }
-    
-
     // ******************** //
     // *** make_wrapper *** //
     // ******************** //
-
-    
-    
-
     static_assert(std::is_same_v<decltype(std::declval<toy_example::wrapper<T>>  ().get()), T>,   "tuple_factory - type deduction failed");
     static_assert(std::is_same_v<decltype(std::declval<toy_example::wrapper<T&>> ().get()), T&>,  "tuple_factory - type deduction failed");
     static_assert(std::is_same_v<decltype(std::declval<toy_example::wrapper<T&&>>().get()), T&&>, "tuple_factory - type deduction failed");

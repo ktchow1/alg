@@ -46,10 +46,10 @@ int sample::num_instance = 0;
 
 
 
-// ********************************************* //
-// *** Return rvalue and rvalue as input arg *** //
-// ********************************************* //
-void test_return_rvalue()
+// ************************************************* //
+// *** Rrvalue as return and rvalue as input arg *** //
+// ************************************************* //
+void test_rvalue_as_return()
 {
     alg::rvalue_factory<sample> factory(10,11,12);
     assert(sample::num_instance == 1);
@@ -106,7 +106,7 @@ void test_return_rvalue()
 }
 
 
-void test_input_rvalue()
+void test_rvalue_as_input()
 {
     alg::rvalue_factory<sample> factory(10,11,12);
 
@@ -135,9 +135,9 @@ void test_input_rvalue()
 
 
 // **************************************** //
-// *** Constructibility & assignability *** //
+// *** Rvalueness and 6 default members *** //
 // **************************************** //
-void test_compiler_generated_constructor()
+void test_rvalueness_and_6_default_members()
 {
     static_assert( std::is_default_constructible<alg::member_initialized_DC>::value);
     static_assert( std::   is_copy_constructible<alg::member_initialized_DC>::value);
@@ -191,9 +191,9 @@ void test_compiler_generated_constructor()
 }
 
 
-void test_rvalue()
+void test_deduce_rvalue()
 {
-    test_return_rvalue();
-    test_input_rvalue();
-    test_compiler_generated_constructor();
+    test_rvalue_as_return();
+    test_rvalue_as_input();
+    test_rvalueness_and_6_default_members();
 }
