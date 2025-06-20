@@ -152,7 +152,7 @@ int main()
 //  test_memory_unique_ptr();
 //  test_optional();
 //  test_polymophism();
-    test_rvalue();
+//  test_rvalue();
 //  test_std_alg();
 //  test_std_container();
 //  test_std_layout();

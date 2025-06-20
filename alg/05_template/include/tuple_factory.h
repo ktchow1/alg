@@ -8,7 +8,6 @@
 // * std::forward_as_tuple()
 //
 //
-//
 // In short, it is about simulating : 
 //  
 //   int i = 123;
@@ -16,15 +15,7 @@
 //   auto&  y = i;                // reference to existing instance, bind to lvalue onlyA
 //   auto&& z = i;                // reference to existing instance, bind to both lvalue and ...
 //   auto&& w = std::move(i);     //                                              rvalue
-//  
-//   x = 100; assert(i == 123);
-//   y = 200; assert(i == 200);
-//   z = 300; assert(i == 300);
-//   w = 400; assert(i == 400);   // we can modify rvalue reference w, yet there may be risk i going out of scope, it's caller responsibility
 //
-//  
-// Lets consider scalar variable "toy_example::wrapper<T>" instead of tuple<X,Y,Z>.
-
 
 namespace toy_example
 {
@@ -32,19 +23,7 @@ namespace toy_example
     std::uint32_t rvalue_impl_count = 0;
 
     template<typename T> 
-    struct incorrect_wrapper // incorrect mimic of std::tuple, see test for reason
-    {
-        
-        decltype(auto) get() 
-        {
-            return std::forward<T>(m); 
-        }
-
-        T m;
-    };
-
-    template<typename T> 
-    struct wrapper // correct mimic of std::tuple
+    struct wrapper // This is not an accurate mimic of tuple, as the return type of tuple<T> is T&, not T.
     {
         decltype(auto) get() 
         {
@@ -71,6 +50,7 @@ namespace toy_example
     {
         return wrapper<T&&>(std::forward<T>(x));
     }
+
 
 
     // ******************************* //
