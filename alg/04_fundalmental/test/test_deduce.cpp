@@ -60,6 +60,8 @@
 struct M{      };
 struct X{ M m; };
 
+
+
 void test_deduce_auto()
 {
           X    x;
@@ -104,6 +106,7 @@ void test_deduce_auto()
 
     print_summary("deduce by auto", "succeeded in compile time");
 }
+
 
 
 void test_deduce_decltype()
@@ -154,3 +157,89 @@ void test_deduce_decltype()
     
     print_summary("deduce by decltype", "succeeded in compile time");
 }
+
+
+
+// ******************************************** //
+// *** 3 questions about type and valueness *** //
+// ******************************************** //
+// Given an expression, ask 4 questions :
+// * what is the type of the expression?
+// * what is the valueness of the expression?
+// * what function signature can be used to bind the expression?
+//
+// decltype (expression)   = type of the expression literally
+// decltype((expression))  = type of the expression considering the valueness
+//
+//                     
+//
+// with name? | 1.type | 2.valuenesss | 3.bound by  | decltype()  decltype(())
+// -----------+--------+--------------+-------------+---------------------------
+//   named    |   X    |   lvalue     |   f(T&)     |   X            X&    
+//   named    |   X&   |   lvalue     |   f(T&)     |   X&           X&   
+//   named    |   X&&  |   lvalue     |   f(T&)     |   X&&          X&  
+// unnamed    |   X    |   rvalue     |   f(T&&)    |   X            X    
+// unnamed    |   X&   |   lvalue     |   f(T&)     |   X&           X&   
+// unnamed    |   X&&  |   rvalue     |   f(T&&)    |   X&&          X&&  
+//                                                      ^--- same as column 1
+//
+
+X     named_x;
+X&    named_rx  = named_x;
+X&&   named_rrx = std::move(named_x);
+X   unnamed_x()   { return named_x; }
+X&  unnamed_rx()  { return named_x; } 
+X&& unnamed_rrx() { return std::move(named_x); } 
+
+std::uint32_t lvalue_count = 0;
+std::uint32_t rvalue_count = 0;
+template<typename T> void fct(T&)  { ++lvalue_count; }
+template<typename T> void fct(T&&) { ++rvalue_count; }
+
+
+
+void test_deduce_3_questions()
+{
+    // 1. type with decltype(), valueness is not considered
+    static_assert(std::is_same_v<decltype(named_x),       X>,   "4 questions failed");
+    static_assert(std::is_same_v<decltype(named_rx),      X&>,  "4 questions failed");
+    static_assert(std::is_same_v<decltype(named_rrx),     X&&>, "4 questions failed");
+    static_assert(std::is_same_v<decltype(unnamed_x()),   X>,   "4 questions failed");
+    static_assert(std::is_same_v<decltype(unnamed_rx()),  X&>,  "4 questions failed");
+    static_assert(std::is_same_v<decltype(unnamed_rrx()), X&&>, "4 questions failed");
+
+    // 1. type with decltype (()), valueness is considered
+    static_assert(std::is_same_v<decltype((named_x)),       X&>,  "4 questions failed"); // lvalue is considered
+    static_assert(std::is_same_v<decltype((named_rx)),      X&>,  "4 questions failed");
+    static_assert(std::is_same_v<decltype((named_rrx)),     X&>,  "4 questions failed"); // lvalue is considered
+    static_assert(std::is_same_v<decltype((unnamed_x())),   X>,   "4 questions failed");
+    static_assert(std::is_same_v<decltype((unnamed_rx())),  X&>,  "4 questions failed");
+    static_assert(std::is_same_v<decltype((unnamed_rrx())), X&&>, "4 questions failed");
+
+    // 2. valueness - this part is consistent with decltype(())
+    static_assert( std::is_lvalue_reference_v<decltype((named_x))>,       "4 questions failed");
+    static_assert( std::is_lvalue_reference_v<decltype((named_rx))>,      "4 questions failed");
+    static_assert( std::is_lvalue_reference_v<decltype((named_rrx))>,     "4 questions failed"); 
+    static_assert(!std::is_lvalue_reference_v<decltype((unnamed_x()))>,   "4 questions failed"); // this is non lvalue ref
+    static_assert( std::is_lvalue_reference_v<decltype((unnamed_rx()))>,  "4 questions failed");
+    static_assert(!std::is_lvalue_reference_v<decltype((unnamed_rrx()))>, "4 questions failed");
+    
+    static_assert(!std::is_rvalue_reference_v<decltype((named_x))>,       "4 questions failed");
+    static_assert(!std::is_rvalue_reference_v<decltype((named_rx))>,      "4 questions failed");
+    static_assert(!std::is_rvalue_reference_v<decltype((named_rrx))>,     "4 questions failed"); 
+    static_assert(!std::is_rvalue_reference_v<decltype((unnamed_x()))>,   "4 questions failed"); // this is also non rvalue ref
+    static_assert(!std::is_rvalue_reference_v<decltype((unnamed_rx()))>,  "4 questions failed");
+    static_assert( std::is_rvalue_reference_v<decltype((unnamed_rrx()))>, "4 questions failed");
+
+    // 3. bound by
+    fct(  named_x);        assert(lvalue_count == 1 && rvalue_count == 0);
+    fct(  named_rx);       assert(lvalue_count == 2 && rvalue_count == 0);
+    fct(  named_rrx);      assert(lvalue_count == 3 && rvalue_count == 0);
+    fct(unnamed_x());      assert(lvalue_count == 3 && rvalue_count == 1);
+    fct(unnamed_rx());     assert(lvalue_count == 4 && rvalue_count == 1);
+    fct(unnamed_rrx());    assert(lvalue_count == 4 && rvalue_count == 2); // <--- proved the above table is correct
+
+    print_summary("rvalue - 3 questions", "succeeded");
+}
+
+

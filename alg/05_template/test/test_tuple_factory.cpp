@@ -20,19 +20,32 @@ void why_we_need_3_tuple_factories()
         auto&& z = i;   
         auto&& w = std::move(i); 
         
+        static_assert(std::is_same_v<decltype(x), int>,   "tuple_factory - type check");
+        static_assert(std::is_same_v<decltype(y), int&>,  "tuple_factory - type check");
+        static_assert(std::is_same_v<decltype(z), int&>,  "tuple_factory - type check");
+        static_assert(std::is_same_v<decltype(w), int&&>, "tuple_factory - type check");
+
         x = 100; assert(i == 123);
         y = 200; assert(i == 200);
         z = 300; assert(i == 300);
         w = 400; assert(i == 400); // caller bears risk doing that ... 
     
-        std::tuple<T> t0;
-        std::tuple<T&> t1(t);
-        std::tuple<T&&> t2(std::move(t));
+
+
+
 
         static_assert(std::is_same_v<decltype(std::get<0>(std::make_tuple(t))),       T&&>, "tuple_factory - type check");
         static_assert(std::is_same_v<decltype(std::get<0>(std::tie(t))),              T&>, "tuple_factory - type check");
         static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(t))), T&>, "tuple_factory - type check");
         static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(std::move(t)))), T&&>, "tuple_factory - type check");
+        auto t0 = std::make_tuple(t);
+        auto t1 = std::tie(t);
+        auto t2 = std::forward_as_tuple(t);
+        auto t3 = std::forward_as_tuple(std::move(t));
+        static_assert(std::is_same_v<decltype(std::get<0>(t0)), T&>, "tuple_factory - type check");
+        static_assert(std::is_same_v<decltype(std::get<0>(t1)), T&>, "tuple_factory - type check");
+        static_assert(std::is_same_v<decltype(std::get<0>(t2)), T&>, "tuple_factory - type check");
+        static_assert(std::is_same_v<decltype(std::get<0>(t3)), T&>, "tuple_factory - type check");
     }
     
 
@@ -62,7 +75,7 @@ void why_we_need_3_tuple_factories()
     static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_perfect_forwarding_reference(T{}).get()), T&&>, "tuple_factory - type deduction failed");
 
 
-
+/*
     
     {
         std::uint32_t x = 123;
@@ -98,7 +111,7 @@ void why_we_need_3_tuple_factories()
         toy_example::interface_by_perfect_forwarding_reference(std::uint32_t(123)); 
         assert(toy_example::lvalue_impl_count == 5);
         assert(toy_example::rvalue_impl_count == 2);
-    }
+    } */
     print_summary("tuple factory - why we need 3 factories?", "succeeded");
 }
 

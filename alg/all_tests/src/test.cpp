@@ -29,6 +29,7 @@ void test_constexpr_array();
 void test_constexpr_map();
 void test_deduce_auto();
 void test_deduce_decltype();
+void test_deduce_3_questions();
 void test_exception();
 void test_literal();
 void test_memory_alignment();
@@ -139,8 +140,9 @@ int main()
 //  test_constexpr();
 //  test_constexpr_array();
 //  test_constexpr_map();
-//  test_deduce_auto();
-//  test_deduce_decltype();
+    test_deduce_auto();
+    test_deduce_decltype();
+    test_deduce_3_questions();
 //  test_exception();
 //  test_literal();
 //  test_memory_alignment();
@@ -152,7 +154,7 @@ int main()
 //  test_memory_unique_ptr();
 //  test_optional();
 //  test_polymophism();
-//  test_rvalue();
+    test_rvalue();
 //  test_std_alg();
 //  test_std_container();
 //  test_std_layout();
