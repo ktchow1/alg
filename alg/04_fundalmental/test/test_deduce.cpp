@@ -54,17 +54,6 @@
 // i.e. if we want to preserve const, reference ..., use decltype(auto)
 //      if we want to remove   const, reference ..., use auto
 //
-//
-// ******************* //
-// *** 4 questions *** //
-// ******************* //
-// Given an expression, ask 4 questions :
-// * what is the type of the expression?
-// * what is the valueness of the expression?
-// * what function signature can be used to bind the expression?
-// * if the function signature is template / auto, how to deduce the type?
-//
-//
 
 struct M{      };
 struct X{ M m; };

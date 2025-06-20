@@ -133,6 +133,56 @@ void test_input_rvalue()
 }
 
 
+// ******************* //
+// *** 4 questions *** //
+// ******************* //
+// Given an expression, ask 4 questions :
+// * what is the type of the expression?
+// * what is the valueness of the expression?
+// * what function signature can be used to bind the expression?
+// * if the function signature is template / auto, how to deduce the type?
+//
+//
+// with name? |  type  |  valuenesss  | bound by
+// -----------+--------+--------------+-------------
+//   named    |   X    |  lvalue      | f(T&)
+// unnamed    |   X    |  rvalue      | f(T&&) <--- this is relevant to implementation of alg::make_tuple / tie / forward_as_tuple
+//   named    |   X&   |  lvalue      | f(T&)
+// unnamed    |   X&   |  lvalue      | f(T&)
+//   named    |   X&&  |  lvalue      | f(T&)
+// unnamed    |   X&&  |  rvalue      | f(T&&) 
+
+namespace toy_example
+{
+    struct X{};
+    X     named_x;
+    X&    named_rx  = named_x;
+    X&&   named_rrx = std::move(named_x);
+    X   unnamed_x()   { return named_x; }
+    X&  unnamed_rx()  { return named_x; } 
+    X&& unnamed_rrx() { return std::move(named_x); } 
+
+    std::uint32_t lvalue_count = 0;
+    std::uint32_t rvalue_count = 0;
+    template<typename T> void fct(T&)  { ++lvalue_count; }
+    template<typename T> void fct(T&&) { ++rvalue_count; }
+}
+
+void test_bind_rvalue()
+{
+    using namespace toy_example;
+
+    fct(  named_x);        assert(lvalue_count == 1 && rvalue_count == 0);
+    fct(unnamed_x());      assert(lvalue_count == 1 && rvalue_count == 1);
+    fct(  named_rx);       assert(lvalue_count == 2 && rvalue_count == 1);
+    fct(unnamed_rx());     assert(lvalue_count == 3 && rvalue_count == 1);
+    fct(  named_rrx);      assert(lvalue_count == 4 && rvalue_count == 1);
+    fct(unnamed_rrx());    assert(lvalue_count == 4 && rvalue_count == 2); // <--- proved the above table is correct
+
+    print_summary("rvalue - bind rvalue", "succeeded");
+}
+
+
 void test_compiler_generated_constructor()
 {
     static_assert( std::is_default_constructible<alg::member_initialized_DC>::value);
@@ -198,6 +248,7 @@ void test_rvalue()
 {
     test_return_rvalue();
     test_input_rvalue();
+    test_bind_rvalue();
     test_compiler_generated_constructor();
     test_universal_reference_deduction();
 }
