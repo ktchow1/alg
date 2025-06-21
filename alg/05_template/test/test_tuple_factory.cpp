@@ -81,12 +81,56 @@ void test_std_make_tuple_type()
 // ******************************************* //
 void test_alg_make_tuple_type()
 {
+    // For named x
+    static_assert(std::is_same_v<decltype(alg::make_tuple      (named_x)           ), std::tuple<X>>  , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(alg::tie             (named_x)           ), std::tuple<X&>> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(alg::forward_as_tuple(named_x)           ), std::tuple<X&>> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(alg::forward_as_tuple(std::move(named_x))), std::tuple<X&&>>, "deduce tuple type");
+
+    // For named x and unnamed tuple
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::make_tuple      (named_x)           )), X&&>, "deduce tuple type"); // this is behaviour of std::get
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::tie             (named_x)           )), X&> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::forward_as_tuple(named_x)           )), X&> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::forward_as_tuple(std::move(named_x)))), X&&>, "deduce tuple type");
+
+    // For named x and named tuple
+    auto t0 = alg::make_tuple      (named_x);
+    auto t1 = alg::tie             (named_x);
+    auto t2 = alg::forward_as_tuple(named_x);
+    auto t3 = alg::forward_as_tuple(std::move(named_x));
+    static_assert(std::is_same_v<decltype(std::get<0>(t0)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(t1)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(t2)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(t3)), X&>, "deduce tuple type");
+
+  
+
+    // For unnamed x
+    static_assert(std::is_same_v<decltype(alg::make_tuple      (unnamed_x())           ), std::tuple<X>>  , "deduce tuple type");
+//  static_assert(std::is_same_v<decltype(alg::tie             (unnamed_x())           ), std::tuple<***>>, "deduce tuple type"); // expected : cannot compile
+    static_assert(std::is_same_v<decltype(alg::forward_as_tuple(unnamed_x())           ), std::tuple<X&&>>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(alg::forward_as_tuple(std::move(unnamed_x()))), std::tuple<X&&>>, "deduce tuple type");
+  
+    // For unnamed x and unnamed tuple
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::make_tuple      (unnamed_x())           )), X&&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::forward_as_tuple(unnamed_x())           )), X&&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(alg::forward_as_tuple(std::move(unnamed_x())))), X&&>, "deduce tuple type");
+  
+    // For unnamed x and named tuple
+    auto s0 = alg::make_tuple      (unnamed_x());
+    auto s2 = alg::forward_as_tuple(unnamed_x());
+    auto s3 = alg::forward_as_tuple(std::move(unnamed_x()));
+    static_assert(std::is_same_v<decltype(std::get<0>(s0)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(s2)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(s3)), X&>, "deduce tuple type"); 
+
     print_summary("tuple factory - alg tuple type", "succeeded in compile time");
 }
 
 
 
-// please replace by X
+// please delete
+/*
 struct T {};
 T t;
 
@@ -115,7 +159,7 @@ void why_we_need_3_tuple_factories()
 
 
     print_summary("tuple factory - why we need 3 factories?", "succeeded");
-}
+} */
 
 
 void test_make_tuple() 
@@ -218,11 +262,9 @@ void test_forward_as_tuple()
 
 void test_tuple_factory()
 {
-    test_alg_make_tuple_type();
+    test_std_make_tuple_type();
     test_alg_make_tuple_type();
 
-
-    why_we_need_3_tuple_factories();
     test_make_tuple();
     test_tie();
     test_forward_as_tuple();

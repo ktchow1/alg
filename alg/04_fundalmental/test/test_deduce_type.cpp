@@ -309,4 +309,6 @@ void test_deduce_type()
     test_auto();
     test_decltype();
     test_named_vs_unnamed();
+
+    // see also tuple_factory.h for more advanced type deduction 
 }

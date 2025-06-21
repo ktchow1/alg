@@ -11,17 +11,23 @@
 // In short, it is about simulating : 
 //  
 //   int i = 123;
-//   auto   x = i;                // instantiate new instance, then deep copy 
-//   auto&  y = i;                // reference to existing instance, bind to lvalue onlyA
-//   auto&& z = i;                // reference to existing instance, bind to both lvalue and ...
+//   auto   x = i;                // instantiate new instance, then deep copy                     <--- simulated by std::make_tupl
+//   auto&  y = i;                // reference to existing instance, bind to lvalue only          <--- simulated by std::tie
+//   auto&& z = i;                // reference to existing instance, bind to both lvalue and ...  <--- simulated by std::forward_as_tuple
 //   auto&& w = std::move(i);     //                                              rvalue
 //
+// Now generalize scaler wrapper into tuple, we have : 
 
+
+// * std::make_tuple           takes deep copy of element
+// * std::tie                  takes lvalue reference to element 
+// * std::forward_as_tuple     takes universal reference to element
+
+
+
+/*
 namespace toy_example
 {
-    std::uint32_t lvalue_impl_count = 0;
-    std::uint32_t rvalue_impl_count = 0;
-
     template<typename T> 
     struct wrapper // This is not an accurate mimic of tuple, as the return type of tuple<T> is T&, not T.
     {
@@ -49,17 +55,17 @@ namespace toy_example
     wrapper<T&&> make_wrapper_by_perfect_forwarding_reference(T&& x) // mimic std::forward_as_tuple
     {
         return wrapper<T&&>(std::forward<T>(x));
-    }
-}
-
-
-
 // Now generalize scaler wrapper into tuple, we have : 
 
 
 // * std::make_tuple           takes deep copy of element
 // * std::tie                  takes lvalue reference to element 
 // * std::forward_as_tuple     takes universal reference to element
+    }
+}
+*/
+
+
 
 
 
