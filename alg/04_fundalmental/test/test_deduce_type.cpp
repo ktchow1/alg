@@ -18,6 +18,7 @@
 // * for auto&& and rvalue assignment      type = reference_collapse<            reference_trim<T>  &&>  
 //
 //
+//
 // **************** //
 // *** decltype *** //
 // **************** //
@@ -30,6 +31,7 @@
 // * for complex prvalue expression        type = reference_collapse<T   > 
 //
 // see also test_rvalue.cpp : test_3_questions().
+//
 //
 //
 // ********************** //
@@ -56,9 +58,32 @@
 // i.e. if we want to preserve const, reference ..., use decltype(auto)
 //      if we want to remove   const, reference ..., use auto
 //
+//
+//
+// ************************ //
+// *** Accessing member *** //
+// ************************ //
+// According to C++20 standard 7.2.1.5, the expression accessing member like this ...
+//
+// expression.member 
+//
+// is lvalue, regardless whether expression is lvalue, xvalue or prvalue, such as :
+//
+// pod.m                <--- lvalue
+// std::move(pod).m     <--- lvalue
+// POD{}.m              <--- lvalue
+//
+//
 
 namespace toy_example
 {
+    struct POD
+    {
+        int   a;
+        int&  b;
+        int&& c;
+    };
+
     struct M{      };
     struct X{ M m; };
 }
@@ -78,10 +103,28 @@ void test_auto_summary()
     static_assert(std::is_same_v<decltype(y), int&>,  "deduce by auto failed"); // auto&  can bind to lvalue only
     static_assert(std::is_same_v<decltype(z), int&>,  "deduce by auto failed"); // auto&& can bind to lvalue and rvalue
     static_assert(std::is_same_v<decltype(w), int&&>, "deduce by auto failed");
-    x = 100; assert(i == 123);
-    y = 200; assert(i == 200);
-    z = 300; assert(i == 300);
-    w = 400; assert(i == 400); // caller bears risk if he modifies something that is temporary ...
+
+    POD pod{123, i, std::move(i)};
+
+    static_assert(std::is_same_v<decltype(pod.a), int>,   "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(pod.b), int&>,  "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(pod.c), int&&>, "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(std::move(pod).a), int>,   "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(std::move(pod).b), int&>,  "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(std::move(pod).c), int&&>, "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(POD{123, i, std::move(i)}.a), int>,   "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(POD{123, i, std::move(i)}.b), int&>,  "deduce by auto failed");
+    static_assert(std::is_same_v<decltype(POD{123, i, std::move(i)}.c), int&&>, "deduce by auto failed");
+    
+    static_assert(std::is_same_v<decltype((pod.a)), int&>,  "deduce by auto failed");                       // expression is lvalue, hence : int   + &
+    static_assert(std::is_same_v<decltype((pod.b)), int&>,  "deduce by auto failed");                       // expression is lvalue, hence : int&  + &
+    static_assert(std::is_same_v<decltype((pod.c)), int&>, "deduce by auto failed");                        // expression is lvalue, hence : int&& + &&
+    static_assert(std::is_same_v<decltype((std::move(pod).a)), int&&>, "deduce by auto failed");            // expression is lvalue, hence : int   + &
+    static_assert(std::is_same_v<decltype((std::move(pod).b)), int&>, "deduce by auto failed");             // expression is lvalue, hence : int&  + &
+    static_assert(std::is_same_v<decltype((std::move(pod).c)), int&>, "deduce by auto failed");             // expression is lvalue, hence : int&& + &&
+    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.a)), int&&>, "deduce by auto failed");
+    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.b)), int&>,  "deduce by auto failed");
+    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.c)), int&>,  "deduce by auto failed");
 
     print_summary("deduce - by auto (summary)", "succeeded in compile time");
 }
@@ -254,9 +297,9 @@ void test_named_vs_unnamed()
     static_assert(std::is_same_v<decltype((unnamed_rrx())), X&&>, "incorrect decltype deduce"); //  xvalue
 
     static_assert(std::is_same_v<decltype((named_x.m)),       M&>,  "incorrect decltype deduce"); 
-    static_assert(std::is_same_v<decltype((named_rx.m)),      M&>,  "incorrect decltype deduce");
+    static_assert(std::is_same_v<decltype((named_rx.m)),      M&>,  "incorrect decltype deduce"); 
     static_assert(std::is_same_v<decltype((named_rrx.m)),     M&>,  "incorrect decltype deduce");
-    static_assert(std::is_same_v<decltype((unnamed_x().m)),   M&&>, "incorrect decltype deduce"); // why's that? it is considered as rvalue
+    static_assert(std::is_same_v<decltype((unnamed_x().m)),   M&&>, "incorrect decltype deduce"); 
     static_assert(std::is_same_v<decltype((unnamed_rx().m)),  M&>,  "incorrect decltype deduce");
     static_assert(std::is_same_v<decltype((unnamed_rrx().m)), M&&>, "incorrect decltype deduce");
 
