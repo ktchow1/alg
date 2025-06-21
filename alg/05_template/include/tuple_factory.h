@@ -50,50 +50,6 @@ namespace toy_example
     {
         return wrapper<T&&>(std::forward<T>(x));
     }
-
-
-
-    // ******************************* //
-    // *** Given 2 implementations *** //
-    // ******************************* //
-    template<typename T>
-    void implementation(T& x) 
-    {
-        ++lvalue_impl_count; 
-    }
-
-    template<typename T>
-    void implementation(T&& x)
-    {
-        
-        ++rvalue_impl_count; 
-    }
-
-
-    // *********************** //
-    // *** Mimic std::bind *** //
-    // *********************** //
-    // It may look stupid creating a wrapper and passing the member to implementation, 
-    // we do so for experiment. This pattern is useful in implementing std::bind.
-    // Interface 1&2 cannot achieve perfect forwarding, while interface 3 can.
-    //
-    template<typename T>
-    void interface_by_copying(T&& x)
-    {
-        implementation(make_wrapper_by_copying(std::forward<T>(x)).get());
-    }
-
-    template<typename T>
-    void interface_by_lvalue_reference(T&& x)
-    {
-        implementation(make_wrapper_by_lvalue_reference(std::forward<T>(x)).get());
-    }
-
-    template<typename T>
-    void interface_by_perfect_forwarding_reference(T&& x)
-    {
-        implementation(make_wrapper_by_perfect_forwarding_reference(std::forward<T>(x)).get());
-    }
 }
 
 

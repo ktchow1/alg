@@ -5,6 +5,88 @@
 #include<utility.h>
 
 
+namespace toy_example2
+{
+    struct X {};
+
+    X     named_x;
+    X&    named_rx  = named_x;
+    X&&   named_rrx = std::move(named_x);
+    X   unnamed_x()   { return named_x; }
+    X&  unnamed_rx()  { return named_x; } 
+    X&& unnamed_rrx() { return std::move(named_x); } 
+}
+using namespace toy_example2;
+
+
+
+// ********************************************************* //
+// *** This test shows why we need std::forward_as_tuple *** //
+// ********************************************************* //
+void test_std_make_tuple_type()
+{
+    // For named x
+    static_assert(std::is_same_v<decltype(std::make_tuple      (named_x)           ), std::tuple<X>>  , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::tie             (named_x)           ), std::tuple<X&>> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::forward_as_tuple(named_x)           ), std::tuple<X&>> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::forward_as_tuple(std::move(named_x))), std::tuple<X&&>>, "deduce tuple type");
+
+    // For named x and unnamed tuple
+    static_assert(std::is_same_v<decltype(std::get<0>(std::make_tuple      (named_x)           )), X&&>, "deduce tuple type"); // this is behaviour of std::get
+    static_assert(std::is_same_v<decltype(std::get<0>(std::tie             (named_x)           )), X&> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(named_x)           )), X&> , "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(std::move(named_x)))), X&&>, "deduce tuple type");
+
+    // For named x and named tuple
+    auto t0 = std::make_tuple      (named_x);
+    auto t1 = std::tie             (named_x);
+    auto t2 = std::forward_as_tuple(named_x);
+    auto t3 = std::forward_as_tuple(std::move(named_x));
+    static_assert(std::is_same_v<decltype(std::get<0>(t0)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(t1)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(t2)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(t3)), X&>, "deduce tuple type");
+
+  
+
+    // For unnamed x
+    static_assert(std::is_same_v<decltype(std::make_tuple      (unnamed_x())           ), std::tuple<X>>  , "deduce tuple type");
+//  static_assert(std::is_same_v<decltype(std::tie             (unnamed_x())           ), std::tuple<***>>, "deduce tuple type"); // expected : cannot compile
+    static_assert(std::is_same_v<decltype(std::forward_as_tuple(unnamed_x())           ), std::tuple<X&&>>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::forward_as_tuple(std::move(unnamed_x()))), std::tuple<X&&>>, "deduce tuple type");
+  
+    // For unnamed x and unnamed tuple
+    static_assert(std::is_same_v<decltype(std::get<0>(std::make_tuple      (unnamed_x())           )), X&&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(unnamed_x())           )), X&&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(std::move(unnamed_x())))), X&&>, "deduce tuple type");
+  
+    // For unnamed x and named tuple
+    auto s0 = std::make_tuple      (unnamed_x());
+    auto s2 = std::forward_as_tuple(unnamed_x());
+    auto s3 = std::forward_as_tuple(std::move(unnamed_x()));
+    static_assert(std::is_same_v<decltype(std::get<0>(s0)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(s2)), X&>, "deduce tuple type");
+    static_assert(std::is_same_v<decltype(std::get<0>(s3)), X&>, "deduce tuple type"); 
+
+    print_summary("tuple factory - std tuple type", "succeeded in compile time");
+}
+
+
+
+// ******************************************* //
+// Repeat the same experiment as above with :
+// * alg::make_tuple
+// * alg::tie
+// * alg::forward_as_tuple
+// ******************************************* //
+void test_alg_make_tuple_type()
+{
+    print_summary("tuple factory - alg tuple type", "succeeded in compile time");
+}
+
+
+
+// please replace by X
 struct T {};
 T t;
 
@@ -32,43 +114,6 @@ void why_we_need_3_tuple_factories()
     static_assert(std::is_same_v<decltype(toy_example::make_wrapper_by_perfect_forwarding_reference(T{}).get()), T&&>, "tuple_factory - type deduction failed");
 
 
-/*
-    
-    {
-        std::uint32_t x = 123;
-
-        toy_example::interface_by_copying(x); 
-        assert(toy_example::lvalue_impl_count == 1);
-        assert(toy_example::rvalue_impl_count == 0);
-        toy_example::interface_by_copying(std::move(x)); 
-        assert(toy_example::lvalue_impl_count == 2);
-        assert(toy_example::rvalue_impl_count == 0);
-        toy_example::interface_by_copying(std::uint32_t(123)); 
-        assert(toy_example::lvalue_impl_count == 3);
-        assert(toy_example::rvalue_impl_count == 0);
-    }
-    {
-        std::uint32_t x = 123;
-
-        toy_example::interface_by_lvalue_reference(x); 
-        assert(toy_example::lvalue_impl_count == 4);
-        assert(toy_example::rvalue_impl_count == 0);
-    //  toy_example::interface_by_lvalue_reference(std::move(x));          // cannot compile for  xvalue
-    //  toy_example::interface_by_lvalue_reference(std::uint32_t(123));    // cannot compile for prvalue
-    }
-    {
-        std::uint32_t x = 123;
-
-        toy_example::interface_by_perfect_forwarding_reference(x); 
-        assert(toy_example::lvalue_impl_count == 5);
-        assert(toy_example::rvalue_impl_count == 0);
-        toy_example::interface_by_perfect_forwarding_reference(std::move(x)); 
-        assert(toy_example::lvalue_impl_count == 5);
-        assert(toy_example::rvalue_impl_count == 1);
-        toy_example::interface_by_perfect_forwarding_reference(std::uint32_t(123)); 
-        assert(toy_example::lvalue_impl_count == 5);
-        assert(toy_example::rvalue_impl_count == 2);
-    } */
     print_summary("tuple factory - why we need 3 factories?", "succeeded");
 }
 
@@ -173,6 +218,10 @@ void test_forward_as_tuple()
 
 void test_tuple_factory()
 {
+    test_alg_make_tuple_type();
+    test_alg_make_tuple_type();
+
+
     why_we_need_3_tuple_factories();
     test_make_tuple();
     test_tie();

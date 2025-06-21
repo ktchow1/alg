@@ -303,32 +303,10 @@ void test_named_vs_unnamed()
 
 
 
-void test_tuple_type()
-{
-    static_assert(std::is_same_v<decltype(std::get<0>(std::make_tuple(named_x))),                  X&&>, "deduce tuple type");
-    static_assert(std::is_same_v<decltype(std::get<0>(std::tie(named_x))),                         X&>,  "deduce tuple type");
-    static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(named_x))),            X&>,  "deduce tuple type");
-    static_assert(std::is_same_v<decltype(std::get<0>(std::forward_as_tuple(std::move(named_x)))), X&&>, "deduce tuple type");
-
-    auto x0 = std::make_tuple(named_x);
-    auto x1 = std::tie(named_x);
-    auto x2 = std::forward_as_tuple(named_x);
-    auto x3 = std::forward_as_tuple(std::move(named_x));
-    static_assert(std::is_same_v<decltype(std::get<0>(x0)), X&>, "deduce tuple type");
-    static_assert(std::is_same_v<decltype(std::get<0>(x1)), X&>, "deduce tuple type");
-    static_assert(std::is_same_v<decltype(std::get<0>(x2)), X&>, "deduce tuple type");
-    static_assert(std::is_same_v<decltype(std::get<0>(x3)), X&>, "deduce tuple type");
-
-    print_summary("deduce - tuple type", "succeeded in compile time");
-}
-
-
-
 void test_deduce_type()
 {
     test_auto_summary();
     test_auto();
     test_decltype();
     test_named_vs_unnamed();
-    test_tuple_type();
 }
