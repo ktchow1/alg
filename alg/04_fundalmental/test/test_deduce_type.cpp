@@ -22,15 +22,14 @@
 // **************** //
 // *** decltype *** //
 // **************** //
-// Get exact type of expression
+// decltype()   : get literal type of expression 
+// decltype(()) : get literal type of expression plus consideration of valuenss (and context)
 //
 // If T is typeof assignment statement :
 // * for simple  expression                type = T 
 // * for complex  lvalue expression        type = reference_collapse<T & >  
 // * for complex  xvalue expression        type = reference_collapse<T &&> 
 // * for complex prvalue expression        type = reference_collapse<T   > 
-//
-// see also test_rvalue.cpp : test_3_questions().
 //
 //
 //
@@ -60,19 +59,23 @@
 //
 //
 //
-// ************************ //
-// *** Accessing member *** //
-// ************************ //
-// According to C++20 standard 7.2.1.5, the expression accessing member like this ...
+// ***************************************** //
+// *** Deduction rules for member access *** //
+// ***************************************** //
+// Valueness of an expresssion that access a reference member follows these logics : 
+// - if the object is lvalue, then the expression is lvalue, regardless the member type
+// - if the object is rvalue, then the expression is xvalue, if the member is non-reference type
+//                                 the expression is lvalue, if the member is reference type (no matter M& or M&&)
+// 
 //
-// expression.member 
-//
-// is lvalue, regardless whether expression is lvalue, xvalue or prvalue, such as :
-//
-// pod.m                <--- lvalue
-// std::move(pod).m     <--- lvalue
-// POD{}.m              <--- lvalue
-//
+// valueness of obj    member    | example        | valueness / type of whole expression  
+// ------------------------------+----------------+---------------------------------------
+//  lvalue             M         |      pod  .m   | lvalue     M  + &  = M&     
+//  lvalue             M& or M&& |      pod  .m   | lvalue     M& + &  = M&,  M&& + & = M&      
+//  xvalue             M         | move(pod) .m   | xvalue     M  + && = M&&
+//  xvalue             M& or M&& | move(pod) .m   | lvalue     M& + &  = M&,  M&& + & = M&
+// prvalue             M         |      POD{}.m   | xvalue     M  + && = M&&
+// prvalue             M& or M&& |      POD{}.m   | lvalue     M& + &  = M&,  M&& + & = M&
 //
 
 namespace toy_example
@@ -116,15 +119,15 @@ void test_auto_summary()
     static_assert(std::is_same_v<decltype(POD{123, i, std::move(i)}.b), int&>,  "deduce by auto failed");
     static_assert(std::is_same_v<decltype(POD{123, i, std::move(i)}.c), int&&>, "deduce by auto failed");
     
-    static_assert(std::is_same_v<decltype((pod.a)), int&>,  "deduce by auto failed");                       // expression is lvalue, hence : int   + &
-    static_assert(std::is_same_v<decltype((pod.b)), int&>,  "deduce by auto failed");                       // expression is lvalue, hence : int&  + &
-    static_assert(std::is_same_v<decltype((pod.c)), int&>, "deduce by auto failed");                        // expression is lvalue, hence : int&& + &&
-    static_assert(std::is_same_v<decltype((std::move(pod).a)), int&&>, "deduce by auto failed");            // expression is lvalue, hence : int   + &
-    static_assert(std::is_same_v<decltype((std::move(pod).b)), int&>, "deduce by auto failed");             // expression is lvalue, hence : int&  + &
-    static_assert(std::is_same_v<decltype((std::move(pod).c)), int&>, "deduce by auto failed");             // expression is lvalue, hence : int&& + &&
-    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.a)), int&&>, "deduce by auto failed");
-    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.b)), int&>,  "deduce by auto failed");
-    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.c)), int&>,  "deduce by auto failed");
+    static_assert(std::is_same_v<decltype((pod.a)), int&>, "deduce by auto failed");                        // expression is lvalue, hence : int   + &
+    static_assert(std::is_same_v<decltype((pod.b)), int&>, "deduce by auto failed");                        // expression is lvalue, hence : int&  + &
+    static_assert(std::is_same_v<decltype((pod.c)), int&>, "deduce by auto failed");                        // expression is lvalue, hence : int&& + & 
+    static_assert(std::is_same_v<decltype((std::move(pod).a)), int&&>, "deduce by auto failed");            // expression is xvalue, hence : int   + && = int&&
+    static_assert(std::is_same_v<decltype((std::move(pod).b)), int&>,  "deduce by auto failed");            // expression is lvalue, hence : int&  + &  = int&
+    static_assert(std::is_same_v<decltype((std::move(pod).c)), int&>,  "deduce by auto failed");            // expression is lvalue, hence : int&& + &  = int&
+    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.a)), int&&>, "deduce by auto failed"); // expression is xvalue, hence : int   + && = int&&
+    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.b)), int&>,  "deduce by auto failed"); // expression is lvalue, hence : int&  + &  = int&
+    static_assert(std::is_same_v<decltype((POD{123, i, std::move(i)}.c)), int&>,  "deduce by auto failed"); // expression is lvalue, hence : int&& + &  = int&
 
     print_summary("deduce - by auto (summary)", "succeeded in compile time");
 }
