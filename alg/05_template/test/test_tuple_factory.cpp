@@ -231,6 +231,7 @@ void test_make_tuple()
     std::get<0>(tup0) = true;
     std::get<1>(tup0) = 'c';
     std::get<2>(tup0) = 345;
+
     assert(b2 == false);
     assert(c2 == 'b');
     assert(i2 == 234); // modify failed

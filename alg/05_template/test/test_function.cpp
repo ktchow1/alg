@@ -79,17 +79,21 @@ struct N1_ary_functor
 
 
 
-// ********************************* //
+// ******************************************************************* //
 // Objective - Test these classes :
 // * alg::simple_function and 
 // * alg::function
 //      
-// for binding :
-// * function pointer
-// * functor (rvalue) 
-// * functor (lvalue) 
-// * lambda 
-// ********************************* //
+// for binding callable :
+// 1. function pointer
+// 2. functor (rvalue) 
+//    functor (lvalue) 
+// 3. member pointer          <--- not yet supported, need alg::bind 
+// 4. lambda 
+// 5. std::function           <--- not yet supported
+// 6. std::bind               <--- not yet supported
+// 7. std::reference_wrapper  <--- not yet supported
+// ******************************************************************* //
 void test_alg_simple_function()
 {
     nullary_functor f;
@@ -299,7 +303,7 @@ void test_std_function()
         assert(s6 == std::string{"www"});
 
     }
-    print_summary("std::function - std::bind", "succeeded");
+    print_summary("std::function", "succeeded");
 }
 
 // *************************************************************************************************************************************** //
@@ -327,6 +331,7 @@ void test_std_function()
 // - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s2
 // - given 3rd arg,         it match std::function<U(T,T) with std::function<std::string(int,int)> to deduce U = std::string   for s3
 // *************************************************************************************************************************************** //
+
 
 
 void test_function()
