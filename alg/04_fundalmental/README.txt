@@ -1,3 +1,11 @@
+Inaccurate terminology :
+* valueness      should be called value-catergory
+* literal-type   should be called declared-type
+
+
+
+
+
 // ************ //
 // *** auto *** //
 // ************ //
@@ -72,10 +80,17 @@ then we can decide final type of decltype(()) using the
   using ordinary logic in decltype(()) and reference collapsing
 
 
+
+
+
 [Rule set 1] Valueness of an expresssion that access a member is propagated by : 
 * if the object is lvalue, then the expression is lvalue, regardless the member is reference type of NOT
 * if the object is rvalue, then the expression is xvalue, if member is non-reference type 
                                 the expression is lvalue, if member is     reference type
+
+[Rule set 1, putting in another way]
+* if member is non-reference type, expression is always lvalue
+* if member is     reference type, expression is always xvalue if object is rvalue, lvalue otherwise
 
 
 valueness    member | example     | valueness       decltype       decltype
@@ -84,7 +99,7 @@ of obj x     type   |             | of expression   (expression)   ((expression)
  lvalue      M      |       x.m   | lvalue          M              M   + &  = M&     
  lvalue      M&     |       x.m   | lvalue          M&             M&  + &  = M&
  lvalue      M&&    |       x.m   | lvalue          M&&            M&& + &  = M&      
- xvalue      M      | move(x).m   | lvalue          M              M   + &  = M& 
+ xvalue      M      | move(x).m   | xvalue          M              M   + &  = M&& 
  xvalue      M&     | move(x).m   | lvalue          M&             M&  + &  = M&
  xvalue      M&&    | move(x).m   | lvalue          M&&            M&& + &  = M&
 prvalue      M      |     X{}.m   | xvalue          M              M   + && = M&&
@@ -93,13 +108,16 @@ prvalue      M&&    |     X{}.m   | lvalue          M&&            M&& + &  = M&
                                                     ^
                                                     +--- same as col 2 
 
+
+
+
 [Rule set 2] Constness and reference of object may propagate to member (in col 2) using following logic :
-*
-*
+* if member is non-reference type,    propagate all constness AND reference of object to member 
+* if member is     reference type, no propagation happens
 
 Therefore after propagation with rule set 2, member type may be different from decltype(expression) :
-* member type in col 2 will be changed (with addition const/ref propagated from object)
-* decltype(expression) remains the literal type of expression
+* column 2                    will be updated with addition const/ref from object
+* column decltype(expression) will remain the literal type of expression
 
 
 
