@@ -16,9 +16,10 @@
 // * for auto&                             type = reference_collapse<            reference_trim<T>  &>
 // * for auto&& and lvalue assignment      type = reference_collapse<            reference_trim<T>& &&>
 // * for auto&& and rvalue assignment      type = reference_collapse<            reference_trim<T>  &&>  
-//
-//
-//
+  
+  
+  
+
 // **************** //
 // *** decltype *** //
 // **************** //
@@ -30,9 +31,31 @@
 // * for complex  lvalue expression        type = reference_collapse<T & >  
 // * for complex  xvalue expression        type = reference_collapse<T &&> 
 // * for complex prvalue expression        type = reference_collapse<T   > 
+  
+  
+
+
+// ****************************************** //
+// *** decltype (rules for member access) *** //
+// ****************************************** //
+// Valueness of an expresssion that access a reference member follows these logics : 
+// - if the object is lvalue, then the expression is lvalue, regardless the member type
+// - if the object is rvalue, then the expression is xvalue, if the member is non-reference type
+//                                 the expression is lvalue, if the member is reference type (no matter M& or M&&)
+// 
 //
-//
-//
+// valueness of obj    member    | example        | valueness / type of whole expression  
+// ------------------------------+----------------+---------------------------------------
+//  lvalue             M         |      pod  .m   | lvalue     M  + &  = M&     
+//  lvalue             M& or M&& |      pod  .m   | lvalue     M& + &  = M&,  M&& + & = M&      
+//  xvalue             M         | move(pod) .m   | xvalue     M  + && = M&&
+//  xvalue             M& or M&& | move(pod) .m   | lvalue     M& + &  = M&,  M&& + & = M&
+// prvalue             M         |      POD{}.m   | xvalue     M  + && = M&&
+// prvalue             M& or M&& |      POD{}.m   | lvalue     M& + &  = M&,  M&& + & = M&
+  
+
+
+
 // ********************** //
 // *** decltype(auto) *** //
 // ********************** //
@@ -56,44 +79,31 @@
 // 
 // i.e. if we want to preserve const, reference ..., use decltype(auto)
 //      if we want to remove   const, reference ..., use auto
-//
-//
-//
-// ***************************************** //
-// *** Deduction rules for member access *** //
-// ***************************************** //
-// Valueness of an expresssion that access a reference member follows these logics : 
-// - if the object is lvalue, then the expression is lvalue, regardless the member type
-// - if the object is rvalue, then the expression is xvalue, if the member is non-reference type
-//                                 the expression is lvalue, if the member is reference type (no matter M& or M&&)
-// 
-//
-// valueness of obj    member    | example        | valueness / type of whole expression  
-// ------------------------------+----------------+---------------------------------------
-//  lvalue             M         |      pod  .m   | lvalue     M  + &  = M&     
-//  lvalue             M& or M&& |      pod  .m   | lvalue     M& + &  = M&,  M&& + & = M&      
-//  xvalue             M         | move(pod) .m   | xvalue     M  + && = M&&
-//  xvalue             M& or M&& | move(pod) .m   | lvalue     M& + &  = M&,  M&& + & = M&
-// prvalue             M         |      POD{}.m   | xvalue     M  + && = M&&
-// prvalue             M& or M&& |      POD{}.m   | lvalue     M& + &  = M&,  M&& + & = M&
-//
+  
+  
+
 
 namespace toy_example
 {
+    struct M{};
+    struct X
+    { 
+        M    m; 
+//      M&   m1;
+//      M&&  m2;
+    };
+
     struct POD
     {
         int   a;
         int&  b;
         int&& c;
     };
-
-    struct M{      };
-    struct X{ M m; };
 }
-
-
-
 using namespace toy_example;
+
+
+
 void test_auto_summary()
 {
     int    i = 123;
@@ -253,9 +263,8 @@ void test_decltype()
 // unnamed    |   X    |   rvalue     |   f(T&&)    |   X            X    
 // unnamed    |   X&   |   lvalue     |   f(T&)     |   X&           X&   
 // unnamed    |   X&&  |   rvalue     |   f(T&&)    |   X&&          X&&  
-//                         ^                            ^--- same as column 1
-//                         |
-//                         +--- either lvalue / rvalue (no type here)
+//                                                      ^--- same as column 1
+//                          
 
 namespace toy_example
 {
