@@ -158,53 +158,58 @@ void test_decltype_member_access()
     static_assert(std::is_same_v<decltype(unnamed_crx().m2), M&&>, "decltype() failure");
     static_assert(std::is_same_v<decltype(unnamed_rrx().m2), M&&>, "decltype() failure");
 
+
+    // [Explanation]
+    // +  means valueness       progagted from object to expression using rule 1 in README.txt
+    // () means const/reference progagted from object to member     using rule 2 in README.txt
+
     // decltype((x.m0))
     static_assert(std::is_same_v<decltype((named_x  .m0)),       M&>, "decltype(()) failure");             // explanation : M +       &  =       M&  (expression is lvalue)
     static_assert(std::is_same_v<decltype((named_rx .m0)),       M&>, "decltype(()) failure");             // explanation : M +       &  =       M&  (expression is lvalue)
     static_assert(std::is_same_v<decltype((named_crx.m0)), const M&>, "decltype(()) failure");             // explanation : M + const &  = const M&  (expression is lvalue)
     static_assert(std::is_same_v<decltype((named_rrx.m0)),       M&>, "decltype(()) failure");             // explanation : M +       &  =       M&  (expression is lvalue)
 
-    static_assert(std::is_same_v<decltype((std::move(named_x)  .m0)),       M&&>, "decltype(()) failure"); // explanation : M +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_rx) .m0)),       M&&>, "decltype(()) failure"); // explanation : M +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_crx).m0)), const M&&>, "decltype(()) failure"); // explanation : M + const && = const M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_rrx).m0)),       M&&>, "decltype(()) failure"); // explanation : M +       && =       M&& (expression is rvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_x)  .m0)),       M&&>, "decltype(()) failure"); // explanation : M +       &  =       M&& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_rx) .m0)),       M&&>, "decltype(()) failure"); // explanation : M +       &  =       M&& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_crx).m0)), const M&&>, "decltype(()) failure"); // explanation : M + const &  = const M&& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_rrx).m0)),       M&&>, "decltype(()) failure"); // explanation : M +       &  =       M&& (expression is xvalue)
 
-    static_assert(std::is_same_v<decltype((unnamed_x()  .m0)),       M&&>, "decltype(()) failure");
-    static_assert(std::is_same_v<decltype((unnamed_rx() .m0)),       M&>,  "decltype(()) failure");        // why ? 
-    static_assert(std::is_same_v<decltype((unnamed_crx().m0)), const M&>,  "decltype(()) failure");        // why ?
-    static_assert(std::is_same_v<decltype((unnamed_rrx().m0)),       M&&>, "decltype(()) failure");
+    static_assert(std::is_same_v<decltype((unnamed_x()  .m0)),       M&&>, "decltype(()) failure");        // explanation : M +       &  =       M&& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_rx() .m0)),       M&>,  "decltype(()) failure");        // explanation : M +       &  =       M&  (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_crx().m0)), const M&>,  "decltype(()) failure");        // explanation : M + const &  = const M&  (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_rrx().m0)),       M&&>, "decltype(()) failure");        // explanation : M +       &  =       M&& (expression is prvalue)
 
     // decltype((x.m1))
-    static_assert(std::is_same_v<decltype((named_x  .m1)), M&>, "decltype(()) failure");                   // explanation : M& +       &  =       M&  (expression is lvalue)
-    static_assert(std::is_same_v<decltype((named_rx .m1)), M&>, "decltype(()) failure");                   // explanation : M& +       &  =       M&  (expression is lvalue)
-    static_assert(std::is_same_v<decltype((named_crx.m1)), M&>, "decltype(()) failure");                   // explanation : M& + const &  = const M&  (expression is lvalue)   <--- why no const
-    static_assert(std::is_same_v<decltype((named_rrx.m1)), M&>, "decltype(()) failure");                   // explanation : M& +       &  =       M&  (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_x  .m1)), M&>, "decltype(()) failure");                   // explanation : M& + & = M& (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_rx .m1)), M&>, "decltype(()) failure");                   // explanation : M& + & = M& (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_crx.m1)), M&>, "decltype(()) failure");                   // explanation : M& + & = M& (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_rrx.m1)), M&>, "decltype(()) failure");                   // explanation : M& + & = M& (expression is lvalue)
                                                
-    static_assert(std::is_same_v<decltype((std::move(named_x)  .m1)), M&>, "decltype(()) failure");        // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_rx) .m1)), M&>, "decltype(()) failure");        // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_crx).m1)), M&>, "decltype(()) failure");        // explanation : M& + const && = const M&& (expression is rvalue)   <--- why no const
-    static_assert(std::is_same_v<decltype((std::move(named_rrx).m1)), M&>, "decltype(()) failure");        // explanation : M& +       && =       M&& (expression is rvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_x)  .m1)), M&>, "decltype(()) failure");        // explanation : M& + & = M& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_rx) .m1)), M&>, "decltype(()) failure");        // explanation : M& + & = M& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_crx).m1)), M&>, "decltype(()) failure");        // explanation : M& + & = M& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_rrx).m1)), M&>, "decltype(()) failure");        // explanation : M& + & = M& (expression is xvalue)
 
-    static_assert(std::is_same_v<decltype((unnamed_x()  .m1)), M&>, "decltype((())failure");               // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((unnamed_rx() .m1)), M&>, "decltype((())failure");               // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((unnamed_crx().m1)), M&>, "decltype((())failure");               // explanation : M& + const && = const M&& (expression is rvalue)   <--- why no const
-    static_assert(std::is_same_v<decltype((unnamed_rrx().m1)), M&>, "decltype((())failure");               // explanation : M& +       && =       M&& (expression is rvalue)
+    static_assert(std::is_same_v<decltype((unnamed_x()  .m1)), M&>, "decltype((())failure");               // explanation : M& + & = M& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_rx() .m1)), M&>, "decltype((())failure");               // explanation : M& + & = M& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_crx().m1)), M&>, "decltype((())failure");               // explanation : M& + & = M& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_rrx().m1)), M&>, "decltype((())failure");               // explanation : M& + & = M& (expression is prvalue)
 
     // decltype((x.m2))
-    static_assert(std::is_same_v<decltype((named_x  .m2)), M&>, "decltype(()) failure");                   // explanation : M& +       &  =       M&  (expression is lvalue)
-    static_assert(std::is_same_v<decltype((named_rx .m2)), M&>, "decltype(()) failure");                   // explanation : M& +       &  =       M&  (expression is lvalue)
-    static_assert(std::is_same_v<decltype((named_crx.m2)), M&>, "decltype(()) failure");                   // explanation : M& + const &  = const M&  (expression is lvalue)   <--- why no const
-    static_assert(std::is_same_v<decltype((named_rrx.m2)), M&>, "decltype(()) failure");                   // explanation : M& +       &  =       M&  (expression is lvalue)
-                                                                                                                                                                                                 
-    static_assert(std::is_same_v<decltype((std::move(named_x)  .m2)), M&>, "decltype(()) failure");        // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_rx) .m2)), M&>, "decltype(()) failure");        // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((std::move(named_crx).m2)), M&>, "decltype(()) failure");        // explanation : M& + const && = const M&& (expression is rvalue)   <--- why no const
-    static_assert(std::is_same_v<decltype((std::move(named_rrx).m2)), M&>, "decltype(()) failure");        // explanation : M& +       && =       M&& (expression is rvalue)
-                                                                                                                                                                                                 
-    static_assert(std::is_same_v<decltype((unnamed_x()  .m2)), M&>, "decltype(()) failure");               // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((unnamed_rx() .m2)), M&>, "decltype(()) failure");               // explanation : M& +       && =       M&& (expression is rvalue)
-    static_assert(std::is_same_v<decltype((unnamed_crx().m2)), M&>, "decltype(()) failure");               // explanation : M& + const && = const M&& (expression is rvalue)   <--- why no const
-    static_assert(std::is_same_v<decltype((unnamed_rrx().m2)), M&>, "decltype(()) failure");               // explanation : M& +       && =       M&& (expression is rvalue)
+    static_assert(std::is_same_v<decltype((named_x  .m2)), M&>, "decltype(()) failure");                   // explanation : M&& + & = M& (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_rx .m2)), M&>, "decltype(()) failure");                   // explanation : M&& + & = M& (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_crx.m2)), M&>, "decltype(()) failure");                   // explanation : M&& + & = M& (expression is lvalue)
+    static_assert(std::is_same_v<decltype((named_rrx.m2)), M&>, "decltype(()) failure");                   // explanation : M&& + & = M& (expression is lvalue)
+  
+    static_assert(std::is_same_v<decltype((std::move(named_x)  .m2)), M&>, "decltype(()) failure");        // explanation : M&& + & = M& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_rx) .m2)), M&>, "decltype(()) failure");        // explanation : M&& + & = M& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_crx).m2)), M&>, "decltype(()) failure");        // explanation : M&& + & = M& (expression is xvalue)
+    static_assert(std::is_same_v<decltype((std::move(named_rrx).m2)), M&>, "decltype(()) failure");        // explanation : M&& + & = M& (expression is xvalue)
+ 
+    static_assert(std::is_same_v<decltype((unnamed_x()  .m2)), M&>, "decltype(()) failure");               // explanation : M&& + & = M& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_rx() .m2)), M&>, "decltype(()) failure");               // explanation : M&& + & = M& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_crx().m2)), M&>, "decltype(()) failure");               // explanation : M&& + & = M& (expression is prvalue)
+    static_assert(std::is_same_v<decltype((unnamed_rrx().m2)), M&>, "decltype(()) failure");               // explanation : M&& + & = M& (expression is prvalue)
 
     print_summary("decltype for member access", "succeeded in compile time");
 }

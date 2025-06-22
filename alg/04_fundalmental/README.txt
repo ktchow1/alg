@@ -10,6 +10,7 @@ If T is typeof assignment statement :
 * for auto&& and lvalue assignment      type = reference_collapse<            reference_trim<T>& &&>
 * for auto&& and rvalue assignment      type = reference_collapse<            reference_trim<T>  &&>  
 
+
   
   
 
@@ -53,13 +54,28 @@ This is because, std::move() is static_cast<X&&>.
 
 
 
+
 // ****************************************** //
 // *** decltype (rules for member access) *** //
 // ****************************************** //
-Valueness of an expresssion that access a reference member follows these logics : 
-- if the object is lvalue, then the expression is lvalue, regardless the member type
-- if the object is rvalue, then the expression is xvalue, if the member is non-reference type
-                                the expression is lvalue, if the member is reference type (no matter M& or M&&)
+When accessing a member, which may be 
+*     reference type member or 
+* non reference type member
+
+then we need to apply 2 sets of rules 
+* rules to propagate the valueness of object to valueness of expression
+* rules to propagate the const/ref of object to const/ref of member
+
+then we can decide final type of decltype(()) using the 
+* propagated valueness of expression AND
+* propagated type of member
+  using ordinary logic in decltype(()) and reference collapsing
+
+
+[Rule set 1] Valueness of an expresssion that access a member is propagated by : 
+* if the object is lvalue, then the expression is lvalue, regardless the member is reference type of NOT
+* if the object is rvalue, then the expression is xvalue, if member is non-reference type 
+                                the expression is lvalue, if member is     reference type
 
 
 valueness    member | example     | valueness       decltype       decltype
@@ -68,13 +84,23 @@ of obj x     type   |             | of expression   (expression)   ((expression)
  lvalue      M      |       x.m   | lvalue          M              M   + &  = M&     
  lvalue      M&     |       x.m   | lvalue          M&             M&  + &  = M&
  lvalue      M&&    |       x.m   | lvalue          M&&            M&& + &  = M&      
- xvalue      M      | move(x).m   | xvalue          M              M   + && = M&&
+ xvalue      M      | move(x).m   | lvalue          M              M   + &  = M& 
  xvalue      M&     | move(x).m   | lvalue          M&             M&  + &  = M&
  xvalue      M&&    | move(x).m   | lvalue          M&&            M&& + &  = M&
 prvalue      M      |     X{}.m   | xvalue          M              M   + && = M&&
 prvalue      M&     |     X{}.m   | lvalue          M&             M&  + &  = M&
 prvalue      M&&    |     X{}.m   | lvalue          M&&            M&& + &  = M&
-                                                    ^--- same as col 2 
+                                                    ^
+                                                    +--- same as col 2 
+
+[Rule set 2] Constness and reference of object may propagate to member (in col 2) using following logic :
+*
+*
+
+Therefore after propagation with rule set 2, member type may be different from decltype(expression) :
+* member type in col 2 will be changed (with addition const/ref propagated from object)
+* decltype(expression) remains the literal type of expression
+
 
 
 
@@ -83,6 +109,7 @@ prvalue      M&&    |     X{}.m   | lvalue          M&&            M&& + &  = M&
 // *** decltype (rules for std::get() tuple *** //
 // ******************************************** //
 Please refer to test_tuple_factory.cpp for type deduction of std::get<N>(tuple).
+
 
 
 
