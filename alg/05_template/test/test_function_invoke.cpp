@@ -35,7 +35,7 @@ auto invoke_as_std_function(T x, T y, const std::function<U(T,T)>& fct)
 
 void test_std_invoke()
 {
-    reset_counters();
+    count::instance().reset_counters();
     N_ary_functor f;
     N1_ary_functor f1;
 
@@ -43,35 +43,21 @@ void test_std_invoke()
     // *** template parameter *** //
     // ************************** //
     {
-        invoke_as_template_para(1, 2, &N_ary_function);   
-        std::cout << "\ncount = " << N_ary_function_count << std::flush;   
-        invoke_as_template_para(1, 2, &N_ary_function);   
-        std::cout << "\ncount = " << N_ary_function_count << std::flush;   
-        invoke_as_template_para(1, 2, &N_ary_function);   
-        std::cout << "\ncount = " << N_ary_function_count << std::flush;   
-
         // Part 1
         auto s0 = invoke_as_template_para(1, 2, &N_ary_function);   
         auto s1 = invoke_as_template_para(1, 2, N_ary_functor{});
         auto s2 = invoke_as_template_para(1, 2, f);           
-        auto s3 = invoke_as_template_para(1, 2, [](int,int) -> std::string                      { ++N_ary_lambda_count;  return "zzz"; });
+        auto s3 = invoke_as_template_para(1, 2, [](int,int) -> std::string                      { ++count::instance().N_ary_lambda_count;  return "zzz"; });
         auto s4 = invoke_as_template_para(1, 2, std::bind(&N1_ary_function,                       std::placeholders::_1, std::placeholders::_2, "uuu"));
         auto s5 = invoke_as_template_para(1, 2, std::bind(&N1_ary_functor::process, std::ref(f1), std::placeholders::_1, std::placeholders::_2, "vvv"));
         auto s6 = invoke_as_template_para(1, 2, std::bind(                          std::ref(f1), std::placeholders::_1, std::placeholders::_2, "www"));
 
-//      std::cout << "\ncount = " << N_ary_function_count << std::flush;   
-//      std::cout << "\ncount = " << N_ary_functor_count << std::flush;   
-//      std::cout << "\ncount = " << N_ary_lambda_count << std::flush;   
-//      std::cout << "\ncount = " << N1_ary_function_count << std::flush;   
-//      std::cout << "\ncount = " << N1_ary_functor_count << std::flush;   
-//      std::cout << "\ncount = " << N1_ary_member_count << std::flush;   
-
-        assert(N_ary_function_count  == 1);   
-        assert(N_ary_functor_count   == 2);   
-        assert(N_ary_lambda_count    == 1);   
-        assert(N1_ary_function_count == 1);   
-        assert(N1_ary_functor_count  == 1);   
-        assert(N1_ary_member_count   == 1);   
+        assert(count::instance().N_ary_function_count  == 1);   
+        assert(count::instance().N_ary_functor_count   == 2);   
+        assert(count::instance().N_ary_lambda_count    == 1);   
+        assert(count::instance().N1_ary_function_count == 1);   
+        assert(count::instance().N1_ary_functor_count  == 1);   
+        assert(count::instance().N1_ary_member_count   == 1);   
 
         assert(s0 == std::string{"xxx"});
         assert(s1 == std::string{"yyy"});
@@ -97,17 +83,17 @@ void test_std_invoke()
         auto s0 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{&N_ary_function});   
         auto s1 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{N_ary_functor{}});
         auto s2 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{f});           
-        auto s3 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{[](int,int) -> std::string                      { ++N_ary_lambda_count;  return "zzz"; }});
+        auto s3 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{[](int,int) -> std::string                      { ++count::instance().N_ary_lambda_count;  return "zzz"; }});
         auto s4 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{std::bind(&N1_ary_function,                       std::placeholders::_1, std::placeholders::_2, "uuu")});
         auto s5 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{std::bind(&N1_ary_functor::process, std::ref(f1), std::placeholders::_1, std::placeholders::_2, "vvv")});
         auto s6 = invoke_as_std_function(1, 2, std::function<std::string(int,int)>{std::bind(                          std::ref(f1), std::placeholders::_1, std::placeholders::_2, "www")});
                                                
-        assert(N_ary_function_count  == 2);
-        assert(N_ary_functor_count   == 4);
-        assert(N_ary_lambda_count    == 2);
-        assert(N1_ary_function_count == 2);
-        assert(N1_ary_functor_count  == 2);
-        assert(N1_ary_member_count   == 2);
+        assert(count::instance().N_ary_function_count  == 2);
+        assert(count::instance().N_ary_functor_count   == 4);
+        assert(count::instance().N_ary_lambda_count    == 2);
+        assert(count::instance().N1_ary_function_count == 2);
+        assert(count::instance().N1_ary_functor_count  == 2);
+        assert(count::instance().N1_ary_member_count   == 2);
 
         assert(s0 == std::string{"xxx"});
         assert(s1 == std::string{"yyy"});
@@ -126,17 +112,17 @@ void test_std_invoke()
         auto s0 = invoke_as_std_function<int,std::string>(1, 2, &N_ary_function);   
         auto s1 = invoke_as_std_function<int,std::string>(1, 2, N_ary_functor{});
         auto s2 = invoke_as_std_function<int,std::string>(1, 2, f);           
-        auto s3 = invoke_as_std_function<int,std::string>(1, 2, [](int,int) -> std::string                      { ++N_ary_lambda_count;  return "zzz"; });
+        auto s3 = invoke_as_std_function<int,std::string>(1, 2, [](int,int) -> std::string                      { ++count::instance().N_ary_lambda_count;  return "zzz"; });
         auto s4 = invoke_as_std_function<int,std::string>(1, 2, std::bind(&N1_ary_function,                       std::placeholders::_1, std::placeholders::_2, "uuu"));
         auto s5 = invoke_as_std_function<int,std::string>(1, 2, std::bind(&N1_ary_functor::process, std::ref(f1), std::placeholders::_1, std::placeholders::_2, "vvv"));
         auto s6 = invoke_as_std_function<int,std::string>(1, 2, std::bind(                          std::ref(f1), std::placeholders::_1, std::placeholders::_2, "www"));
 
-        assert(N_ary_function_count  == 3);
-        assert(N_ary_functor_count   == 6);
-        assert(N_ary_lambda_count    == 3);
-        assert(N1_ary_function_count == 3);
-        assert(N1_ary_functor_count  == 3);
-        assert(N1_ary_member_count   == 3);
+        assert(count::instance().N_ary_function_count  == 3);
+        assert(count::instance().N_ary_functor_count   == 6);
+        assert(count::instance().N_ary_lambda_count    == 3);
+        assert(count::instance().N1_ary_function_count == 3);
+        assert(count::instance().N1_ary_functor_count  == 3);
+        assert(count::instance().N1_ary_member_count   == 3);
 
         assert(s0 == std::string{"xxx"});
         assert(s1 == std::string{"yyy"});
