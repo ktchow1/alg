@@ -142,7 +142,7 @@ void test_decltype()
     static_assert(std::is_same_v<decltype(named_rrx),       X&&>, "decltype() failure");
     static_assert(std::is_same_v<decltype(named_x  ),       X>,   "decltype() failure");
 
-    static_assert(std::is_same_v<decltype(std::move(named_crx)), const X&&>, "decltype() failure"); // What does it mean by const X&&?
+    static_assert(std::is_same_v<decltype(std::move(named_crx)), const X&&>, "decltype() failure"); 
     static_assert(std::is_same_v<decltype(std::move(named_rx) ),       X&&>, "decltype() failure");
     static_assert(std::is_same_v<decltype(std::move(named_rrx)),       X&&>, "decltype() failure");
     static_assert(std::is_same_v<decltype(std::move(named_x)  ),       X&&>, "decltype() failure");

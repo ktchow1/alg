@@ -139,7 +139,7 @@ int main()
 //  test_constexpr_array();
 //  test_constexpr_map();
 //  test_deduce_rvalue();
-    test_deduce_type();
+//  test_deduce_type();
 //  test_exception();
 //  test_literal();
 //  test_memory_alignment();
