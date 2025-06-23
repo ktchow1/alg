@@ -12,29 +12,29 @@ namespace function_test
     class count
     { 
     public:
-        std::uint32_t nullary_function_count     = 0;
-        std::uint32_t nullary_functor_count      = 0;
-        std::uint32_t nullary_member_count       = 0;
-        std::uint32_t nullary_lambda_count       = 0;
-        std::uint32_t nullary_std_function_count = 0;
-        std::uint32_t nullary_std_bind_count     = 0;
-        std::uint32_t nullary_std_ref_count      = 0;
+        std::uint32_t nullary_function     = 0;
+        std::uint32_t nullary_functor      = 0;
+        std::uint32_t nullary_member       = 0;
+        std::uint32_t nullary_lambda       = 0;
+        std::uint32_t nullary_std_function = 0;
+        std::uint32_t nullary_std_bind     = 0;
+        std::uint32_t nullary_std_ref      = 0;
 
-        std::uint32_t N_ary_function_count     = 0;
-        std::uint32_t N_ary_functor_count      = 0;
-        std::uint32_t N_ary_member_count       = 0;
-        std::uint32_t N_ary_lambda_count       = 0;
-        std::uint32_t N_ary_std_function_count = 0;
-        std::uint32_t N_ary_std_bind_count     = 0;
-        std::uint32_t N_ary_std_ref_count      = 0;
+        std::uint32_t N_ary_function     = 0;
+        std::uint32_t N_ary_functor      = 0;
+        std::uint32_t N_ary_member       = 0;
+        std::uint32_t N_ary_lambda       = 0;
+        std::uint32_t N_ary_std_function = 0;
+        std::uint32_t N_ary_std_bind     = 0;
+        std::uint32_t N_ary_std_ref      = 0;
 
-        std::uint32_t N1_ary_function_count     = 0;
-        std::uint32_t N1_ary_functor_count      = 0;
-        std::uint32_t N1_ary_member_count       = 0;
-        std::uint32_t N1_ary_lambda_count       = 0;
-        std::uint32_t N1_ary_std_function_count = 0;
-        std::uint32_t N1_ary_std_bind_count     = 0;
-        std::uint32_t N1_ary_std_ref_count      = 0;
+        std::uint32_t N1_ary_function     = 0;
+        std::uint32_t N1_ary_functor      = 0;
+        std::uint32_t N1_ary_member       = 0;
+        std::uint32_t N1_ary_lambda       = 0;
+        std::uint32_t N1_ary_std_function = 0;
+        std::uint32_t N1_ary_std_bind     = 0;
+        std::uint32_t N1_ary_std_ref      = 0;
 
     public:
         inline static count& instance()
@@ -43,31 +43,31 @@ namespace function_test
             return x;
         }
 
-        inline void reset_counters()
+        inline void reset()
         {
-            nullary_function_count     = 0;
-            nullary_functor_count      = 0;
-            nullary_member_count       = 0;
-            nullary_lambda_count       = 0;
-            nullary_std_function_count = 0;
-            nullary_std_bind_count     = 0;
-            nullary_std_ref_count      = 0;
+            nullary_function     = 0;
+            nullary_functor      = 0;
+            nullary_member       = 0;
+            nullary_lambda       = 0;
+            nullary_std_function = 0;
+            nullary_std_bind     = 0;
+            nullary_std_ref      = 0;
 
-            N_ary_function_count     = 0;
-            N_ary_functor_count      = 0;
-            N_ary_member_count       = 0;
-            N_ary_lambda_count       = 0;
-            N_ary_std_function_count = 0;
-            N_ary_std_bind_count     = 0;
-            N_ary_std_ref_count      = 0;
+            N_ary_function     = 0;
+            N_ary_functor      = 0;
+            N_ary_member       = 0;
+            N_ary_lambda       = 0;
+            N_ary_std_function = 0;
+            N_ary_std_bind     = 0;
+            N_ary_std_ref      = 0;
 
-            N1_ary_function_count     = 0;
-            N1_ary_functor_count      = 0;
-            N1_ary_member_count       = 0;
-            N1_ary_lambda_count       = 0;
-            N1_ary_std_function_count = 0;
-            N1_ary_std_bind_count     = 0;
-            N1_ary_std_ref_count      = 0;
+            N1_ary_function     = 0;
+            N1_ary_functor      = 0;
+            N1_ary_member       = 0;
+            N1_ary_lambda       = 0;
+            N1_ary_std_function = 0;
+            N1_ary_std_bind     = 0;
+            N1_ary_std_ref      = 0;
         }
 
     private:        
@@ -86,19 +86,19 @@ namespace function_test
     // *************** //
     inline void nullary_function() 
     { 
-        ++count::instance().nullary_function_count;
+        ++count::instance().nullary_function;
     }
 
     struct nullary_functor
     {
         inline void operator()() const 
         {
-            ++count::instance().nullary_functor_count;
+            ++count::instance().nullary_functor;
         }
 
         inline void process() const
         {
-            ++count::instance().nullary_member_count;
+            ++count::instance().nullary_member;
         }
     };
 
@@ -108,7 +108,7 @@ namespace function_test
     // ************* //
     inline std::string N_ary_function(int, int) 
     {
-        ++count::instance().N_ary_function_count;
+        ++count::instance().N_ary_function;
         return "xxx"; 
     }
 
@@ -116,13 +116,13 @@ namespace function_test
     {
         inline std::string operator()(int, int) const 
         { 
-            ++count::instance().N_ary_functor_count;
+            ++count::instance().N_ary_functor;
             return "yyy"; 
         }
 
         inline std::string process(int, int) const 
         { 
-            ++count::instance().N_ary_member_count;
+            ++count::instance().N_ary_member;
             return "zzz"; 
         }
     };
@@ -133,7 +133,7 @@ namespace function_test
     // ************* //
     inline std::string N1_ary_function(int, int, const std::string& str) 
     {
-        ++count::instance().N1_ary_function_count;
+        ++count::instance().N1_ary_function;
         return str; 
     }
 
@@ -141,13 +141,13 @@ namespace function_test
     {
         inline std::string operator()(int, int, const std::string& str) const 
         { 
-            ++count::instance().N1_ary_functor_count;
+            ++count::instance().N1_ary_functor;
             return str; 
         }
 
         inline std::string process(int, int, const std::string& str) const 
         { 
-            ++count::instance().N1_ary_member_count;
+            ++count::instance().N1_ary_member;
             return str; 
         }
     };

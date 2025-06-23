@@ -25,7 +25,7 @@ using namespace function_test;
 // ******************************************************************* //
 void test_alg_simple_function()
 {
-    count::instance().reset_counters();
+    count::instance().reset();
     nullary_functor f;
     std::vector<alg::simple_function> fs; 
 
@@ -35,7 +35,7 @@ void test_alg_simple_function()
     fs.push_back(f);                   // <--- cannot compile this line, if std::decay_t is removed
     fs.push_back([]()
     { 
-        ++count::instance().nullary_lambda_count;
+        ++count::instance().nullary_lambda;
     });
 
     // using simple_function type
@@ -44,7 +44,7 @@ void test_alg_simple_function()
     alg::simple_function f2(f);
     alg::simple_function f3([]()
     {
-        ++count::instance().nullary_lambda_count;
+        ++count::instance().nullary_lambda;
     });
     fs.push_back(f0);                  // <--- cannot compile all these lines, if unique_ptr is used instead of shared_ptr inside simple_function
     fs.push_back(f1);                  //      std::unique_ptr makes simple_function non-copyable 
@@ -52,16 +52,17 @@ void test_alg_simple_function()
     fs.push_back(f3);
 
     for(const auto& f:fs) f();    
-    assert(count::instance().nullary_function_count == 2);
-    assert(count::instance().nullary_functor_count  == 4);
-    assert(count::instance().nullary_lambda_count   == 2);
+    assert(count::instance().nullary_function == 2);
+    assert(count::instance().nullary_functor  == 4);
+    assert(count::instance().nullary_lambda   == 2);
     print_summary("alg::function - simple version", "succeeded");
 }
   
 
+
 void test_alg_function()
 {
-    count::instance().reset_counters();
+    count::instance().reset();
     N_ary_functor f;
     std::vector<alg::function<std::string,int,int>> fs; 
 
@@ -71,7 +72,7 @@ void test_alg_function()
     fs.push_back(f);           
     fs.push_back([](int,int) -> std::string
     {
-        ++count::instance().N_ary_lambda_count;
+        ++count::instance().N_ary_lambda;
         return "zzz"; 
     });
 
@@ -81,7 +82,7 @@ void test_alg_function()
     alg::function<std::string,int,int> f2(f);
     alg::function<std::string,int,int> f3([](int,int) -> std::string
     {
-        ++count::instance().N_ary_lambda_count;
+        ++count::instance().N_ary_lambda;
         return "zzz"; 
     });
     fs.push_back(f0); 
@@ -90,9 +91,9 @@ void test_alg_function()
     fs.push_back(f3);
 
     for(const auto& f:fs) f(123,123);    
-    assert(count::instance().N_ary_function_count == 2);
-    assert(count::instance().N_ary_functor_count  == 4);
-    assert(count::instance().N_ary_lambda_count   == 2);
+    assert(count::instance().N_ary_function == 2);
+    assert(count::instance().N_ary_functor  == 4);
+    assert(count::instance().N_ary_lambda   == 2);
 
     assert(fs[0](123,123) == "xxx");
     assert(fs[1](123,123) == "yyy");
@@ -104,7 +105,6 @@ void test_alg_function()
     assert(fs[7](123,123) == "zzz");
     print_summary("alg::function - genera version", "succeeded");
 }
-
 
 
 
