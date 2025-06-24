@@ -1,5 +1,30 @@
 #pragma once
+#include<functional>
 #include<memory>
+
+
+// alg::function can bind to all these callable : 
+//
+//                               |       direct function call      standardised call of std::invoke
+// ------------------------------+--------------------------------------------------------------------
+// 1. function pointer           |       (*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 2. functor (rvalue)           |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//    functor (lvalue)           |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 3. member pointer             |   (obj.*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 4. lambda                     |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 5. std::function              |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 6. std::bind                  |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 7. std::reference_wrapper<F>  |    f.get()(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//
+//
+// Remark 1 : 
+// Implementation with direct function call has different forms for different callables, hence not suitable for alg::function.
+// Implementation with standardised call can handle all callables, the complexity is delegated to std::invoke.
+//
+// Remark 2 : 
+// alg::simple_function does not support member pointer, even with std::invoke,
+// because it is nullary and no placeholder for passing the object.
+//
 
 
 
@@ -27,7 +52,13 @@ namespace alg
 
             void call() const override
             {
-                _fct();
+                std::invoke(_fct);
+
+                 // The following implementation does not support :
+                 // * member pointer
+                 // * std::reference_wrapper
+                   
+            //  _fct();
             }
 
         private:
@@ -83,7 +114,8 @@ namespace alg
 
             R call(ARGS&&...args) const override
             {
-                return _fct(std::forward<ARGS>(args)...);
+                return std::invoke(_fct, std::forward<ARGS>(args)...);
+            //  return _fct(std::forward<ARGS>(args)...);
             }
 
         private:
