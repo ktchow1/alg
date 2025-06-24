@@ -51,10 +51,16 @@ using namespace toy_example;
 
 void test_valueness()
 {
-    assert( std::is_lvalue_reference_v<decltype((named_crx    ))> && !std::is_rvalue_reference_v<decltype((named_crx    ))>); //  lvalue
-    assert( std::is_lvalue_reference_v<decltype((named_rx     ))> && !std::is_rvalue_reference_v<decltype((named_rx     ))>); //  lvalue
-    assert( std::is_lvalue_reference_v<decltype((named_rrx    ))> && !std::is_rvalue_reference_v<decltype((named_rrx    ))>); //  lvalue
-    assert( std::is_lvalue_reference_v<decltype((named_x      ))> && !std::is_rvalue_reference_v<decltype((named_x      ))>); //  lvalue
+    assert( std::is_lvalue_reference_v<decltype((named_crx))> && !std::is_rvalue_reference_v<decltype((named_crx))>); // lvalue
+    assert( std::is_lvalue_reference_v<decltype((named_rx ))> && !std::is_rvalue_reference_v<decltype((named_rx ))>); // lvalue
+    assert( std::is_lvalue_reference_v<decltype((named_rrx))> && !std::is_rvalue_reference_v<decltype((named_rrx))>); // lvalue
+    assert( std::is_lvalue_reference_v<decltype((named_x  ))> && !std::is_rvalue_reference_v<decltype((named_x  ))>); // lvalue
+
+    assert(!std::is_lvalue_reference_v<decltype((std::move(named_crx)))> && std::is_rvalue_reference_v<decltype((std::move(named_crx)))>); // xvalue
+    assert(!std::is_lvalue_reference_v<decltype((std::move(named_rx )))> && std::is_rvalue_reference_v<decltype((std::move(named_rx )))>); // xvalue
+    assert(!std::is_lvalue_reference_v<decltype((std::move(named_rrx)))> && std::is_rvalue_reference_v<decltype((std::move(named_rrx)))>); // xvalue
+    assert(!std::is_lvalue_reference_v<decltype((std::move(named_x  )))> && std::is_rvalue_reference_v<decltype((std::move(named_x  )))>); // xvalue
+
     assert( std::is_lvalue_reference_v<decltype((unnamed_crx()))> && !std::is_rvalue_reference_v<decltype((unnamed_crx()))>); //  lvalue
     assert( std::is_lvalue_reference_v<decltype((unnamed_rx() ))> && !std::is_rvalue_reference_v<decltype((unnamed_rx() ))>); //  lvalue
     assert(!std::is_lvalue_reference_v<decltype((unnamed_rrx()))> &&  std::is_rvalue_reference_v<decltype((unnamed_rrx()))>); //  xvalue
