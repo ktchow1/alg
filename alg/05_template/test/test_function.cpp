@@ -24,19 +24,26 @@ void test_alg_simple_function()
     fs.push_back(&nullary_function);   // <--- cannot compile all these lines, if "explicit" is added to alg::simple_function constructor
     fs.push_back(nullary_functor{});
     fs.push_back(f);        
-    fs.push_back([]() { ++count::instance().nullary_lambda; });
-    fs.push_back(std::function<void()>{nullary_function});
-    fs.push_back(std::bind(nullary_function));
+    fs.push_back([]() 
+    { 
+        ++count::instance().nullary_lambda; 
+    });
+    fs.push_back(nullary_std_function);
+    fs.push_back(std::bind(nullary_std_function));
     fs.push_back(std::ref(f));
+
 
 
     // Add named callable
     alg::simple_function f0(&nullary_function);
     alg::simple_function f1(nullary_functor{});
     alg::simple_function f2(f);
-    alg::simple_function f3([]() { ++count::instance().nullary_lambda; });
-    alg::simple_function f4(std::function<void()>{nullary_function});
-    alg::simple_function f5(std::bind(nullary_function));
+    alg::simple_function f3([]() 
+    { 
+        ++count::instance().nullary_lambda; 
+    });
+    alg::simple_function f4(nullary_std_function);
+    alg::simple_function f5(std::bind(nullary_std_function));
     alg::simple_function f6(std::ref(f));
 
     fs.push_back(f0);                  // <--- cannot compile all these lines, if std::unique_ptr is used instead of std::shared_ptr inside alg::simple_function
@@ -50,9 +57,10 @@ void test_alg_simple_function()
 
 
     for(const auto& f:fs) f();    
-    assert(count::instance().nullary_function == 6);
-    assert(count::instance().nullary_functor  == 6);
-    assert(count::instance().nullary_lambda   == 2);
+    assert(count::instance().nullary_function     == 2);
+    assert(count::instance().nullary_functor      == 6);
+    assert(count::instance().nullary_lambda       == 2);
+    assert(count::instance().nullary_std_function == 4);
     print_summary("alg::function - simple version", "succeeded");
 }
   
@@ -75,6 +83,7 @@ void test_alg_function()
         ++count::instance().N_ary_lambda;
         return "zzz"; 
     });
+
 
 
     // Add named callable

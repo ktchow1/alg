@@ -1,6 +1,7 @@
 #pragma once
 #include<cstdint>
 #include<string>
+#include<functional>
 
 
 // *************************************************** //
@@ -102,6 +103,11 @@ namespace function_test
         }
     };
 
+    inline std::function<void()> nullary_std_function{[]() // <--- see Remark A : inline variable vs static variable
+    {
+        ++count::instance().nullary_std_function;
+    }}; 
+
 
     // ************* //
     // *** N ary *** //
@@ -127,6 +133,12 @@ namespace function_test
         }
     };
 
+    inline std::function<std::string(int,int)> N_ary_std_function{[](int, int) 
+    {
+        ++count::instance().N_ary_std_function;
+        return "www";
+    }}; 
+
 
     // ************* //
     // *** N ary *** //
@@ -151,4 +163,21 @@ namespace function_test
             return str; 
         }
     };
-}
+
+    inline std::function<std::string(int,int,const std::string&)> N1_ary_std_function{[](int, int, const std::string& str) 
+    {
+        ++count::instance().N1_ary_std_function;
+        return str;
+    }}; 
+} 
+
+
+// Remark A : inline variable vs static variable
+//
+// If we declare variable in header, that is included in multiple cpp, 
+// * as "inline", then each translation unit share the same instance    
+// * as "static", then each translation unit has its own instance
+//
+// It is counter-intuitive, as we are 
+// * talking about inline variable / static variable here
+// * different from inline function / static function.
