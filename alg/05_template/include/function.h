@@ -5,16 +5,17 @@
 
 // alg::function can bind to all these callable : 
 //
-//                               |       direct function call      standardised call of std::invoke
-// ------------------------------+--------------------------------------------------------------------
-// 1. function pointer           |       (*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-// 2. functor (rvalue)           |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-//    functor (lvalue)           |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-// 3. member pointer             |   (obj.*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-// 4. lambda                     |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-// 5. std::function              |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-// 6. std::bind                  |         f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
-// 7. std::reference_wrapper<F>  |    f.get()(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//                               |              direct function call      standardised call of std::invoke
+// ------------------------------+---------------------------------------------------------------------------
+// 1. function pointer           |              (*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 2. functor (rvalue)           |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//    functor (lvalue)           |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 3. member pointer             |          (obj.*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 4. lambda                     |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 5. std::function              |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 6. std::bind                  |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 7. std::reference_wrapper<F>  |           f.get()(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//                               | or simply      f (arg0,arg1,arg2)
 //
 //
 // Remark 1 : 
@@ -25,6 +26,8 @@
 // alg::simple_function does not support member pointer, even with std::invoke,
 // because it is nullary and no placeholder for passing the object.
 //
+// Remark 3 : 
+// There is std::reference_wrapper<T>::operator() for calling wrapped callable directly.
 
 
 
