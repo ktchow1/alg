@@ -489,6 +489,16 @@ namespace alg
     struct comparator_traits<std::less<T>> { using opposite_type = std::greater<T>; }; 
     template<typename T> 
     struct comparator_traits<std::greater<T>> { using opposite_type = std::less<T>; }; 
+
+
+    // *************************** //
+    // *** Final : Elegant way *** //
+    // *************************** //
+    template<typename T>
+    constexpr bool is_reference_wrapper_v = false;
+
+    template<typename T>
+    constexpr bool is_reference_wrapper_v<std::reference_wrapper<T>> = true;
 }
 
 
