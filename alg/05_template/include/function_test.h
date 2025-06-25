@@ -140,9 +140,9 @@ namespace function_test
     }}; 
 
 
-    // ************* //
-    // *** N ary *** //
-    // ************* //
+    // ************** //
+    // *** N1 ary *** //
+    // ************** //
     inline std::string N1_ary_function(int, int, const std::string& str) 
     {
         ++count::instance().N1_ary_function;
