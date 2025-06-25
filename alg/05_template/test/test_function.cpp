@@ -56,6 +56,7 @@ void test_alg_simple_function()
 
 
 
+    // Invoke and check
     for(const auto& f:fs) f();    
     assert(count::instance().nullary_function     == 2);
     assert(count::instance().nullary_functor      == 6);
@@ -81,8 +82,11 @@ void test_alg_function()
     fs.push_back([](int,int) -> std::string
     {
         ++count::instance().N_ary_lambda;
-        return "zzz"; 
+        return "uuu"; 
     });
+    fs.push_back(N_ary_std_function);
+    fs.push_back(std::bind(N_ary_std_function, std::placeholders::_1, std::placeholders::_2));
+    fs.push_back(std::ref(f));
 
 
 
@@ -93,28 +97,36 @@ void test_alg_function()
     alg::function<std::string,int,int> f3([](int,int) -> std::string
     {
         ++count::instance().N_ary_lambda;
-        return "zzz"; 
+        return "vvv"; 
     });
+    alg::function<std::string,int,int> f4(N_ary_std_function);
+    alg::function<std::string,int,int> f5(std::bind(N_ary_std_function, std::placeholders::_1, std::placeholders::_2));
+    alg::function<std::string,int,int> f6(std::ref(f));
+
     fs.push_back(f0); 
     fs.push_back(f1);
     fs.push_back(f2);
     fs.push_back(f3);
+    fs.push_back(f4);
+    fs.push_back(f5);
+    fs.push_back(f6);
 
 
 
+    // Invoke and check
     for(const auto& f:fs) f(123,123);    
-    assert(count::instance().N_ary_function == 2);
-    assert(count::instance().N_ary_functor  == 4);
-    assert(count::instance().N_ary_lambda   == 2);
+    assert(count::instance().N_ary_function     == 2);
+    assert(count::instance().N_ary_functor      == 6);
+    assert(count::instance().N_ary_lambda       == 2);
+    assert(count::instance().N_ary_std_function == 4);
 
     assert(fs[0](123,123) == "xxx");
     assert(fs[1](123,123) == "yyy");
     assert(fs[2](123,123) == "yyy");
-    assert(fs[3](123,123) == "zzz");
-    assert(fs[4](123,123) == "xxx");
-    assert(fs[5](123,123) == "yyy");
+    assert(fs[3](123,123) == "uuu");
+    assert(fs[4](123,123) == "www");
+    assert(fs[5](123,123) == "www");
     assert(fs[6](123,123) == "yyy");
-    assert(fs[7](123,123) == "zzz");
     print_summary("alg::function - genera version", "succeeded");
 }
 
