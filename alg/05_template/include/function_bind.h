@@ -5,8 +5,11 @@
 
 namespace alg
 {
-    template<std::uint32_t> 
-    struct placeholder {};
+    template<std::uint32_t N> 
+    struct placeholder 
+    {
+        static constexpr std::uint32_t value = N;
+    };
 
     namespace placeholders
     {
@@ -16,6 +19,12 @@ namespace alg
         inline placeholder<4> _4;
         inline placeholder<5> _5;
     }
+
+    template<typename T>
+    constexpr bool is_placeholder_v = false;
+    template<std::uint32_t N>
+    constexpr bool is_placeholder_v<placeholder<N>> = true;
+
 
 
     template<typename T>
@@ -67,9 +76,15 @@ namespace alg
     class bound_function
     {
     public:
-        bound_function(F&& fct, BOUND_ARGS&&...bound_args) // size = N+M, includes placeholders 
-                     : m_fct(std::forward<F>(fct))
-                     , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...) 
+//      bound_function(F&& fct, BOUND_ARGS&&...bound_args) // Why is this not preferred? Compile error. See remark 1
+//                   : m_fct(std::forward<F>(fct))
+//                   , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...) 
+//      {
+//      }
+
+        bound_function(F fct, BOUND_ARGS...bound_args) // size = N+M, includes placeholders 
+                     : m_fct(std::move(fct))
+                     , m_bound_args(std::move(bound_args)...) 
         {
         }
 
@@ -100,17 +115,30 @@ namespace alg
 
     private:
         template<typename T, typename...CALL_ARGS>
-        decltype(auto) resolve_args(T&& bound_arg, CALL_ARGS&&...call_args) // case 1 : non-placeholder
+        decltype(auto) resolve_args(T&& bound_arg, CALL_ARGS&&...call_args) 
         {
-            return unwrap(std::forward<T>(bound_arg));
+            if constexpr (is_placeholder_v<std::decay_t<T>>)
+            {
+                constexpr std::uint32_t N = std::decay_t<T>::value;
+                return std::get<N-1>(std::forward_as_tuple(std::forward<CALL_ARGS>(call_args)...));
+            }
+            else
+            {
+                return unwrap(std::forward<T>(bound_arg));
+            }
         }
 
-        template<std::size_t N, typename...CALL_ARGS>
-        decltype(auto) resolve_args(placeholder<N> dummy, CALL_ARGS&&...call_args) // case 2 : placeholder
-        {
-            return std::get<N>(std::forward_as_tuple(std::forward<CALL_ARGS>(call_args)...));
+//      template<typename T, typename...CALL_ARGS>
+//      decltype(auto) resolve_args(T&& bound_arg, CALL_ARGS&&...call_args) // case 1 : non-placeholder
+//      {
+//          return unwrap(std::forward<T>(bound_arg));
+//      }
 
-        }
+//      template<std::size_t N, typename...CALL_ARGS>
+//      decltype(auto) resolve_args(const placeholder<N>& dummy, CALL_ARGS&&...call_args) // case 2 : placeholder
+//      {
+//          return std::get<N-1>(std::forward_as_tuple(std::forward<CALL_ARGS>(call_args)...)); // BUG : It is N-1, NOT N.
+//      }
 
 
     private:
@@ -144,3 +172,18 @@ namespace alg
         return bound_function {std::forward<F>(fct), std::forward<BOUND_ARGS>(bound_args)...};
     }
 }
+
+
+
+
+// Remark 1 :
+//
+//
+//
+// Thus :
+// 1. CTAD has to kicks in order to make BOUND_ARGS&& a universal reference in bound_function constructor
+// 2. CTAD will be bypassed when there is deduction guide
+// 3. CTAD will be bypassed for variadic template without deduction guide
+// 4. hence no matter whether there is deduction guide, BOUND_ARGS&& is a rvalue reference
+//
+// 
