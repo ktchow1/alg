@@ -58,8 +58,9 @@ namespace alg
 // 1. bound-arguments are stored by value,     using std::      make_tuple    <--- N+M
 // 2.  call-arguments are passed by reference, using std::forward_as_tuple    <---   M
 //
-// where N = number of bound arg
-//       M = number of called arg (i.e. number of placeholders)
+// where N = number of non-placeholders bound args
+//       M = number of     placeholders 
+//         = number of call args
 // **************************************************************************************** //
 namespace alg
 {
@@ -118,17 +119,30 @@ namespace alg
         std::tuple<BOUND_ARGS...> m_bound_args;
     };
 
+
+
+    // *********************** //
+    // *** Deduction guide *** //
+    // *********************** //
+    // Variadic template supports CTAD 
+    // only if deduction guide is provided.
+
+    template<typename F, typename...BOUND_ARGS>
+    bound_functor(F&&, BOUND_ARGS&&...) -> bound_functor<std::decay_t<F>, std::decay_t<BOUND_ARGS>...>;
     
-/*
+
+
     // ************************** //
     // *** Bind, as a factory *** //
     // ************************** //
-    template<>
-    decltype(auto) bind()   
-    {
-        bound_functor fct
+    // Cannot use decltype(auto) here as the return value is temporary,
+    // hence returning by decltype(auto) will result in rvalue reference to temporary,
+    // hence dangling ...
 
-        return std::function<>();
+    template<typename F, typename...BOUND_ARGS>
+    auto bind(F&& fct, BOUND_ARGS&&...bound_args)   
+    {
+        bound_functor functor{std::forward<F>(fct), std::forward<BOUND_ARGS>(bound_args)...};
+        return std::function(functor);
     }
-*/
 }
