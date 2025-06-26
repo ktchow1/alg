@@ -47,16 +47,15 @@ namespace alg
 //
 // 1. alg::bind works with 2 variadic parameter pack : 
 // *  variadic bound-arguments (on calling alg::bind)
-// *  variadic  call-arguments (on calling std::function created by alg::bind)
+// *  variadic  call-arguments (on calling alg::bound_function created by alg::bind)
 // 2. as there are 2 packs, the unpack is a nested variadic parameter unpack 
 //
 // 
 //
-// The creation of std::function by alg::bind is done in 2 steps (for better readabilty)
-// 1. create alg::bound_function, store bound-arguments into std::tuple 
-// 2. create std::function,       using bound_function as the callable
+// On construction of alg::bound_function :
+// 1. alg::bound_function, store bound-arguments into std::tuple 
 // 
-// On invoking std::function, bound_function::operator() will be invoked, which :
+// On invocation of alg::bound_function :
 // 1. extract bound-arguments from std::tuple 
 // 2. replace placeholders by call-arguments
 //
