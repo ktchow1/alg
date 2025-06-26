@@ -128,18 +128,6 @@ namespace alg
             }
         }
 
-//      template<typename T, typename...CALL_ARGS>
-//      decltype(auto) resolve_args(T&& bound_arg, CALL_ARGS&&...call_args) // case 1 : non-placeholder
-//      {
-//          return unwrap(std::forward<T>(bound_arg));
-//      }
-
-//      template<std::size_t N, typename...CALL_ARGS>
-//      decltype(auto) resolve_args(const placeholder<N>& dummy, CALL_ARGS&&...call_args) // case 2 : placeholder
-//      {
-//          return std::get<N-1>(std::forward_as_tuple(std::forward<CALL_ARGS>(call_args)...)); // BUG : It is N-1, NOT N.
-//      }
-
 
     private:
         F m_fct;
@@ -176,14 +164,18 @@ namespace alg
 
 
 
-// Remark 1 :
+// Remark 1 
+// The commented constructor does not work, as there is compilation error when there is placeholder in alg::bind.
+// * when call alg::bind with placeholder, BOUND_ARGS&& is deduced, hence BOUND_ARGS&& is universal reference that binds to lvalue placeholders::_1
+// * when call bound_function constructor, BOUND_ARGS&& is NOT deduced, as it is assigned by deduction guide, hence BOUND_ARGS&& is rvalue reference
+// * when binding rvalue reference BOUND_ARGS&& to lvalue placeholders::_1, there will be ERROR 
 //
-//
-//
-// Thus :
+// Therefore :
 // 1. CTAD has to kicks in order to make BOUND_ARGS&& a universal reference in bound_function constructor
 // 2. CTAD will be bypassed when there is deduction guide
 // 3. CTAD will be bypassed for variadic template without deduction guide
 // 4. hence no matter whether there is deduction guide, BOUND_ARGS&& is a rvalue reference
 //
+// Solution : 
+// * use another constructor that pass by value and then move
 // 
