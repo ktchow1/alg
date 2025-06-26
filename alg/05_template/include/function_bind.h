@@ -16,12 +16,26 @@ namespace alg
         using _4 = placeholder<4>;
         using _5 = placeholder<5>;
     }
+
+
+    template<typename T>
+    decltype(auto) unwrap(T&& x)
+    {
+        return std::forward<T>(x);
+    }
+
+    template<typename T>
+    decltype(auto) unwrap(std::reference_wrapper<T> x)
+    {
+        return x.get();
+    }
 }
 
 
-// ************ //
-// *** Bind *** //
-// ************ //
+
+// **************************************************************************************** //
+// Bind 
+//
 // 1. alg::bind works with std::function, NOT alg::function.
 // 2. alg::bind works with 2 variadic parameter pack : 
 // *  variadic bound-arguments (on calling alg::bind)
@@ -31,8 +45,14 @@ namespace alg
 // 
 //
 // The creation of std::function by alg::bind is done in 2 steps (for better readabilty)
-// 1. create alg::bound_function_object, store bound-arguments into std::tuple 
-// 2. create std::function,            extract bound-arguments from std::tuple and from call-arguments
+// 1. create alg::bound_functor, store bound-arguments into std::tuple 
+// 2. create std::function,      using bound_functor as the callable
+// 
+// On invoking std::function, bound_functor::operator() will be invoked, which :
+// 1. extract bound-arguments from std::tuple 
+// 2. replace placeholders by call-arguments
+//
+//
 //
 // We have different treatments for 2 parameter packs : 
 // 1. bound-arguments are stored by value,     using std::      make_tuple    <--- N+M
@@ -40,32 +60,26 @@ namespace alg
 //
 // where N = number of bound arg
 //       M = number of called arg (i.e. number of placeholders)
-//
-
+// **************************************************************************************** //
 namespace alg
 {
     template<typename F, typename...BOUND_ARGS>
-    class bound_function_object
+    class bound_functor
     {
     public:
-        bound_function_object(F&& fct, BOUND_ARGS&&...bound_args) 
-                            : m_fct(std::forward<F>(fct))
-                            , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...) // including placeholders
+        bound_functor(F&& fct, BOUND_ARGS&&...bound_args) // size = N+M, includes placeholders 
+                    : m_fct(std::forward<F>(fct))
+                    , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...) 
         {
         }
 
     public:
         template<typename...CALL_ARGS>
-        auto operator()(CALL_ARGS&&...call_args)
+        decltype(auto) operator()(CALL_ARGS&&...call_args)
         {
-            // Remark :
-            // std::index_sequence_for<BOUND_ARGS...> creates 
-            // std::index_sequence<0, 1, 2, ..., sizeof...(BOUND_ARGS)-1>
-            // it introduces non-type template parameters Ns in implementation function.
-            //
-            return implement_with_nested_para_packs
+            return implement_2D_unpack
             (
-                std::index_sequence_for<BOUND_ARGS...>{},
+                std::index_sequence_for<BOUND_ARGS...>{}, // <--- create std::index_sequence<0, 1, 2, ..., sizeof...(BOUND_ARGS)-1>
                 std::forward<CALL_ARGS>(call_args)...
             );
         }
@@ -73,47 +87,48 @@ namespace alg
 
     private:
         template<std::size_t...Ns, typename...CALL_ARGS>
-        auto implement_with_nested_para_packs(std::index_sequence<Ns...>, CALL_ARGS&&...call_args)
+        decltype(auto) implement_2D_unpack(std::index_sequence<Ns...>, CALL_ARGS&&...call_args)
         {
-            // Remark :
-            // Why std::invoke(f, args...)? Instead of f(args...)?
-            // The former is more generic.
-            // The latter cannot handle all cases in uniform syntax.
-            //
             return std::invoke
             (
-                m_fct,                                                                        // vvv----------- this unpacks CALL_ARGS (inner loop)
-                revolve_bound_args(std::get<Ns>(m_bound_args), std::forward<CALL_ARGS>(call_args)...) ...
-                                                                                                    //^^^------ this unpacks Ns (outer loop)
+                m_fct,      //            size = N+M                                       vvv----------- this unpacks CALL_ARGS (inner loop)
+                revolve_args(std::get<Ns>(m_bound_args), std::forward<CALL_ARGS>(call_args)...) ...
+                            //                                                   size = M       ^^^------ this unpacks Ns (outer loop)
             );
         }
-/*
-        template<typename T, typename...CALL_ARGS>
-        auto resolve_bound_args( bound_arg, CALL_ARGS&&...call_args) // case 1 : non-placeholder
-        {
-            return bound_arg;
 
+
+    private:
+        template<typename T, typename...CALL_ARGS>
+        decltype(auto) resolve_args(T&& bound_arg, CALL_ARGS&&...call_args) // case 1 : non-placeholder
+        {
+            return unwrap(std::forward<T>(bound_arg));
         }
 
         template<std::size_t N, typename...CALL_ARGS>
-        auto resolve_bound_args(placeholder<N> dummy, CALL_ARGS&&...call_args) // case 2 : placeholder
+        decltype(auto) resolve_args(placeholder<N> dummy, CALL_ARGS&&...call_args) // case 2 : placeholder
         {
-            return bound_arg;
+            return std::get<N>(std::forward_as_tuple(std::forward<CALL_ARGS>(call_args)...));
 
         }
-*/
-    private:
-        // Todo - This implementation involves :
-        // * deep copy of function and
-        // * deep copy of all bound arguments
 
+
+    private:
         F m_fct;
         std::tuple<BOUND_ARGS...> m_bound_args;
     };
 
     
+/*
     // ************************** //
     // *** Bind, as a factory *** //
     // ************************** //
+    template<>
+    decltype(auto) bind()   
+    {
+        bound_functor fct
 
+        return std::function<>();
+    }
+*/
 }
