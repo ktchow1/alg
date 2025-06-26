@@ -3,7 +3,27 @@
 #include<memory>
 
 
-// alg::function can bind to all these callable : 
+// ************************************** //
+// *** std::bind is NOT std::function *** //
+// ************************************** //
+// std::function is a type-erased wrapper, which needs to know whole signature.
+// std::bind is a templated callable object, which needs to know all arg types.
+// std::bind's return type is NOT std::function.
+//
+//
+//               |   std::function       std::bind
+// --------------+-------------------------------------------
+// what is it    |   type erasure        templated callable                 
+// arg    type   |   known in compile    known in compile 
+// return type   |   known in compile    deduced
+// performance   |   slower              faster
+//
+
+
+
+// *************************************************** // 
+// *** alg::function can bind to various callables *** //
+// *************************************************** // 
 //
 //                               |              direct function call      standardised call of std::invoke
 // ------------------------------+---------------------------------------------------------------------------

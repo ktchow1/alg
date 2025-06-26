@@ -10,11 +10,11 @@ namespace alg
 
     namespace placeholders
     {
-        using _1 = placeholder<1>;
-        using _2 = placeholder<2>;
-        using _3 = placeholder<3>;
-        using _4 = placeholder<4>;
-        using _5 = placeholder<5>;
+        inline placeholder<1> _1;
+        inline placeholder<2> _2;
+        inline placeholder<3> _3;
+        inline placeholder<4> _4;
+        inline placeholder<5> _5;
     }
 
 
@@ -36,19 +36,18 @@ namespace alg
 // **************************************************************************************** //
 // Bind 
 //
-// 1. alg::bind works with std::function, NOT alg::function.
-// 2. alg::bind works with 2 variadic parameter pack : 
+// 1. alg::bind works with 2 variadic parameter pack : 
 // *  variadic bound-arguments (on calling alg::bind)
 // *  variadic  call-arguments (on calling std::function created by alg::bind)
-// 3. as there are 2 packs, the unpack is a nested variadic parameter unpack 
+// 2. as there are 2 packs, the unpack is a nested variadic parameter unpack 
 //
 // 
 //
 // The creation of std::function by alg::bind is done in 2 steps (for better readabilty)
-// 1. create alg::bound_functor, store bound-arguments into std::tuple 
-// 2. create std::function,      using bound_functor as the callable
+// 1. create alg::bound_function, store bound-arguments into std::tuple 
+// 2. create std::function,       using bound_function as the callable
 // 
-// On invoking std::function, bound_functor::operator() will be invoked, which :
+// On invoking std::function, bound_function::operator() will be invoked, which :
 // 1. extract bound-arguments from std::tuple 
 // 2. replace placeholders by call-arguments
 //
@@ -65,12 +64,12 @@ namespace alg
 namespace alg
 {
     template<typename F, typename...BOUND_ARGS>
-    class bound_functor
+    class bound_function
     {
     public:
-        bound_functor(F&& fct, BOUND_ARGS&&...bound_args) // size = N+M, includes placeholders 
-                    : m_fct(std::forward<F>(fct))
-                    , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...) 
+        bound_function(F&& fct, BOUND_ARGS&&...bound_args) // size = N+M, includes placeholders 
+                     : m_fct(std::forward<F>(fct))
+                     , m_bound_args(std::forward<BOUND_ARGS>(bound_args)...) 
         {
         }
 
@@ -93,7 +92,7 @@ namespace alg
             return std::invoke
             (
                 m_fct,      //            size = N+M                                       vvv----------- this unpacks CALL_ARGS (inner loop)
-                revolve_args(std::get<Ns>(m_bound_args), std::forward<CALL_ARGS>(call_args)...) ...
+                resolve_args(std::get<Ns>(m_bound_args), std::forward<CALL_ARGS>(call_args)...) ...
                             //                                                   size = M       ^^^------ this unpacks Ns (outer loop)
             );
         }
@@ -128,7 +127,7 @@ namespace alg
     // only if deduction guide is provided.
 
     template<typename F, typename...BOUND_ARGS>
-    bound_functor(F&&, BOUND_ARGS&&...) -> bound_functor<std::decay_t<F>, std::decay_t<BOUND_ARGS>...>;
+    bound_function(F&&, BOUND_ARGS&&...) -> bound_function<std::decay_t<F>, std::decay_t<BOUND_ARGS>...>;
     
 
 
@@ -142,7 +141,6 @@ namespace alg
     template<typename F, typename...BOUND_ARGS>
     auto bind(F&& fct, BOUND_ARGS&&...bound_args)   
     {
-        bound_functor functor{std::forward<F>(fct), std::forward<BOUND_ARGS>(bound_args)...};
-        return std::function(functor);
+        return bound_function {std::forward<F>(fct), std::forward<BOUND_ARGS>(bound_args)...};
     }
 }
