@@ -20,11 +20,25 @@ namespace alg
         return static_cast<typename std::remove_reference<T>::type&&>(x);
     }
 
+
+    // Note : 
+    // T is not deduced by compiler
+    // T is given explicitly by caller, recall std::forward<T>(x)
+    // 
+    // Why design this way? Because ... 
+    // std::forward is always used in another template with parameter T,
+    // std::forward has to capture what T is, as deduced by compiler.
+    //
+    // 1. caller deduction as T   :   X    X&   X&&
+    // 2. bind named input as T&  :   X&   X&   X&
+    // 3. return as reference T&& :   X&&  X&   X&&  
+    //
     template<typename T> T&& forward(typename std::remove_reference<T>::type& x) noexcept
     {
         return static_cast<T&&>(x);
     }
 }
+
 
 namespace alg
 {
@@ -63,7 +77,8 @@ namespace alg
     template<typename T> void binding_lvalue_ref(T&) {}               //           N   |    Y   |    N   |    N
     template<typename T> void binding_rvalue_ref(T&&) {}              //           N   |    N   |    Y   |    Y
     template<typename T> void binding_value(T) {}                     //           Y   |    Y   |    Y   |    Y
-}    
+}   
+
 
 //                          | DC  CC  CA  MC  MA  DD 
 // -------------------------+-------------------------
@@ -184,6 +199,7 @@ namespace alg
         }
     };
 }
+
 
 // Universal reference T&& or auto&&
 // T ---> X& for lvalue 

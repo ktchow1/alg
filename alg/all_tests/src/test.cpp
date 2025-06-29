@@ -158,13 +158,13 @@ int main()
 //
 //  banner("05_template");
 //  test_array();
-    test_function();                      // for testing alg::function
-    test_function_bind();                 // for testing alg::bind   which makes std::function
-    test_function_invoke();               // for testing alg::invoke which calls std::function
+//  test_function();                      // for testing alg::function
+//  test_function_bind();                 // for testing alg::bind   which makes std::function
+//  test_function_invoke();               // for testing alg::invoke which calls std::function
 //  test_metaprog();
 //  test_optional_and_reference();
 //  test_shared_ptr();
-//  test_template(); 
+    test_template(); 
 //  test_template_specialization(); 
 //  test_traits();
 //  test_tuple_idx_seq();                 // for testing alg::idx_seq

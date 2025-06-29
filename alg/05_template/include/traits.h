@@ -90,7 +90,7 @@ namespace alg
 
     // 2. variadic approach  
     //
-    // Question : Can we remove interface and consider recursion as interface? 
+    // Question : Can we re
     //            No, recursion requires at least 1 int, while boundary has 0 int.
     //
     template<int...Ns> 

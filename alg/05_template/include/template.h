@@ -3,16 +3,20 @@
 #include<cstdint>
 
 
-// ******************************************************************************************* //
-// Template basic                                                                              //
-//                                                                                             //
-// *     function template   with auto deduction                                               //
-// *        class template   with class-template-argument-deduction (CTAD) and deduction guide //
-// * class member template                                                                     //
-// *     variable template                                                                     //
-// *        alias template                                                                     //
-// *     template template                                                                     //
-// ******************************************************************************************* //
+// *****************************************************
+// Template basic                                                                              
+// *     function template   with auto deduction                                               
+// *        class template   with CTAD / deduction guide 
+// * class member template                                                                     
+// *     variable template                                                                     
+// *        alias template                                                                     
+// *     template template                                                                     
+//
+//
+// Template definition
+// * generalization 
+// * specialization
+// *****************************************************
 namespace alg 
 {
     namespace global
@@ -38,6 +42,22 @@ namespace alg
     }
 
 
+    // ************************************************************ //
+    // *** function template (NTTP non type template parameter) *** //
+    // ************************************************************ //
+    template<typename T, std::uint32_t N>
+    void function_template_with_NTTP(const T& t)
+    {
+        for(std::uint32_t n=0; n!=N; ++n) t();
+    }
+
+    template<typename T, auto N>
+    void function_template_with_NTTP(const T& t)
+    {
+        for(decltype(N) n=0; n!=N; ++n) t();
+    }
+
+
 
     // ************************************* //
     // *** Abbreviated function template *** //
@@ -53,9 +73,9 @@ namespace alg
     // *** class template *** //
     // ********************** //
     // There are 6 cases :
-    // class template with template type explicit specified         = generalization + specialization
-    // class template with template type deduced by CTAD            = generalization + specialization
-    // class template with template type deduced by deduction guide = generalization + specialization
+    // class template with template type deduced by CTAD         
+    // class template with template type deduced by deduction guide
+    // class template with template type explicit specified      
     // 
     // CTAD            = compiler deduces all template types in constructor
     // deduction guide = compiler deduces all template types given hint 
@@ -216,22 +236,22 @@ namespace alg
     // 
     namespace fct_space
     {
-        std::string fct1(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 1000); }
-        std::string fct2(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 2000); }
+        std::string   fct1(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 1000); }
+        std::string   fct2(const std::string& s, std::uint32_t n, std::uint32_t m) { return std::to_string(std::stol(s) + n + m + 2000); }
         std::uint32_t fct3(std::uint32_t n, std::uint32_t m) { return n + m + 3000; }
         std::uint32_t fct4(std::uint32_t n, std::uint32_t m) { return n + m + 4000; }
-        std::string fct5() { return "aaaa"; }
-        std::string fct6() { return "bbbb"; }
+        std::string   fct5() { return "aaaa"; }
+        std::string   fct6() { return "bbbb"; }
     }
 
     template<typename FCT_PTR, typename...ARGS> 
-    auto invoke_fct_TTP0(FCT_PTR fct_ptr, ARGS&&... args) // use 1st arg to deduce FCT_PTR 
+    auto invoke_fct_TTP(FCT_PTR fct_ptr, ARGS&&... args) // use 1st arg to deduce FCT_PTR 
     {
         return (*fct_ptr)(std::forward<ARGS>(args)...);
     }
 
     template<auto FCT_PTR, typename...ARGS> 
-    auto invoke_fct_TTP1(ARGS&&... args)  
+    auto invoke_fct_NTTP(ARGS&&... args)  
     {
         return (*FCT_PTR)(std::forward<ARGS>(args)...);
     }
@@ -268,14 +288,14 @@ namespace alg
 
 
     template<typename MEM_PTR, typename...ARGS> 
-    auto invoke_mem_TTP0(MEM_PTR mem_ptr, ARGS&&... args) 
+    auto invoke_mem_TTP(MEM_PTR mem_ptr, ARGS&&... args) 
     {
         fct_group x;
         return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
     template<auto MEM_PTR, typename...ARGS> 
-    auto invoke_mem_TTP1(ARGS&&... args)  
+    auto invoke_mem_NTTP(ARGS&&... args)  
     {
         fct_group x;
         return (x.*MEM_PTR)(std::forward<ARGS>(args)...);

@@ -175,25 +175,18 @@ void test_template()
 
 
     // *** function pointer as type-template-parameter *** //
-    assert(alg::invoke_fct_TTP0(&alg::fct_space::fct1, std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
-    assert(alg::invoke_fct_TTP0(&alg::fct_space::fct2, std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
-    assert(alg::invoke_fct_TTP0(&alg::fct_space::fct3, std::uint32_t{300}, std::uint32_t{30}) == 3330);
-    assert(alg::invoke_fct_TTP0(&alg::fct_space::fct4, std::uint32_t{400}, std::uint32_t{40}) == 4440);
-    assert(alg::invoke_fct_TTP0(&alg::fct_space::fct5) == "aaaa");
-    assert(alg::invoke_fct_TTP0(&alg::fct_space::fct6) == "bbbb");
-
-    assert(alg::invoke_fct_TTP1<&alg::fct_space::fct1>(std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
-    assert(alg::invoke_fct_TTP1<&alg::fct_space::fct2>(std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
-    assert(alg::invoke_fct_TTP1<&alg::fct_space::fct3>(std::uint32_t{300}, std::uint32_t{30}) == 3330);
-    assert(alg::invoke_fct_TTP1<&alg::fct_space::fct4>(std::uint32_t{400}, std::uint32_t{40}) == 4440);
-    assert(alg::invoke_fct_TTP1<&alg::fct_space::fct5>() == "aaaa");
-    assert(alg::invoke_fct_TTP1<&alg::fct_space::fct6>() == "bbbb");
+    assert(alg::invoke_fct_TTP(&alg::fct_space::fct1, std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
+    assert(alg::invoke_fct_TTP(&alg::fct_space::fct2, std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
+    assert(alg::invoke_fct_TTP(&alg::fct_space::fct3, std::uint32_t{300}, std::uint32_t{30}) == 3330);
+    assert(alg::invoke_fct_TTP(&alg::fct_space::fct4, std::uint32_t{400}, std::uint32_t{40}) == 4440);
+    assert(alg::invoke_fct_TTP(&alg::fct_space::fct5) == "aaaa");
+    assert(alg::invoke_fct_TTP(&alg::fct_space::fct6) == "bbbb");
     print_summary("function pointer as TTP", "succeeded");
 
 
 
     // *** function pointer as type-template-parameter *** //
-    assert(alg::invoke_fct_TTP0([](const std::string& s, std::uint32_t n, std::uint32_t m)
+    assert(alg::invoke_fct_TTP([](const std::string& s, std::uint32_t n, std::uint32_t m)
     {
         return std::to_string(std::stol(s) + n + m + 1000);
     }
@@ -205,6 +198,12 @@ void test_template()
 
 
     // *** function pointer as non-type-template-parameter *** //
+    assert(alg::invoke_fct_NTTP<&alg::fct_space::fct1>(std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
+    assert(alg::invoke_fct_NTTP<&alg::fct_space::fct2>(std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
+    assert(alg::invoke_fct_NTTP<&alg::fct_space::fct3>(std::uint32_t{300}, std::uint32_t{30}) == 3330);
+    assert(alg::invoke_fct_NTTP<&alg::fct_space::fct4>(std::uint32_t{400}, std::uint32_t{40}) == 4440);
+    assert(alg::invoke_fct_NTTP<&alg::fct_space::fct5>() == "aaaa");
+    assert(alg::invoke_fct_NTTP<&alg::fct_space::fct6>() == "bbbb");
     assert(alg::invoke_fct_NTTP0<&alg::fct_space::fct3>(std::uint32_t{300}, std::uint32_t{30}) == 3330);
     assert(alg::invoke_fct_NTTP0<&alg::fct_space::fct4>(std::uint32_t{400}, std::uint32_t{40}) == 4440);
     assert(alg::invoke_fct_NTTP1<&alg::fct_space::fct5>() == "aaaa");
@@ -214,24 +213,23 @@ void test_template()
 
 
     // *** member pointer as type-template-parameter *** //
-    assert(alg::invoke_mem_TTP0(&alg::fct_group::fct1, std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
-    assert(alg::invoke_mem_TTP0(&alg::fct_group::fct2, std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
-    assert(alg::invoke_mem_TTP0(&alg::fct_group::fct3, std::uint32_t{300}, std::uint32_t{30}) == 3330);
-    assert(alg::invoke_mem_TTP0(&alg::fct_group::fct4, std::uint32_t{400}, std::uint32_t{40}) == 4440);
-    assert(alg::invoke_mem_TTP0(&alg::fct_group::fct5) == "aaaa");
-    assert(alg::invoke_mem_TTP0(&alg::fct_group::fct6) == "bbbb");
-
-    assert(alg::invoke_mem_TTP1<&alg::fct_group::fct1>(std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
-    assert(alg::invoke_mem_TTP1<&alg::fct_group::fct2>(std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
-    assert(alg::invoke_mem_TTP1<&alg::fct_group::fct3>(std::uint32_t{300}, std::uint32_t{30}) == 3330);
-    assert(alg::invoke_mem_TTP1<&alg::fct_group::fct4>(std::uint32_t{400}, std::uint32_t{40}) == 4440);
-    assert(alg::invoke_mem_TTP1<&alg::fct_group::fct5>() == "aaaa");
-    assert(alg::invoke_mem_TTP1<&alg::fct_group::fct6>() == "bbbb");
+    assert(alg::invoke_mem_TTP(&alg::fct_group::fct1, std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
+    assert(alg::invoke_mem_TTP(&alg::fct_group::fct2, std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
+    assert(alg::invoke_mem_TTP(&alg::fct_group::fct3, std::uint32_t{300}, std::uint32_t{30}) == 3330);
+    assert(alg::invoke_mem_TTP(&alg::fct_group::fct4, std::uint32_t{400}, std::uint32_t{40}) == 4440);
+    assert(alg::invoke_mem_TTP(&alg::fct_group::fct5) == "aaaa");
+    assert(alg::invoke_mem_TTP(&alg::fct_group::fct6) == "bbbb");
     print_summary("  member pointer as TTP", "succeeded");
 
 
 
     // *** member pointer as non-type-template-parameter *** //
+    assert(alg::invoke_mem_NTTP<&alg::fct_group::fct1>(std::string{"100"}, std::uint32_t{10}, std::uint32_t{1}) == "1111");
+    assert(alg::invoke_mem_NTTP<&alg::fct_group::fct2>(std::string{"200"}, std::uint32_t{20}, std::uint32_t{2}) == "2222");
+    assert(alg::invoke_mem_NTTP<&alg::fct_group::fct3>(std::uint32_t{300}, std::uint32_t{30}) == 3330);
+    assert(alg::invoke_mem_NTTP<&alg::fct_group::fct4>(std::uint32_t{400}, std::uint32_t{40}) == 4440);
+    assert(alg::invoke_mem_NTTP<&alg::fct_group::fct5>() == "aaaa");
+    assert(alg::invoke_mem_NTTP<&alg::fct_group::fct6>() == "bbbb");
     assert(alg::invoke_mem_NTTP0<&alg::fct_group::fct3>(std::uint32_t{300}, std::uint32_t{30}) == 3330);
     assert(alg::invoke_mem_NTTP0<&alg::fct_group::fct4>(std::uint32_t{400}, std::uint32_t{40}) == 4440);
     assert(alg::invoke_mem_NTTP1<&alg::fct_group::fct5>() == "aaaa");
