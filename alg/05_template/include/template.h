@@ -57,15 +57,7 @@ namespace alg
         for(decltype(N) n=0; n!=N; ++n) t();
     }
 
-
-    // ********************************************** //
-    // *** function template (NTTP - with char[]) *** //
-    // ********************************************** //
-    // Must     use const char*
-    // Must not use std::string
-    // Must not use std::string_view
-
-    template<const char* str> 
+    template<const char* str>                         // <--- char[] as NTTP
     auto function_template_with_char_array_NTTP()
     {
         return std::string{str};
