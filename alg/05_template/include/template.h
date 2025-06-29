@@ -3,9 +3,9 @@
 #include<cstdint>
 
 
-// *****************************************************
+// ***********************************************************************
 // Template basic                                                                              
-// *     function template   with auto deduction                                               
+// *     function template   with auto deduction / NTTP vs TTP / auto NTTP
 // *        class template   with CTAD / deduction guide 
 // * class member template                                                                     
 // *     variable template                                                                     
@@ -16,7 +16,7 @@
 // Template definition
 // * generalization 
 // * specialization
-// *****************************************************
+// ***********************************************************************
 namespace alg 
 {
     namespace global
@@ -45,13 +45,13 @@ namespace alg
     // ************************************************************ //
     // *** function template (NTTP non type template parameter) *** //
     // ************************************************************ //
-    template<typename T, std::uint32_t N>
+    template<typename T, std::uint32_t N>             // <--- specific NTTP
     void function_template_with_NTTP(const T& t)
     {
         for(std::uint32_t n=0; n!=N; ++n) t();
     }
 
-    template<typename T, auto N>
+    template<typename T, auto N>                      // <--- any NTTP 
     void function_template_with_NTTP(const T& t)
     {
         for(decltype(N) n=0; n!=N; ++n) t();
