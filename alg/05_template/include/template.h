@@ -42,9 +42,9 @@ namespace alg
     }
 
 
-    // ************************************************************ //
-    // *** function template (NTTP non type template parameter) *** //
-    // ************************************************************ //
+    // ************************************************************** //
+    // *** function template (NTTP - non type template parameter) *** //
+    // ************************************************************** //
     template<typename T, std::uint32_t N>             // <--- specific NTTP
     void function_template_with_NTTP(const T& t)
     {
@@ -57,6 +57,22 @@ namespace alg
         for(decltype(N) n=0; n!=N; ++n) t();
     }
 
+
+    // ********************************************** //
+    // *** function template (NTTP - with char[]) *** //
+    // ********************************************** //
+    // Must     use const char*
+    // Must not use std::string
+    // Must not use std::string_view
+
+    template<const char* str> 
+    struct str_as_NTTP
+    {
+        auto get() const
+        {
+            return std::string{str};
+        } 
+    };
 
 
     // ************************************* //
@@ -250,10 +266,10 @@ namespace alg
         return (*fct_ptr)(std::forward<ARGS>(args)...);
     }
 
-    template<auto FCT_PTR, typename...ARGS> 
+    template<auto fct_ptr, typename...ARGS> 
     auto invoke_fct_NTTP(ARGS&&... args)  
     {
-        return (*FCT_PTR)(std::forward<ARGS>(args)...);
+        return (*fct_ptr)(std::forward<ARGS>(args)...);
     }
 
     template<std::uint32_t (*fct_ptr)(std::uint32_t, std::uint32_t), typename...ARGS>
@@ -294,11 +310,11 @@ namespace alg
         return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
-    template<auto MEM_PTR, typename...ARGS> 
+    template<auto mem_ptr, typename...ARGS> 
     auto invoke_mem_NTTP(ARGS&&... args)  
     {
         fct_group x;
-        return (x.*MEM_PTR)(std::forward<ARGS>(args)...);
+        return (x.*mem_ptr)(std::forward<ARGS>(args)...);
     }
 
     template<std::uint32_t (fct_group::* mem_ptr)(std::uint32_t, std::uint32_t), typename...ARGS>
@@ -314,24 +330,6 @@ namespace alg
         fct_group x;
         return (x.*mem_ptr)();
     }
-
-
-
-    // **************************************************** //
-    // *** string as non-type-template-parameter (NTTP) *** //
-    // **************************************************** //
-    // Must     use const char*
-    // Must not use std::string
-    // Must not use std::string_view
-
-    template<const char* str> 
-    struct str_as_NTTP
-    {
-        auto get() const
-        {
-            return std::string{str};
-        } 
-    };
 }
 
 

@@ -30,6 +30,20 @@ void test_template()
 
 
 
+    // function template - char[] as NTTP
+    static const char s0[] = "ABCDEF__XXX";
+    static const char s1[] = "KLMNOP__YYY";
+    static const char s2[] = "PQRSTU__ZZZ";
+    alg::str_as_NTTP<s0> obj0;
+    alg::str_as_NTTP<s1> obj1;
+    alg::str_as_NTTP<s2> obj2;
+    assert(obj0.get() == std::string{s0});
+    assert(obj1.get() == std::string{s1});
+    assert(obj2.get() == std::string{s2});
+    print_summary("function template - char[] as NTTP", "succeeded");
+
+
+
     // class template 
     alg::class_template<A,B,int> x0;
     alg::class_template<A,B,C> x1;
@@ -235,20 +249,6 @@ void test_template()
     assert(alg::invoke_mem_NTTP1<&alg::fct_group::fct5>() == "aaaa");
     assert(alg::invoke_mem_NTTP1<&alg::fct_group::fct6>() == "bbbb");
     print_summary("  member pointer as NTTP", "succeeded");
-
-
-
-    // *** char[] as template parameter *** //
-    static const char s0[] = "ABCDEF__XXX";
-    static const char s1[] = "KLMNOP__YYY";
-    static const char s2[] = "PQRSTU__ZZZ";
-    alg::str_as_NTTP<s0> obj0;
-    alg::str_as_NTTP<s1> obj1;
-    alg::str_as_NTTP<s2> obj2;
-    assert(obj0.get() == std::string{s0});
-    assert(obj1.get() == std::string{s1});
-    assert(obj2.get() == std::string{s2});
-    print_summary("char [] string as non-type-template-parameter", "succeeded");
 }
 
 
