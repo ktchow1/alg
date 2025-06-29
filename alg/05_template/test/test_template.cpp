@@ -34,12 +34,9 @@ void test_template()
     static const char s0[] = "ABCDEF__XXX";
     static const char s1[] = "KLMNOP__YYY";
     static const char s2[] = "PQRSTU__ZZZ";
-    alg::str_as_NTTP<s0> obj0;
-    alg::str_as_NTTP<s1> obj1;
-    alg::str_as_NTTP<s2> obj2;
-    assert(obj0.get() == std::string{s0});
-    assert(obj1.get() == std::string{s1});
-    assert(obj2.get() == std::string{s2});
+    assert(alg::function_template_with_char_array_NTTP<s0>() == std::string{s0});
+    assert(alg::function_template_with_char_array_NTTP<s1>() == std::string{s1});
+    assert(alg::function_template_with_char_array_NTTP<s2>() == std::string{s2});
     print_summary("function template - char[] as NTTP", "succeeded");
 
 

@@ -66,13 +66,10 @@ namespace alg
     // Must not use std::string_view
 
     template<const char* str> 
-    struct str_as_NTTP
+    auto function_template_with_char_array_NTTP()
     {
-        auto get() const
-        {
-            return std::string{str};
-        } 
-    };
+        return std::string{str};
+    } 
 
 
     // ************************************* //
