@@ -90,8 +90,9 @@ namespace alg
 
     // 2. variadic approach  
     //
-    // Question : Can we re
-    //            No, recursion requires at least 1 int, while boundary has 0 int.
+    // Question : Can we remove interface?
+    //            No, if we remove interface, there will be compile error,
+    //            as recursion requires at least 1 int, while boundary has 0 int.
     //
     template<int...Ns> 
     struct value2type_variadic_runtime                     // interface
@@ -126,7 +127,7 @@ namespace alg
         using type = typename value2type_variadic_compiletime<N,Ns...>::type; 
     }; 
     template<int N, int...Ns>
-    struct value2type_variadic_compiletime<N,N,Ns...>      // boundary case
+    struct value2type_variadic_compiletime<N,N,Ns...>      // recursion
     { 
         using type = derivedN<N>; 
     }; 
