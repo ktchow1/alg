@@ -235,8 +235,8 @@ namespace alg
     template<        typename T, typename F> struct condition<true,T,F> { using type = T; };
     
     // Allow compilation (or not) depending on boolean value B
-    template<bool B, typename T=void> struct enable_if         {                 }; // no type here, this case will trigger compilation error
-    template<        typename T     > struct enable_if<true,T> { using type = T; }; 
+    template<bool B, typename T> struct enable_if         {                 }; // no type here, this case will trigger compilation error
+    template<        typename T> struct enable_if<true,T> { using type = T; }; 
 
 
     // *********************** //
