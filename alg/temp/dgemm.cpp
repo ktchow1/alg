@@ -1,139 +1,173 @@
+// ******************************************************************************************* //
+// *** Objective : replace matrix product in UBLAS with MKL, keeping boost UBLAS interface *** //
+// ******************************************************************************************* //
+using vector = boost::numeric::ublas::vector<double>;
+using matrix = boost::numeric::ublas::matrix<double>;
 
-
-
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/operation.hpp> // for trans()
-#include <type_traits>
-
-namespace ublas = boost::numeric::ublas;
-
-// Trait to detect if T is a ublas::matrix
-template<typename T>
-struct is_ublas_matrix : std::false_type {};
-
-template<typename T, typename Alloc>
-struct is_ublas_matrix<ublas::matrix<T, Alloc>> : std::true_type {};
-
-template<typename T>
-constexpr bool is_ublas_matrix_v = is_ublas_matrix<T>::value;
-
-// Trait to detect if T is a ublas::vector
-template<typename T>
-struct is_ublas_vector : std::false_type {};
-
-template<typename T, typename Alloc>
-struct is_ublas_vector<ublas::vector<T, Alloc>> : std::true_type {};
-
-template<typename T>
-constexpr bool is_ublas_vector_v = is_ublas_vector<T>::value;
-
-// Trait to detect if T is a transpose expression
-template<typename U>
-constexpr bool is_transpose_v = std::is_same<
-    std::decay_t<decltype(ublas::trans(std::declval<U>()))>,
-    std::decay_t<U>
->::value;
-
-// Combined traits for convenience:
-template<typename T>
-constexpr bool is_matrix_or_transpose_v = is_ublas_matrix_v<T> || is_transpose_v<T>;
-
-template<typename T>
-constexpr bool is_matrix_or_vector_or_transpose_v =
-    is_ublas_matrix_v<T> || is_ublas_vector_v<T> || is_transpose_v<T>;
-
-// Example usage (optional, for testing):
-#ifdef EXAMPLE_USAGE
-#include <iostream>
-int main() {
-    ublas::matrix<double> m(3,3);
-    auto t = ublas::trans(m);
-    ublas::vector<double> v(3);
-
-    std::cout << std::boolalpha;
-    std::cout << "is_ublas_matrix_v<m> = " << is_ublas_matrix_v<decltype(m)> << "\n";
-    std::cout << "is_transpose_v<t> = " << is_transpose_v<decltype(t)> << "\n";
-    std::cout << "is_ublas_vector_v<v> = " << is_ublas_vector_v<decltype(v)> << "\n";
-
-    std::cout << "is_matrix_or_vector_or_transpose_v<m> = "
-              << is_matrix_or_vector_or_transpose_v<decltype(m)> << "\n";
-    std::cout << "is_matrix_or_vector_or_transpose_v<t> = "
-              << is_matrix_or_vector_or_transpose_v<decltype(t)> << "\n";
-    std::cout << "is_matrix_or_vector_or_transpose_v<v> = "
-              << is_matrix_or_vector_or_transpose_v<decltype(v)> << "\n";
-
-    return 0;
-}
-#endif
-
-
-
-
-
-
-template <typename A, typename B>
-auto my_product(const A& a_expr, const B& b_expr) 
+struct matrix_trans
 {
-    using ublas::matrix;
-    using ublas::vector;
+    const matrix& mat;
+};
 
-    constexpr bool A_is_vec = std::is_same_v<std::decay_t<A>, vector<double>>;
-    constexpr bool B_is_vec = std::is_same_v<std::decay_t<B>, vector<double>>;
-    constexpr bool A_is_trans = is_transposed_v<A>;
-    constexpr bool B_is_trans = is_transposed_v<B>;
+inline matrix_trans trans(const matrix& mat)
+{
+    return matrix_trans{mat};
+}
 
-    const auto& A = get_base(a_expr);
-    const auto& B = get_base(b_expr);
 
-    const double* A_data = &A.data()[0];
-    const double* B_data = &B.data()[0];
 
-    if constexpr (!A_is_vec && !B_is_vec) 
+
+// ************************************************************************** //
+// boost::numeric::ublas has a lot of lazy operations, like :
+//
+//    auto ans = element_product(vec0,vec1) 
+//
+// which is an unknown type (may even changed across different boost version).
+// Therefore we cannot define is_vector<T> traits with std::is_same, 
+// instead   we can    define is_vector<T> traits with std::is_convertible, 
+// even if the intermediate type may change, it must be able to materialize 
+// as boost::numeric::ublas::vector.
+// ************************************************************************** //
+template<typename T> constexpr bool is_vector_v = std::is_convertible_v<T,vector>;
+
+template<typename T> struct is_matrix               : public std::false_type{};
+template<>           struct is_matrix<matrix>       : public std:: true_type{};
+template<>           struct is_matrix<matrix_trans> : public std:: true_type{};
+template<typename T> constexpr bool is_matrix_v = is_matrix<std::decay_t<T>>::value;
+
+template<typename T> struct is_transpose               : public std::false_type{};
+template<>           struct is_transpose<matrix_trans> : public std:: true_type{};
+template<typename T> constexpr bool is_transpose_v = is_transpose<std::decay_t<T>>::value;
+
+template<typename T> constexpr bool is_vector_or_matrix 
+= is_vector_v<T> || 
+  is_matrix_v<T>;
+
+
+
+
+// ************************************************************************** //
+// 1. "if constexpt" allows to return different types in different branches
+// 2.  if some branches return  lvalue or xvalue <--- pass by reference
+//        some branches return prvalue           <--- pass by value
+//     then declare return type as "decltype(auto)" 
+// 3. caller should declare "auto&&", like following :
+//
+//    auto&& x = fct_that_returns_reference_or_value();
+//
+// 4. cannot use "const auto&&" 
+// -  const auot&& is not universal reference
+// -  const auto&& is rvalue reference
+// ************************************************************************** //
+template<typename T> 
+decltype(auto) get_data(const T& x) // where x can be vector, matrix or matrix transpose
+{
+    if constexpr(is_transpose_v<T>)
     {
-        CBLAS_TRANSPOSE transA = A_is_trans ? CblasTrans : CblasNoTrans;
-        CBLAS_TRANSPOSE transB = B_is_trans ? CblasTrans : CblasNoTrans;
-
-        MKL_INT M = (transA == CblasNoTrans) ? A.size1() : A.size2();
-        MKL_INT K = (transA == CblasNoTrans) ? A.size2() : A.size1();
-        MKL_INT N = (transB == CblasNoTrans) ? B.size2() : B.size1();
-
-        matrix<double> C(M, N);
-        cblas_dgemm(CblasRowMajor, transA, transB, M, N, K,
-                    1.0, A_data, A.size2(), B_data, B.size2(), 0.0, &C.data()[0], N);
-        return C;
-
-    } 
-    else if constexpr (A_is_vec && !B_is_vec) 
+        return x.mat; // lvalue reference of matrix
+    }
+    else if constexpr(is_matrix_v<T>)
     {
-        CBLAS_TRANSPOSE transB = B_is_trans ? CblasTrans : CblasNoTrans;
-        MKL_INT K = A.size();
-        MKL_INT N = (transB == CblasNoTrans) ? B.size2() : B.size1();
-
-        vector<double> result(N);
-        cblas_dgemv(CblasRowMajor, transB, 
-                    (transB == CblasNoTrans) ? B.size1() : B.size2(),
-                    (transB == CblasNoTrans) ? B.size2() : B.size1(),
-                    1.0, B_data, B.size2(), 
-                    &a_expr[0], 1, 0.0, &result[0], 1);
-        return result;
-
-    } 
-    else if constexpr (!A_is_vec && B_is_vec) 
-    {
-        CBLAS_TRANSPOSE transA = A_is_trans ? CblasTrans : CblasNoTrans;
-        MKL_INT M = (transA == CblasNoTrans) ? A.size1() : A.size2();
-        MKL_INT K = (transA == CblasNoTrans) ? A.size2() : A.size1();
-
-        vector<double> result(M);
-        cblas_dgemv(CblasRowMajor, transA,
-                    M, K, 1.0,
-                    A_data, A.size2(),
-                    &b_expr[0], 1, 0.0, &result[0], 1);
-        return result;
-
-    } 
+        return x; // lvalue reference of matrix
+    }
     else 
     {
+        return vector{x}; // prvalue vector (force it to materalize all lazy vector calculation by conversion to vector)
     }
 }
+
+
+
+
+// *************************************************** //
+// *** Double general matrix matrix multiplication *** //
+// *************************************************** //
+template<typename TA, typename TB>
+requires is_vector_or_matrix<TA> &&
+         is_vector_or_matrix<TB>
+auto dgemm(const TA& expression_A, const TB& expression_B)
+{
+    constexpr bool A_is_mat = is_matrix_v<TA>;
+    constexpr bool B_is_mat = is_matrix_v<TB>;
+    auto&& A = get_data(expression_A);
+    auto&& B = get_data(expression_B);
+
+
+    if constexpr (A_is_mat && B_is_mat)
+    {
+        CBLAS_TRANSPOSE transA = is_transpose_v<TA> ? CblasTrans : CblasNoTrans;
+        CBLAS_TRANSPOSE transB = is_transpose_v<TB> ? CblasTrans : CblasNoTrans;
+        MKL_INT M = (transA == CblasNoTrans) ? A.size1() : A.size2();
+        MKL_INT K = (transA == CblasNoTrans) ? A.size2() : A.size1();
+        MKL_INT N = (transB == CblasNoTrans) ? B.size2() : B.size1();
+
+        matrix C(M, N);
+        cblas_dgemm
+        (
+            CblasRowMajor, transA, transB, M, N, K, 1.0,
+            A.data().begin(), A.size2(),
+            B.data().begin(), B.size2(), 0.0,
+            C.data().begin(), N
+        );
+        return C;
+    }
+    else if constexpr (A_is_mat && !B_is_mat)
+    {
+        CBLAS_TRANSPOSE transA = is_transpose_v<TA> ? CblasTrans : CblasNoTrans;
+        MKL_INT M = (transA == CblasNoTrans) ? A.size1() : A.size2();
+        MKL_INT N = 1;
+        MKL_INT K = (transA == CblasNoTrans) ? A.size2() : A.size1();
+
+        vector C(M); // M*1 matrix
+        cblas_dgemm
+        (
+            CblasRowMajor, transA, CblasNoTrans, M, N, K, 1.0,
+            A.data().begin(), A.size2(),
+            B.data().begin(), 1, 0.0,
+            C.data().begin(), 1
+        );
+        return C;
+    }
+    else if constexpr (!A_is_mat && B_is_mat)
+    {
+        CBLAS_TRANSPOSE transB = is_transpose_v<TB> ? CblasTrans : CblasNoTrans;
+        MKL_INT M = 1;
+        MKL_INT N = (transB == CblasNoTrans) ? B.size2() : B.size1();
+        MKL_INT K = (transB == CblasNoTrans) ? B.size1() : B.size2();
+
+        vector C(N); // 1*N matrix
+        cblas_dgemm
+        (
+            CblasRowMajor, CblasNoTrans, transB, M, N, K, 1.0,
+            A.data().begin(), A.size(),
+            B.data().begin(), B.size2(), 0.0,
+            C.data().begin(), C.size()
+        );
+        return C;
+    }
+    else
+    {
+        // Todo : dot product of vectors
+        return double{0.0}
+    }
+}
+
+
+
+
+// **************************************** //
+// User can call in the following ways, 
+// return type is governed by input arg : 
+// **************************************** //
+matrix m0;
+matrix m1;
+vector v0;
+
+auto m2 = dgemm(      m0,        m1);
+auto m3 = dgemm(      m0,  trans(m1));
+auto m4 = dgemm(trans(m0),       m1);
+auto m5 = dgemm(trans(m0), trans(m1));
+auto v1 = dgemm(      m0,        v0);        // m0  * v0  where v0 is col matrix
+auto v2 = dgemm(trans(m0),       v0);        // m0' * v0  where v0 is col matrix
+auto v3 = dgemm(      v0,        m0);        // v0  * m0  where v0 is row matrix
+auto v4 = dgemm(      v0,  trans(m0));       // v0  * m0' where v0 is row matrix
