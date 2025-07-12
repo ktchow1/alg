@@ -60,19 +60,19 @@ template<typename T> constexpr bool is_vector_or_matrix
 // -  const auto&& is rvalue reference
 // ************************************************************************** //
 template<typename T> 
-decltype(auto) get_data(const T& x) // where x can be vector, matrix or matrix transpose
+decltype(auto) get_data(T&& x) // where x can be vector, matrix or matrix transpose
 {
     if constexpr(is_transpose_v<T>)
     {
-        return x.mat; // lvalue reference of matrix
+        return std::forward<T>(x).mat; // lvalue reference of matrix
     }
     else if constexpr(is_matrix_v<T>)
     {
-        return x; // lvalue reference of matrix
+        return std::forward<T>(x); // lvalue reference of matrix
     }
     else 
     {
-        return vector{x}; // prvalue vector (force it to materalize all lazy vector calculation by conversion to vector)
+        return vector{std::forward<T>(x)}; // prvalue vector (force it to materalize all lazy vector calculation by conversion to vector)
     }
 }
 
@@ -85,12 +85,12 @@ decltype(auto) get_data(const T& x) // where x can be vector, matrix or matrix t
 template<typename TA, typename TB>
 requires is_vector_or_matrix<TA> &&
          is_vector_or_matrix<TB>
-auto dgemm(const TA& expression_A, const TB& expression_B)
+auto dgemm(TA&& expression_A, TB&& expression_B)
 {
     constexpr bool A_is_mat = is_matrix_v<TA>;
     constexpr bool B_is_mat = is_matrix_v<TB>;
-    auto&& A = get_data(expression_A);
-    auto&& B = get_data(expression_B);
+    auto&& A = get_data(std::forward<T>(expression_A));
+    auto&& B = get_data(std::forward<T>(expression_B));
 
 
     if constexpr (A_is_mat && B_is_mat)
@@ -98,8 +98,8 @@ auto dgemm(const TA& expression_A, const TB& expression_B)
         CBLAS_TRANSPOSE transA = is_transpose_v<TA> ? CblasTrans : CblasNoTrans;
         CBLAS_TRANSPOSE transB = is_transpose_v<TB> ? CblasTrans : CblasNoTrans;
         MKL_INT M = (transA == CblasNoTrans) ? A.size1() : A.size2();
-        MKL_INT K = (transA == CblasNoTrans) ? A.size2() : A.size1();
         MKL_INT N = (transB == CblasNoTrans) ? B.size2() : B.size1();
+        MKL_INT K = (transA == CblasNoTrans) ? A.size2() : A.size1();
 
         matrix C(M, N);
         cblas_dgemm
@@ -159,15 +159,18 @@ auto dgemm(const TA& expression_A, const TB& expression_B)
 // User can call in the following ways, 
 // return type is governed by input arg : 
 // **************************************** //
-matrix m0;
-matrix m1;
-vector v0;
+void test()
+{
+    matrix m0;
+    matrix m1;
+    vector v0;
 
-auto m2 = dgemm(      m0,        m1);
-auto m3 = dgemm(      m0,  trans(m1));
-auto m4 = dgemm(trans(m0),       m1);
-auto m5 = dgemm(trans(m0), trans(m1));
-auto v1 = dgemm(      m0,        v0);        // m0  * v0  where v0 is col matrix
-auto v2 = dgemm(trans(m0),       v0);        // m0' * v0  where v0 is col matrix
-auto v3 = dgemm(      v0,        m0);        // v0  * m0  where v0 is row matrix
-auto v4 = dgemm(      v0,  trans(m0));       // v0  * m0' where v0 is row matrix
+    auto m2 = dgemm(      m0,        m1);
+    auto m3 = dgemm(      m0,  trans(m1));
+    auto m4 = dgemm(trans(m0),       m1);
+    auto m5 = dgemm(trans(m0), trans(m1));
+    auto v1 = dgemm(      m0,        v0);        // m0  * v0  where v0 is col matrix
+    auto v2 = dgemm(trans(m0),       v0);        // m0' * v0  where v0 is col matrix
+    auto v3 = dgemm(      v0,        m0);        // v0  * m0  where v0 is row matrix
+    auto v4 = dgemm(      v0,  trans(m0));       // v0  * m0' where v0 is row matrix
+}
