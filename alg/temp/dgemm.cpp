@@ -28,20 +28,20 @@ inline matrix_trans trans(const matrix& mat)
 // even if the intermediate type may change, it must be able to materialize 
 // as boost::numeric::ublas::vector.
 // ************************************************************************** //
-template<typename T> constexpr bool is_vector_v = std::is_convertible_v<T,vector>;
+template<typename T> struct is_vector               : public std::false_type{};
+template<>           struct is_vector<vector>       : public std:: true_type{};
 
 template<typename T> struct is_matrix               : public std::false_type{};
 template<>           struct is_matrix<matrix>       : public std:: true_type{};
 template<>           struct is_matrix<matrix_trans> : public std:: true_type{};
-template<typename T> constexpr bool is_matrix_v = is_matrix<std::decay_t<T>>::value;
 
 template<typename T> struct is_transpose               : public std::false_type{};
 template<>           struct is_transpose<matrix_trans> : public std:: true_type{};
-template<typename T> constexpr bool is_transpose_v = is_transpose<std::decay_t<T>>::value;
 
-template<typename T> constexpr bool is_vector_or_matrix 
-= is_vector_v<T> || 
-  is_matrix_v<T>;
+template<typename T> constexpr bool is_vector_v    = is_vector<std::decay_t<T>>::value;
+template<typename T> constexpr bool is_matrix_v    = is_matrix<std::decay_t<T>>::value;
+template<typename T> constexpr bool is_transpose_v = is_transpose<std::decay_t<T>>::value;
+template<typename T> constexpr bool is_dgemm_arg_v = std::is_convertible_v<T,vector> || is_vector_v<T> || is_matrix_v<T>;
 
 
 
@@ -60,13 +60,14 @@ template<typename T> constexpr bool is_vector_or_matrix
 // -  const auto&& is rvalue reference
 // ************************************************************************** //
 template<typename T> 
+requires is_dgemm_arg_v<T> 
 decltype(auto) get_data(T&& x) // where x can be vector, matrix or matrix transpose
 {
     if constexpr(is_transpose_v<T>)
     {
         return std::forward<T>(x).mat; // lvalue reference of matrix
     }
-    else if constexpr(is_matrix_v<T>)
+    else if constexpr(is_matrix_v<T> || is_vector_v<T>)
     {
         return std::forward<T>(x); // lvalue reference of matrix
     }
@@ -83,8 +84,8 @@ decltype(auto) get_data(T&& x) // where x can be vector, matrix or matrix transp
 // *** Double general matrix matrix multiplication *** //
 // *************************************************** //
 template<typename TA, typename TB>
-requires is_vector_or_matrix<TA> &&
-         is_vector_or_matrix<TB>
+requires is_dgemm_arg_v<TA> &&
+         is_dgemm_arg_v<TB>
 auto dgemm(TA&& expression_A, TB&& expression_B)
 {
     constexpr bool A_is_mat = is_matrix_v<TA>;
