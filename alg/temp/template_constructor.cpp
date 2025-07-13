@@ -1,5 +1,4 @@
-It is possble to have template constructor for non-template class. However type T should be deduce-able from constructor arguments.
-
+// It is possble to have template constructor for non-template class. However type T should be deduce-able from constructor arguments.
 class A
 {
 public:
@@ -21,8 +20,9 @@ void test()
     A a3(1,"1234");              // other, not sure what is it ... NOT char*, NOT char[]
 }
 
-However, T cannot be non-deduce-able from constructor arguments.
 
+
+// However, T cannot be non-deduce-able from constructor arguments.
 class A
 {
 public:
