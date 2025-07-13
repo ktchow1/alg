@@ -1,4 +1,3 @@
-// ...existing code...
 
 class svm
 {
@@ -65,15 +64,3 @@ private:
     int epochs;
     double C;
 };
-
-// Example usage
-int main()
-{
-    std::vector<std::vector<double>> X = {{2, 3}, {1, 1}, {2, 1}, {3, 2}, {7, 8}, {8, 8}, {9, 10}, {8, 9}};
-    std::vector<int> y = {0, 0, 0, 0, 1, 1, 1, 1};
-    svm model;
-    model.learn(X, y);
-    std::cout << "Inspect [2,2]: " << model.inspect({2,2}) << std::endl;
-    std::cout << "Inspect [8,8]: " << model.inspect({8,8}) << std::endl;
-    return 0;
-}
