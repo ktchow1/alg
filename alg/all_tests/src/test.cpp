@@ -135,7 +135,7 @@ int main()
 //
 //  banner("04_fundalmental");
 //  test_cast();
-//  test_constexpr();
+    test_constexpr();
 //  test_constexpr_array();
 //  test_constexpr_map();
 //  test_deduce_rvalue();
@@ -164,9 +164,9 @@ int main()
 //  test_metaprog();
 //  test_optional_and_reference();
 //  test_shared_ptr();
-    test_template(); 
+//  test_template(); 
 //  test_template_specialization(); 
-    test_traits();
+//  test_traits();
 //  test_tuple_idx_seq();                 // for testing alg::idx_seq
 //  test_tuple();                         // for testing alg::tuple, algorithm to process std::tuple
 //  test_tuple_factory();                 // for testing alg::make_tuple, which creates std::tuple
