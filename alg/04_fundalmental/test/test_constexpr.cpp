@@ -106,15 +106,15 @@ namespace test
 }
 
 
+// ****************************************************************** //
+// When to use "if constexpr" then? Only for template :
+//
+// - when we want to replace SFINAE
+// - when we want to tell compiler NOT to compile some IF branches
+// - can return different types in different "if constexpr" branches
+// ****************************************************************** //
 namespace test
 {
-    // ****************************************************************** //
-    // When to use "if constexpr" then? Only for template :
-    //
-    // - when we want to replace SFINAE
-    // - when we want to tell compiler NOT to compile some IF branches
-    // - can return different types in different "if constexpr" branches
-    // ****************************************************************** //
     template<typename T> 
     constexpr auto sum(const T& input)
     {
