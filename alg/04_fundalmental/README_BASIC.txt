@@ -60,6 +60,6 @@ Static keyword has several overload meaning :
 
 
 [Singleton]
-singleton implemented by static local : one instance for all threads
-singleton implemented by global local : one instance for each thread
+singleton implemented by static global : one instance for all threads
+singleton implemented by  thread_local : one instance for each thread
 
