@@ -1,26 +1,60 @@
-[Space domain]
-scope = where an object can be accessed
-* namespace scope
-* file scope
-* class scope
-* function scope
-* function prototype scope
-* block scope
+[Scope]
+Scope is where an object can be accessed. Divided into :
+
+          scope            |  classification   
+---------------------------+----------------------------------------
+namespace scope            |  global variable
+     file scopee           |  global variable
+    class scopee           |   local variable
+ function scopee           |   local variable
+ function prototype scopee |   local variable
+    block scopee           |   local variable
 
 
 
 
-[Time domain]
-storage duration = time duration of an object when its memory is allocated / deallocated
-lifetime         = time duration of an object when its constructor / destructor is called
+[Storage duration and lifetime]
+* storage duration = time duration of an object when it is allocated / deallocated in memory
+*         lifetime = time duration of an object when it is constructed / destructed
+* storage duration == lifetime (usually, but not necessary)  
+* storage duration >  lifetime, when using "placement new"
 
-* storage duration == lifetime (often, but not necessary)  
-* storage duration >= lifetime, when using "placement new"
 
-for   auto local variable, storage duration is defined by its scope
-for       global variable, storage duration is extended from its scope to program lifetime
-for static local variable, storage duration is extended from its scope to program lifetime
-for thread local variable, storage duration is extended from its scope to  thread lifetime  
+
+
+[Automatic & static storage duration]
+*    static storage duration means a variable live as long as the program
+* automatic storage duration means a variable live as long as its scope
+* by default, global variable has static storage duration
+* by default,  local variable has auto   storage duration, unless ...
+            if local variable is declared as static,       its lifetime is extended to the program lifetime <--- int main()
+            if local variable is declared as thread_local, its lifetime is extended to the  thread lifetime
+
+                       | storage duration
+-----------------------+-------------------------------
+      global variable  | static, i.e. program life
+       local variable  |   auto, i.e. scope
+static local variable  | static, i.e. program life
+thread local variable  |               thread life
+
+
+
+
+[Linkage]
+* Linkage is about whether a global variable can be accessed by other tranlation unit.
+* Linkage does not involve local variable.
+* Global variable (in namespace scope or file scope) 
+- can    be external linked to other translation units when declared "extern" in header
+- cannot be external linked to other translation units when declared "static"
+
+
+
+
+[Static keyword]
+Static keyword has several overload meaning :
+* static member variable inside class            = member belong to class, not object
+* static  local variable inside function         = sticky variable value
+* static global variable inside namespace / file = do not allow extern, support internal linkage only
 
 
 
