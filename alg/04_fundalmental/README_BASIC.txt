@@ -25,9 +25,9 @@ namespace scope            |  global variable
 [Automatic & static storage duration]
 *    static storage duration means a variable live as long as the program
 * automatic storage duration means a variable live as long as its scope
-* by default, global variable has static storage duration
-* by default,  local variable has auto   storage duration, unless ...
-            if local variable is declared as static,       its lifetime is extended to the program lifetime <--- int main()
+* by default, global variable has static storage duration (i.e. as main() of call stack)
+* by default,  local variable has auto   storage duration (i.e.  governed by call stack), unless ...
+            if local variable is declared as static,       its lifetime is extended to the program lifetime 
             if local variable is declared as thread_local, its lifetime is extended to the  thread lifetime
 
                        | storage duration
