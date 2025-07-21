@@ -30,11 +30,13 @@ For spinlock :
 * if winning thread dies
 * if winning thread dominates CPU
 * if winning thread runs infinite large job
-  other threads will be blocked, other threads are dependent on winning thread
+* other threads will be blocked
+* other threads are dependent on winning_thread_blocking_other_with_its_critical_section()
 
 For ring buffer :
 * there is no critical session
 * contention happens on 1 atomic instruction CAS 
+* other threads do not depend on winning_thread_proceed_without_blocking()
 
 Hence, for lockfree-ness classification :
 * spinlock is non lockfree in nature
