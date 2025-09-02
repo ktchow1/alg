@@ -109,6 +109,17 @@ void test_runtime_traits()
 }
 
 
+namespace test
+{
+    struct my_class
+    {
+        void f0(int,int,int);
+        void f1(int,const std::string&);
+        void f2(const std::string&,
+                const std::string&);
+    };
+}
+
 void test_sfinae_traits()
 {
     static_assert(alg::is_same_v<alg::integral_constant<std::uint8_t, 123>  ::value_type, std::uint8_t>,  "failed to use integral_constant");
@@ -389,9 +400,16 @@ void test_sfinae_traits()
     static_assert(alg::has_value_v<std::string>                       ==  true, "failed to use is_incrementable");
     static_assert(alg::has_value_v<std::list<int>::iterator>          ==  true, "failed to use is_incrementable");
     static_assert(alg::has_value_v<std::vector<int >::iterator>       ==  true, "failed to use is_incrementable");
-
     static_assert(alg::has_value_v<std::vector<int*>::iterator>       ==  true, "failed to use is_incrementable");
     static_assert(alg::has_value_v<std::vector<int*>::const_iterator> ==  true, "failed to use is_incrementable");
+
+    // This traits does not work when there are overloads with same member names.
+    static_assert(alg::has_mem<&test::my_class::f0, test::my_class, std::string, int, int>   ::value == false, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f1, test::my_class, std::string, std::string>::value == false, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f2, test::my_class, std::string, char>       ::value == false, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f0, test::my_class, int, int, int>           ::value ==  true, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f1, test::my_class, int, std::string>        ::value ==  true, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f2, test::my_class, std::string, std::string>::value ==  true, "failed to use has_mem");
 
     static_assert(alg::is_convertible_v<int, int>            ==  true, "failed to use is_convertible");
     static_assert(alg::is_convertible_v<int, double>         ==  true, "failed to use is_convertible");

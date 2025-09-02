@@ -410,7 +410,32 @@ namespace alg
     struct has_value : public false_type {};
     template<typename T>
     struct has_value<T,map_to_default<typename T::value_type>> : public true_type {};
+
+
+    // has memfct
+    template<auto mem_ptr, typename T, typename CONSTRAINT = default_type, typename...ARGS>
+    struct has_mem_impl : public false_type {};
+    template<auto mem_ptr, typename T, typename...ARGS>
+    struct has_mem_impl
+    <   
+        mem_ptr, T,
+        map_to_default<decltype
+        (
+            (std::declval<T>().*mem_ptr)(std::declval<ARGS>()...)
+        )>,
+        ARGS...
+    >
+    : public true_type {};
+
+    template<auto mem_ptr, typename T, typename...ARGS>
+    struct has_mem : public has_mem_impl<mem_ptr, T, default_type, ARGS...> {};
     
+    // Remark
+    // * mem_ptr is NTTP, not TTP, user needs to specify the exact member name when using the traits
+    // * using same pattern as is_incrementable, but involves 2 layers : implemenation and interface
+    // * using concepts is simpler than using traits, as no need to have generic case and speciailization
+    // * this traits does not work when there are overloads with same member names [NOT COMPLETED]
+
 
     // is convertible
     template<typename SRC, typename DST, typename CONSTRAINT = default_type>  
