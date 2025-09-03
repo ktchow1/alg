@@ -431,10 +431,11 @@ namespace alg
     struct has_mem : public has_mem_impl<mem_ptr, T, default_type, ARGS...> {};
     
     // Remark
+    // * this traits does not work properly, does not support overloads 
     // * mem_ptr is NTTP, not TTP, user needs to specify the exact member name when using the traits
     // * using same pattern as is_incrementable, but involves 2 layers : implemenation and interface
     // * using concepts is simpler than using traits, as no need to have generic case and speciailization
-    // * this traits does not work when there are overloads with same member names [NOT COMPLETED]
+    // * using concepts alg::invocable 
 
 
     // is convertible
@@ -460,7 +461,7 @@ namespace alg
 
     // is base of (method 2 & 3)
     template <typename B> std::false_type is_ptr_convertible_to(const void*);
-    template <typename B> std::true_type  is_ptr_convertible_to(const B*);
+   template <typename B> std::true_type  is_ptr_convertible_to(const B*);
 
     template <typename B, typename D>
     struct is_base_of2 : public decltype(is_ptr_convertible_to<B>(static_cast<D*>(nullptr))) {};
