@@ -112,7 +112,7 @@ inline void banner(const std::string str)
 int main()
 {
 //  banner("01_algorithm");
-//  test_arithmetic();
+    test_arithmetic();
 //  test_bisection();
 //  test_stack();
 //  test_dual();
@@ -166,7 +166,7 @@ int main()
 //  test_shared_ptr();
 //  test_template(); 
 //  test_template_specialization(); 
-    test_traits();
+//  test_traits();
 //  test_tuple_idx_seq();                 // for testing alg::idx_seq
 //  test_tuple();                         // for testing alg::tuple, algorithm to process std::tuple
 //  test_tuple_factory();                 // for testing alg::make_tuple, which creates std::tuple

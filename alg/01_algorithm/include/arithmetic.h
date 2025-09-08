@@ -125,8 +125,8 @@ namespace alg
         std::uint64_t z = 0;
         while(x > 0)
         {
-            z = z*10 + x%10;
-            x = x/10;
+            z = z * 10 + x % 10;
+            x = x / 10;
         }
         return z;
     }
@@ -136,8 +136,8 @@ namespace alg
         std::uint64_t z = 0;
         while(x > 0)
         {
-            z = z + x%2;
-            x = x/2;
+            z = z + x % 2;
+            x = x >> 1;
         }
         return z;
     }
@@ -147,9 +147,9 @@ namespace alg
         std::uint64_t z = 0;
         while(x > 0)
         {
-            if (x%2 == 1) z = z + n;
-            x = x/2;
-            n = n*2;
+            if (x %2 == 1) z = z + n; // n*(2^LSB[0]) + n*(2^LSB[1]) + n*(2^LSB[2]) + ...
+            x = x / 2;
+            n = n << 1;
         }
         return z;
     }
@@ -159,9 +159,9 @@ namespace alg
         std::uint64_t z = 1;
         while(x > 0)
         {
-            if (x%2 == 1) z = z * n;
-            x = x/2;
-            n = n*n;
+            if (x % 2 == 1) z = z * n; // n^(2^LSB[0]) * n^(2^LSB[1]) * n^(2^LSB[2]) * ...
+            x = x / 2;
+            n = n * n;
         }
         return z;
     }
@@ -175,12 +175,12 @@ namespace alg
         std::uint64_t M  = 0;
         while(sx <= n)
         {
-            sx = sx * 2;
+            sx = (sx << 1);
             ++M;
         }
         if (M > 0)
         {
-            sx = sx / 2;
+            sx = (sx >> 1);
             --M;
         }
 
@@ -192,14 +192,14 @@ namespace alg
         {
             if (n >= sx)
             {
-                z = z*2 + 1;
+                z = (z << 1) + 1;
                 n = n - sx;
-                sx = sx / 2;
+                sx = (sx >> 1);
             }
             else
             {
-                z = z*2;
-                sx = sx / 2;
+                z = (z << 1);
+                sx = (sx >> 1);
             }
         }
         return z;
