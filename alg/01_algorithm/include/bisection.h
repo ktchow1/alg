@@ -40,9 +40,9 @@ namespace alg
 
 
     // ******************************************* //
-    // Find target in non-monotonic increasing vec
+    // Find target in non-monotonic increasing vec //
     // ******************************************* //
-    std::optional<std::uint32_t> bisection(const std::vector<std::int32_t>& vec, std::int32_t target)
+    std::optional<std::uint32_t> bisection(const std::vector<std::int32_t>& vec, std::int32_t target) // Faster to have separate implementations for decreasing vec.
     {
         // 1. check edge case 
         if (vec.size() == 0) return std::nullopt; 
