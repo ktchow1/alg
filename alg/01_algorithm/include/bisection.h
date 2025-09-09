@@ -62,8 +62,8 @@ namespace alg
             std::uint32_t xm = (x0 + x1) >> 1;
             
             // 5. bisection
-            if (vec[xm] > target) x1 = xm;
-            else                  x0 = xm;
+            if (vec[xm] < target) x0 = xm;
+            else                  x1 = xm;
         }            
 
         // 6. answer
