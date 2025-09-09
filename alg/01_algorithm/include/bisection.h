@@ -39,17 +39,18 @@ namespace alg
     }
 
 
-    // *********************************************************** //
-    // Find target in non-monotonic increasing (or decreasing) vec
-    // *********************************************************** //
+    // ******************************************* //
+    // Find target in non-monotonic increasing vec
+    // ******************************************* //
     std::optional<std::uint32_t> bisection(const std::vector<std::int32_t>& vec, std::int32_t target)
     {
         // 1. check edge case 
         if (vec.size() == 0) return std::nullopt; 
 
         // 2. check solution existence
-        if (vec.front() < target && vec.back() < target) return std::nullopt;
-        if (vec.front() > target && vec.back() > target) return std::nullopt;
+        if (vec.front() > vec.back()) return std::nullopt;
+        if (vec.front() > target)     return std::nullopt;
+        if (vec.back()  < target)     return std::nullopt;
 
         // 3. check stop condition
         std::uint32_t x0 = 0;
@@ -61,9 +62,8 @@ namespace alg
             std::uint32_t xm = (x0 + x1) >> 1;
             
             // 5. bisection
-            if      (vec[x0] <= target && target <= vec[xm]) x1 = xm;
-            else if (vec[x0] >= target && target >= vec[xm]) x1 = xm;
-            else                                             x0 = xm;
+            if (vec[xm] > target) x1 = xm;
+            else                  x0 = xm;
         }            
 
         // 6. answer
