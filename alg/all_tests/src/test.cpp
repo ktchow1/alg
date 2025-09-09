@@ -114,7 +114,7 @@ int main()
 //  banner("01_algorithm");
     test_arithmetic();
     test_bisection();
-//  test_stack();
+    test_stack();
 //  test_dual();
 //  test_list();
 //  test_tree();

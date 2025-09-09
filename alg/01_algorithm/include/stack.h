@@ -40,6 +40,7 @@ namespace alg
         // ******************************************** //
         // *** Pass member pointer as concrete type *** //
         // ******************************************** //
+        // The 2nd method is better, as it supports variadic.
         void apply0(void (C0::* fp0)(), 
                     void (C1::* fp1)())
         {
@@ -48,29 +49,22 @@ namespace alg
         } 
 
         template<typename T>
-        void apply0(void (C0::* fp0)(const T&), 
-                    void (C1::* fp1)(const T&),
-                    const T& x)
+        void apply0(void (C0::* fp0)(const T& arg), 
+                    void (C1::* fp1)(const T& arg),
+                    const T& arg)
         {
-            (m_container_ptr0->*fp0)(x); // BUG : Dont forget the bracket (mem.*fp)(x)
-            (m_container_ptr1->*fp1)(x);
+            (m_container_ptr0->*fp0)(arg); // BUG : Dont forget the bracket (mem.*fp)(x)
+            (m_container_ptr1->*fp1)(arg);
         }
 
         // ******************************************** //
         // *** Pass member pointer as template type *** //
         // ******************************************** //
-        template<typename FP0, typename FP1>
-        void apply1(FP0 fp0, FP1 fp1)
+        template<typename FP0, typename FP1, typename...ARGS>
+        void apply1(FP0 fp0, FP1 fp1, ARGS&&...args)
         {
-            (m_container_ptr0->*fp0)();
-            (m_container_ptr1->*fp1)();
-        } 
-        
-        template<typename FP0, typename FP1, typename T>
-        void apply1(FP0 fp0, FP1 fp1, const T& x)
-        {
-            (m_container_ptr0->*fp0)(x);
-            (m_container_ptr1->*fp1)(x);
+            (m_container_ptr0->*fp0)(std::forward<ARGS>(args)...);
+            (m_container_ptr1->*fp1)(std::forward<ARGS>(args)...);
         } 
 
         template<typename FP0, typename FP1>
