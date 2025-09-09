@@ -168,19 +168,19 @@ namespace alg
 
     inline std::uint64_t divide(std::uint64_t n, std::uint64_t x) // output = n / x
     {
-        // ***************************************** //
-        // *** Max sx = x*2^M, such that sx <= n *** //
-        // ***************************************** //
-        std::uint64_t sx = x;
-        std::uint64_t M  = 0;
-        while(sx <= n)
+        // ***************************************************** //
+        // *** Max scaled_x = x*2^M, such that scaled_x <= n *** //
+        // ***************************************************** //
+        std::uint64_t scaled_x = x;
+        std::uint64_t M = 0;
+        while(scaled_x <= n)
         {
-            sx = (sx << 1);
+            scaled_x = (scaled_x << 1);
             ++M;
         }
         if (M > 0)
         {
-            sx = (sx >> 1);
+            scaled_x = (scaled_x >> 1);
             --M;
         }
 
@@ -190,16 +190,16 @@ namespace alg
         std::uint64_t z = 0;
         for(std::uint32_t m=0; m!=M+1; ++m) // BUG : M+1 instead of M
         {
-            if (n >= sx)
+            if (n >= scaled_x)
             {
                 z = (z << 1) + 1;
-                n = n - sx;
-                sx = (sx >> 1);
+                n = n - scaled_x;
+                scaled_x = (scaled_x >> 1);
             }
             else
             {
                 z = (z << 1);
-                sx = (sx >> 1);
+                scaled_x = (scaled_x >> 1);
             }
         }
         return z;
