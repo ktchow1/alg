@@ -168,6 +168,8 @@ namespace alg
 
     inline std::uint64_t divide(std::uint64_t n, std::uint64_t x) // output = n / x
     {
+        if (x == 0) return 0; // divided by zero
+
         // ***************************************************** //
         // *** Max scaled_x = x*2^M, such that scaled_x <= n *** //
         // ***************************************************** //
@@ -183,6 +185,7 @@ namespace alg
             scaled_x = (scaled_x >> 1);
             --M;
         }
+        else return 0;
 
         // ********************* //
         // *** Update answer *** //
