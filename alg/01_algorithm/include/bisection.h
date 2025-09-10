@@ -110,6 +110,7 @@ namespace alg
     }
   
 
+    // Assume vec is monotonic rotated
     std::optional<std::uint32_t> rotated_bisection(const std::vector<std::int32_t>& vec, std::int32_t target)
     {
         // 1. check edge case 
@@ -126,16 +127,17 @@ namespace alg
             // 4. mid point
             std::uint32_t xm = (x0 + x1) >> 1;
             
-            // 5. bisection
-            if (vec[x0] <= vec[xm])
-            {
-                if (vec[x0] <= target && target <= vec[xm]) x1 = xm;
-                else                                        x0 = xm;
+            // 5. bisection - 1st half is increasing
+            if (vec[x0] < vec[xm]) 
+            { 
+                if (target < vec[x0] || target > vec[xm]) x0 = xm; // target is not in 1st half
+                else                                      x1 = xm;
             }
+            // 5. bisection - 2nd half is increasing
             else 
             {
-                if (vec[xm] <= target && target <= vec[x1]) x0 = xm;
-                else                                        x1 = xm;
+                if (target < vec[xm] || target > vec[x1]) x1 = xm; // target is not in 2nd half
+                else                                      x0 = xm;
             }
         }            
 
