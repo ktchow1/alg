@@ -68,7 +68,7 @@ namespace alg
                     m_map.erase(m_list.back().first);
                     m_list.pop_back();
                 }
-                m_map.emplace(key, m_list.emplace(m_list.begin(), std::make_pair(key, value)));
+                m_map.emplace(key, m_list.emplace(m_list.begin(), key, value));
             }
         }
 

@@ -115,7 +115,7 @@ int main()
     test_arithmetic();
     test_bisection();
     test_stack();
-//  test_dual();
+    test_dual();
 //  test_list();
 //  test_tree();
 //  test_tree_variant();

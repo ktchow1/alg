@@ -401,9 +401,11 @@ namespace alg { namespace obj_pool
         template<typename...ARGS>
         void push(ARGS&&...args)
         {
+            // request node
             auto new_node = m_pool.request(std::forward<ARGS>(args)...);
             if (new_node)
             {
+                // update link
                 new_node->m_next = m_head;
                 m_head = new_node;
                 ++m_size;
@@ -414,10 +416,12 @@ namespace alg { namespace obj_pool
         {
             if (m_head)
             {
+                // update link
                 auto del_node = m_head;
                 m_head = m_head->m_next;
                 --m_size;
 
+                // release node
                 m_pool.release(del_node);
             }
         }
