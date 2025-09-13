@@ -112,7 +112,7 @@ namespace alg
 // This is inspired by Ilia's question "Highest volumn stock problem" :
 // * map that can accept (symbol, price)
 // * map that can be queried with symbol
-// * map that can be queried wuth top N price 
+// * map that can be queried with top N price 
 //
 //
 // This is a map<K,V> that allows :
@@ -184,7 +184,7 @@ namespace alg
         std::vector<std::pair<K,V>> get_top(std::uint32_t N) const
         {
             std::vector<std::pair<K,V>> ans;
-            for(auto [value, key] : m_sort | std::views::take(N))
+            for(const auto& [value, key] : m_sort | std::views::take(N))
             {
                 ans.emplace_back(key, value);
             }
@@ -192,7 +192,7 @@ namespace alg
         } 
   
     private:
-        std::multimap<V,K,std::greater<>> m_sort;  
+        std::multimap<V,K,std::greater<V>> m_sort;  
         std::map<K,typename decltype(m_sort)::iterator> m_map; 
     }; 
 }
