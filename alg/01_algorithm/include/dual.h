@@ -36,10 +36,6 @@
 //   (c) we cannot erase  an item in the middle of priority_queue and re-insert
 //       popping is possile from top only
 //        
-// Remark 3 
-// * Can we use std::map instead of list for tracking recent-used-item? 
-// * No, because of (a) above
-//
 // ********************************************************************************* //
 namespace alg
 {
@@ -115,7 +111,7 @@ namespace alg
 // * map that can be queried with top N price 
 //
 //
-// This is a map<K,V> that allows :
+// This is dual map implemenatation, that allows :
 // * O(logN) search of key
 // * O(logN) search of value
 // * iteratible in key   (sorted in increasing order)
@@ -123,11 +119,6 @@ namespace alg
 // * K to V is one to many mapping
 // * V to K is many to one mapping
 // 
-// *************************************************************************************** //
-// 1. Unlike LRU, which maintains sorted simply by putting latest item at the front,
-//    value_indexed_map maintains sorted by std::multi_map, hence dual map implementation.
-// 2. Unlike LRU, which needs to delete existing items when overflow, 
-//    value_indexed_map does not delete existing items, hence simpler.
 //
 // Therefore :
 // * least recent used map = map + list
@@ -172,7 +163,6 @@ namespace alg
         auto get_by_value(const V& value) const
         {
             std::vector<K> ans;
-
             auto range = m_sort.equal_range(value);
             for(auto iter=range.first; iter!=range.second; ++iter)
             {
@@ -181,7 +171,7 @@ namespace alg
             return ans;
         }
         
-        std::vector<std::pair<K,V>> get_top(std::uint32_t N) const
+        auto get_top(std::uint32_t N) const
         {
             std::vector<std::pair<K,V>> ans;
             for(const auto& [value, key] : m_sort | std::views::take(N))
