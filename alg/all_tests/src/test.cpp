@@ -117,8 +117,8 @@ int main()
     test_stack();
     test_dual();
     test_list();
-//  test_tree();
-//  test_tree_variant();
+    test_tree();
+    test_tree_variant();
     test_sorting();
 //
 //  banner("02_dynprog_vec");

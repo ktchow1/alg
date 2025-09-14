@@ -382,12 +382,12 @@ namespace alg { namespace list
             while(true)
             {
                 slow = slow->m_next;
-                fast = fast->m_next;
-                if (fast == nullptr) return false;
-                fast = fast->m_next;
-                
                 if (slow == nullptr) return false;
+                fast = fast->m_next;
                 if (fast == nullptr) return false;
+                fast = fast->m_next;
+                if (fast == nullptr) return false;
+
                 if (slow == fast)  
                 {
                     m_meet = slow;
