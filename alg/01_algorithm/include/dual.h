@@ -142,7 +142,7 @@ namespace alg
             }
             else
             {
-                m_map[key] = m_sort.emplace(value, key);
+                m_map.emplace(key, m_sort.emplace(value, key));
             } 
         }
   
