@@ -54,7 +54,6 @@ namespace alg
             ITER j=end;
             for(--j; j!=i; --j)
             {
-// ******************************************************************** //
                 if (CMP{}(*j, *(j-1)))
                 {
                     std::swap(*j, *(j-1));
@@ -79,7 +78,6 @@ namespace alg
         }
     }
 
-// ******************************************************************** //
     template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
     void quick_sort(ITER begin, ITER end) // bidirectional iterator
     {
