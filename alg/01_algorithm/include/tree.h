@@ -73,11 +73,8 @@ namespace alg { namespace avl
     template<typename T>
     struct node
     {
-        node() : m_value{}, m_lhs{nullptr}, m_rhs{nullptr}
-        {
-        }
-
-        explicit node(const T& x) : m_value{x}, m_lhs{nullptr}, m_rhs{nullptr}
+        template<typename...ARGS>
+        node(ARGS&&...args) : m_value{std::forward<ARGS>(args)...}, m_lhs{nullptr}, m_rhs{nullptr}
         {
         }
 

@@ -424,8 +424,8 @@ namespace alg { namespace list
         // N1 = list.size()-1
         // 
         // (M-H) * 2 = (M-H) + loop_length
-        //           = (M-H) + ((N-M) + (M-E) + 1)
-        //           = (M-H) + ((N-M) + (M-H) - (E-H) + 1)
+        //           = (M-H) + (N-E+1)
+        //       M-H = N-E+1
         //       E-H = N-M+1
 
         const node<T>* loop_entry_node()
