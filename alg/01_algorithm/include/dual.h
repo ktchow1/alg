@@ -8,34 +8,22 @@
 
 
 // ********************************************************************************* //
+// LRU map
+// ********************************************************************************* //
 // Approach 1 
 // * std::unordered_map<K, std::pair<V, std::list<K>::iterator> 
 // * std::list<K>
+//
 //
 // Approach 2
 // * std::unordered_map<K, std::list<std::pair<K,V>>::iterator> 
 // * std::list<std::pair<K,V>>
 //
+//
 // That is, we can put V in either container. Both approaches are ok :
 // * given an iter in  map, we can get its list position instantly
 // * given an iter in list, we can get its  map position in O(1) 
 // * approach 2 is implemented in the below, to be consistent with value_indexed_map
-//
-// ********************************************************************************* //
-// Consideration about selecting STL container :
-//
-// Remark 1 
-// * There is no function for modifying KEY in std::map or std::set.
-// * Do not include recent_used_timestamp or version in KEY.
-//
-// Remark 2 
-// * Can we use std::priority_queue instead of list for tracking recent-used-item? 
-// * No, because :
-//   (a) sorting in LRU is simple, always erase in middle and insert at the front
-//   (b) we cannot change an item in the middle of priority_queue and keep it sorted 
-//   (c) we cannot erase  an item in the middle of priority_queue and re-insert
-//       popping is possile from top only
-//        
 // ********************************************************************************* //
 namespace alg
 {
@@ -102,9 +90,9 @@ namespace alg
 
 
 
-// *************************************************************************************** //
+// ********************************************************************** //
 // Value indexed map 
-// *************************************************************************************** //
+// ********************************************************************** //
 // This is inspired by Ilia's question "Highest volumn stock problem" :
 // * map that can accept (symbol, price)
 // * map that can be queried with symbol
@@ -123,7 +111,7 @@ namespace alg
 // Therefore :
 // * least recent used map = map + list
 // * value indexed map     = map + multimap
-// *************************************************************************************** //
+// ********************************************************************** //
 namespace alg
 {
     template<typename K, typename V> 
@@ -186,3 +174,33 @@ namespace alg
         std::map<K,typename decltype(m_sort)::iterator> m_map; 
     }; 
 }
+
+
+// ******************************************************************** //
+// About STL container :
+//
+// std::map
+// * cannot modify key
+// * erase(key)                <--- does     involve binary search
+// * erase(iterator)           <--- does not involve binary search
+// * emplace(key, value)       <--- construct of K-V pair and copy of V
+// * map[key] = value          <--- construct of K-V pair
+//
+//
+// std::list
+// * use of emplace(iterator)  <--- does     return new iterator
+// * use of emplace_back       <--- does not return new iterator
+// * use of splice
+//
+//
+// std::priority_queue
+// * cannot use priority_queue instead of list in LRU, because : 
+//   cannot modify value in the middle and keep it sorted
+//
+//
+// std::multimap
+// * use of equal_range
+// * use of lower_bound (in other tests)
+// * use of upper_bound (in other tests)
+// * use of std::views::take(N)
+// ******************************************************************** //
