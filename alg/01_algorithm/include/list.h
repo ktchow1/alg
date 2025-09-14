@@ -76,7 +76,7 @@ namespace alg { namespace list
         using value_type = T;
 
         template<typename...ARGS>
-        auto insert_before_head(ARGS&&...args)
+        auto insert_before_head(ARGS&&...args) // same as alg::obj_pool::stack::push
         {
             node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
             new_node->m_next  = m_head;
@@ -87,7 +87,7 @@ namespace alg { namespace list
         template<typename...ARGS>
         auto insert_before(node<T>* this_node, ARGS&&...args)
         {
-            if (this_node == m_head) return insert_before_head(std::forward<ARGS>(args)...);
+            if (this_node == m_head) return insert_before_head(std::forward<ARGS>(args)...); // we need this because there is no previous node for head
 
             node<T>*  new_node = new node<T>{std::forward<ARGS>(args)...};
             node<T>* prev_node = get_prev_node(this_node);
@@ -97,7 +97,7 @@ namespace alg { namespace list
         }
 
         template<typename...ARGS>
-        auto insert_after(node<T>* this_node, ARGS&&...args)
+        auto insert_after(node<T>* this_node, ARGS&&...args) // same as alg::obj_pool::stack::push
         {
             node<T>* new_node =  new node<T>{std::forward<ARGS>(args)...};
              new_node->m_next = this_node->m_next;
@@ -105,6 +105,7 @@ namespace alg { namespace list
             return new_node;
         }
         
+    public:
         void erase_head()
         {
             if (m_head == nullptr) return;
@@ -123,6 +124,7 @@ namespace alg { namespace list
             delete this_node;
         }
 
+    public:
         void reverse()
         {
             if (m_head == nullptr) return;
@@ -155,7 +157,7 @@ namespace alg { namespace list
         }
 
     private:
-        // Caller is responsible for checking :begin
+        // Caller is responsible for checking 
         // * head node is NOT nullptr
         // * this_node is NOT m_head
         node<T>* get_prev_node(node<T>* this_node) const noexcept
@@ -182,6 +184,7 @@ namespace alg { namespace list
     public:
         using value_type = T;
 
+    private:
         template<typename...ARGS>
         auto insert_first_node(ARGS&&...args)
         {
@@ -191,6 +194,7 @@ namespace alg { namespace list
             return new_node;
         }
 
+    public:
         template<typename...ARGS>
         auto insert_before_head(ARGS&&...args)
         {
@@ -245,6 +249,7 @@ namespace alg { namespace list
             return new_node;
         }
 
+    private:
         void erase_only_node()
         {
             if (m_head == nullptr) return;
@@ -256,6 +261,7 @@ namespace alg { namespace list
             delete this_node;
         }
 
+    public:
         void erase_head() 
         {
             if (m_head == m_tail) return erase_only_node();
@@ -290,6 +296,7 @@ namespace alg { namespace list
             delete this_node;
         }
 
+    public:
         void reverse()
         {
             node<T>* this_node = m_head;

@@ -361,7 +361,7 @@ namespace alg { namespace obj_pool
         {
             if (m_unused_head == nullptr) return nullptr;
 
-            // update link
+            // update link x 2
             node<T>* new_node = m_unused_head;
             m_unused_head = m_unused_head->m_next;
 
@@ -378,7 +378,7 @@ namespace alg { namespace obj_pool
             // update node
             del_node->m_value.~T();
 
-            // update link
+            // update link x 2
             del_node->m_next = m_unused_head;
             m_unused_head = del_node;
         }
@@ -405,7 +405,7 @@ namespace alg { namespace obj_pool
             auto new_node = m_pool.request(std::forward<ARGS>(args)...);
             if (new_node)
             {
-                // update link
+                // update link x 2
                 new_node->m_next = m_head;
                 m_head = new_node;
                 ++m_size;
@@ -416,7 +416,7 @@ namespace alg { namespace obj_pool
         {
             if (m_head)
             {
-                // update link
+                // update link x 2
                 auto del_node = m_head;
                 m_head = m_head->m_next;
                 --m_size;
