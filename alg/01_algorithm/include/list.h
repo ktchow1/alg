@@ -2,7 +2,7 @@
 #include<iostream>
 #include<cstdint>
 #include<vector>
-// ******************************************* //
+// ********************************************* //
 // singly_list            doubly_list
 // --------------------+----------------------
 //                     |  insert_first_node
@@ -10,12 +10,16 @@
 //                     |  insert_after_tail
 // insert_before       |  insert_before
 // insert_after        |  insert_after
+// --------------------+----------------------
 //                     |  erase_only_node
 // erase_head          |  erase_head
 //                     |  erase_tail
 // erase               |  erase
+// --------------------+----------------------
 // get_prev_node       |
-// ******************************************* //
+//
+//
+// ********************************************* //
 // std::forward_list = singly_list
 // * do not have erase() as it cannot this_node
 // * do provide remove(T) as it does 1D scan
@@ -23,12 +27,14 @@
 // std::list = doubly_list
 // * do provide erase() 
 // * do provide remove(T) to do 1D scan 
-// ******************************************* //
+//
+//
+// ********************************************* //
 // For push and pop, please :
 // 1. new or delete node
 // 2. update links involved
 // 3. update head or tail involved 
-// ******************************************* //
+// ********************************************* //
 
 
 namespace alg { namespace list

@@ -176,15 +176,15 @@ namespace alg
 }
 
 
-// ******************************************************************** //
+// ******************************************************************************************************* //
 // About STL container :
 //
 // std::map
 // * cannot modify key
 // * erase(key)                <--- does     involve binary search
 // * erase(iterator)           <--- does not involve binary search
-// * emplace(key, value)       <--- construct of K-V pair and copy of V
-// * map[key] = value          <--- construct of K-V pair
+// * emplace(key, value)       <--- construct of K-V pair and copy of V (if K exists, support V overwrite)
+// * map[key] = value          <--- construct of K-V pair               (if K exists,      no V overwrite)
 //
 //
 // std::list
@@ -203,4 +203,4 @@ namespace alg
 // * use of lower_bound (in other tests)
 // * use of upper_bound (in other tests)
 // * use of std::views::take(N)
-// ******************************************************************** //
+// ******************************************************************************************************* //
