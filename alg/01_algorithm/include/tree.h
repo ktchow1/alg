@@ -12,6 +12,8 @@
 // -  what is a binary tree
 // -  what is a binary complete tree
 // -  what is a binary complete sorted tree
+//
+//
 // 2. Tree functions 
 // -  insert 
 // -  find 
@@ -24,8 +26,9 @@
 //    DFS_pre_order     |     traversal in prefix tree
 //    DFS_in_order      |     traversal in avl tree for sorting
 //    DFS_post_order    |     destruction / calculate depth & balance factor
-// *************************************************************************** //
-// Null check 
+//
+//
+// 3. Null check 
 // * check this_node           <--- less check, more recursion, simpler code
 // * check this_node->m_lhs &
 //         this_node->m_rhs    <--- more check, less recursion, faster runtime
