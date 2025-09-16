@@ -202,7 +202,7 @@ namespace alg { namespace list
 
             node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
             new_node->m_next = m_head;
-            m_head->m_prev = new_node;
+            m_head->m_prev = new_node; // opposite link
             m_head = new_node;
             return new_node;
         }
@@ -214,7 +214,7 @@ namespace alg { namespace list
 
             node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
             new_node->m_prev = m_tail;
-            m_tail->m_next = new_node;
+            m_tail->m_next = new_node; // opposite link
             m_tail = new_node;
             return new_node;
         }
@@ -227,10 +227,10 @@ namespace alg { namespace list
 
             node<T>*  new_node = new node<T>{std::forward<ARGS>(args)...};
             node<T>* prev_node = this_node->m_prev;
-            new_node->m_prev = prev_node; 
-            new_node->m_next = this_node; 
-            prev_node->m_next = new_node;
-            this_node->m_prev = new_node;
+             new_node->m_next  = this_node; 
+            this_node->m_prev  =  new_node; // opposite link
+             new_node->m_prev  = prev_node; 
+            prev_node->m_next  =  new_node; // opposite link
             return new_node;
         }
  
@@ -240,12 +240,12 @@ namespace alg { namespace list
             if (this_node == m_tail) return insert_after_tail(std::forward<ARGS>(args)...);
             if (this_node == rend()) return insert_before_head(std::forward<ARGS>(args)...);
 
-            node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
+            node<T>*  new_node = new node<T>{std::forward<ARGS>(args)...};
             node<T>* next_node = this_node->m_next;
-            new_node->m_prev = this_node; 
-            new_node->m_next = next_node;
-            this_node->m_next = new_node;
-            next_node->m_prev = new_node;
+             new_node->m_next  = next_node;
+            next_node->m_prev  =  new_node; // opposite link
+             new_node->m_prev  = this_node; 
+            this_node->m_next  =  new_node; // opposite link
             return new_node;
         }
 
@@ -267,9 +267,8 @@ namespace alg { namespace list
             if (m_head == m_tail) return erase_only_node();
 
             node<T>* this_node = m_head;
-            node<T>* next_node = m_head->m_next;
-            next_node->m_prev  = nullptr;
-            m_head = next_node;
+            m_head = m_head->m_next;
+            m_head->m_prev  = nullptr;
             delete this_node;
         }
 
@@ -278,9 +277,8 @@ namespace alg { namespace list
             if (m_head == m_tail) return erase_only_node();
 
             node<T>* this_node = m_tail;
-            node<T>* prev_node = m_tail->m_prev;
-            prev_node->m_next  = nullptr;
-            m_tail = prev_node;
+            m_tail = m_tail->m_prev;
+            m_tail->m_next  = nullptr; 
             delete this_node;
         }
 
@@ -300,7 +298,7 @@ namespace alg { namespace list
         void reverse()
         {
             node<T>* this_node = m_head;
-            while(this_node != nullptr)
+            while(this_node != nullptr) // should work for size=0 and size=1
             {
                 node<T>* next_node = this_node->m_next;
                 std::swap(this_node->m_prev, this_node->m_next);
