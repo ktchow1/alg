@@ -6,7 +6,9 @@
 #include<queue>
 #include<stack>
 #include<algorithm>
-// *************************************************************************** //
+
+
+// **************************************************************************** //
 // 1. Tree definitions and properties
 // -  what is a tree
 // -  what is a binary tree
@@ -15,24 +17,28 @@
 //
 //
 // 2. Tree functions 
-// -  insert 
+// -  insert
+// -  destruct
 // -  find 
 // -  depth
 // -  balance factor
 // -  balance & rotate
-// -  traversal         |     applications 
-//    ------------------+-----------------------------------------------------
-//    BFS               | 
-//    DFS_pre_order     |     traversal in prefix tree
-//    DFS_in_order      |     traversal in avl tree for sorting
-//    DFS_post_order    |     destruction / calculate depth & balance factor
+// -  traversal        |  applications 
+//    -----------------+------------------------------------------------
+//    BFS              |
+//    DFS_pre_order    |  traversal in prefix tree
+//    DFS_in_order     |  traversal in avl tree for sorting
+//    DFS_post_order   |  destruction / calculate depth & balance factor
 //
 //
-// 3. Null check 
-// * check this_node           <--- less check, more recursion, simpler code
-// * check this_node->m_lhs &
-//         this_node->m_rhs    <--- more check, less recursion, faster runtime
-// *************************************************************************** //
+// 3. For each function :
+// -  provide interface without node<T>* input
+// -  provide recursive implemenation with node<T>* or node<T>** input
+// -  provide null checking, either :
+//    check this_node       
+//    check this_node->m_lhs &
+//          this_node->m_rhs
+// **************************************************************************** //
   
 namespace alg
 {
