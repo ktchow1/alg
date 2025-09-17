@@ -310,13 +310,13 @@ namespace alg { namespace avl
             while(!q.empty())
             {
                 this_node = q.front();
+                q.pop();
                 if (this_node) 
                 {
                     fct(this_node->m_value);
                     q.push(this_node->m_lhs);
                     q.push(this_node->m_rhs);
                 }
-                q.pop();
             }
         }
 
