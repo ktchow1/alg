@@ -184,6 +184,10 @@ namespace alg { namespace avl
             }
         }
 
+        // Why tree::insert() needs node<T>** while
+        //     list::insert() needs node<T>* only?
+        // Because tree::insert() is recursive and we may modify node<T>* by new operator.
+        //
         node<T>* insert(node<T>** this_node_ptr, const T& x) // BUG2 : need to use node<T>** for this_node_ptr
         {
             if      (*this_node_ptr == nullptr)          { *this_node_ptr = new node<T>(x); return *this_node_ptr; }
