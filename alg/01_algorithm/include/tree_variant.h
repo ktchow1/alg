@@ -277,11 +277,7 @@ namespace alg
 //   node in prefix tree may not contain value 
 // * node in avl    tree has 0-2  children
 //   node in prefix tree has 0-26 children
-//
-// Nullity
-// * m_root     is not a node pointer, as it must exist
-// * m_children is not a node pointer, as it must exist 
-// * hence unlike avl tree, no destructor is needed
+// * node are NOT pointers, they are struct
 // ********************************************************************************
 namespace alg
 {
@@ -294,6 +290,13 @@ namespace alg
             std::optional<V> m_value;
             std::unordered_map<char, node> m_children; 
         };
+        
+        // compare another design (in which, node must be pointer)
+    //  struct node
+    //  {
+    //      std::optional<V> m_value;
+    //      std::array<node*, 26> m_children; 
+    //  };
 
     public:
         const node& insert(const std::string& key, const V& value)
