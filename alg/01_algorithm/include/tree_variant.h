@@ -211,11 +211,6 @@ namespace alg
 
         const T& find(const T& x)
         {
-            auto iter = m_parent.find(x);
-            if (iter == m_parent.end()) 
-            {
-                m_parent[x] = x;
-            }
             if      (m_mode == find_mode::iterative)  return find_root_iterative(x);
             else if (m_mode == find_mode::recursive)  return find_root_recursive(x);
             else                                      return find_root_recursive_with_path_compression(x);
@@ -225,7 +220,8 @@ namespace alg
         {
             auto root_x = find(x);
             auto root_y = find(y);
-            m_parent[root_x] = root_y;
+            m_parent[root_x] = root_x;
+            m_parent[root_y] = root_x; // BUG : we need to update both
         }
 
         bool is_same_set(const T& x, const T& y) 
@@ -241,25 +237,28 @@ namespace alg
             T temp = x;
 
             auto iter = m_parent.find(temp); 
-            while(iter->second != temp)
+            while(true)
             {
+                if (iter == m_parent.end()) return x;            // return x (query),    not return "temp"
+                if (iter->second == temp)   return iter->second; // return iter->second, not return "temp", which is temporary
                 temp = iter->second; 
                 iter = m_parent.find(temp); 
             }
-            return iter->second;
         }
 
         const T& find_root_recursive(const T& x)
         {
             auto iter = m_parent.find(x); 
-            if (iter->second == x) return x;
+            if (iter == m_parent.end())  return x;
+            if (iter->second == x)       return x;
             return find_root_recursive(iter->second);
         }
 
         const T& find_root_recursive_with_path_compression(const T& x)
         {
             auto iter = m_parent.find(x); 
-            if (iter->second == x) return x;
+            if (iter == m_parent.end())  return x;
+            if (iter->second == x)       return x;
             return iter->second = find_root_recursive(iter->second);
         }
 
