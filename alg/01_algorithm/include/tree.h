@@ -272,10 +272,17 @@ namespace alg { namespace avl
             }
         }
  
-        // ******************************************************************************//
+        // ****************************************************************************** //
         // RULE 1 : overtake this_node by lhs, cache this_node as it is next-to-process
         // RULE 2 : pop previous overtaken node, process it, visit rhs child, goto rule 1
-        // ******************************************************************************//
+        //
+        // Rotate the tree 45 degree clockwise, we can see better
+        //
+        //        05  04  03  02  01  00 (root)
+        //            06          11
+        //    09  08  07       13 12 
+        //            10 
+        // ****************************************************************************** //
         template<typename F> requires std::invocable<F,T>
         void dfs_in_order_iterative(const node<T>* this_node, F& fct) const noexcept
         {
