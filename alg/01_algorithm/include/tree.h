@@ -396,8 +396,8 @@ namespace alg { namespace avl
         auto* new_node = new node<typename std::iterator_traits<ITER>::value_type> {*mid};   // can handle case when size = 1
         new_node->m_lhs = create_avl_tree_from_sorted_vec(begin, mid);                       // when size=1, mid = begin, will return nullptr
         new_node->m_rhs = create_avl_tree_from_sorted_vec(mid+1, end);                       // when size=1, mid+1 = end, will return nullptr
-        return new_node;
-    }
+        return new_node;                                                                     // why we need to check size = 0,1 in is_vec_post_ordered(), but check size = 0 in here?
+    }                                                                                        // both are recursive, but in here, we reduce the size in next call every time. 
 
     template<typename T>
     std::pair<node<T>*, node<T>*> create_doubly_list_from_avl_tree(node<T>* root) 
