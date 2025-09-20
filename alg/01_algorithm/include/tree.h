@@ -305,6 +305,25 @@ namespace alg { namespace avl
         }
 
         template<typename F> requires std::invocable<F,T>
+        void dfs_in_order_iterative_FAILED(const node<T>* this_node, F& fct) const noexcept // FAILURE IMPLEMENTATION
+        {  
+            std::stack<const node<T>*> s; // no nullptr in s
+
+            if (this_node != nullptr) s.push(this_node);
+            while(!s.empty())
+            {
+                this_node = s.top();
+                if (this_node->m_lhs != nullptr) s.push(this_node->m_lhs); // <--- pushing LHS will result in infinity loop, hence this implemenation does not work
+                else
+                {
+                    s.pop();
+                    fct(this_node->m_value);
+                    if (this_node->m_rhs != nullptr) s.push(this_node->m_rhs);
+                }
+            }
+        }
+
+        template<typename F> requires std::invocable<F,T>
         void bfs_iterative(const node<T>* this_node, F& fct) const noexcept
         {
             std::queue<const node<T>*> q; // no nullptr in q
