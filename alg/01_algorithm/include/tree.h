@@ -257,18 +257,15 @@ namespace alg { namespace avl
         void dfs_pre_order_iterative(const node<T>* this_node, F& fct) const noexcept
         {
             std::stack<const node<T>*> s; // there exists nullptr in s
-            s.push(this_node);
+            if (this_node != nullptr) s.push(this_node);
 
             while(!s.empty())
             {
                 this_node = s.top();
-                s.pop(); // BUG3 : pop immediately after top
-                if (this_node) 
-                {
-                    fct(this_node->m_value);
-                    s.push(this_node->m_rhs); // BUG4 : push rhs first
-                    s.push(this_node->m_lhs); // BUG4 : push lhs later, we process lhs first
-                }
+                s.pop();                                                  // BUG3 : pop must be before push
+                fct(this_node->m_value);
+                if (this_node->m_rhs!= nullptr) s.push(this_node->m_rhs); // BUG4 : push rhs first
+                if (this_node->m_lhs!= nullptr) s.push(this_node->m_lhs); // BUG4 : push lhs later
             }
         }
  
@@ -312,18 +309,15 @@ namespace alg { namespace avl
         void bfs_iterative(const node<T>* this_node, F& fct) const noexcept
         {
             std::queue<const node<T>*> q; // there exists nullptr in q
-            q.push(this_node);
+            if (this_node != nullptr) q.push(this_node);
 
             while(!q.empty())
             {
                 this_node = q.front();
                 q.pop();
-                if (this_node) 
-                {
-                    fct(this_node->m_value);
-                    q.push(this_node->m_lhs);
-                    q.push(this_node->m_rhs);
-                }
+                fct(this_node->m_value);
+                if (this_node->m_lhs!= nullptr) q.push(this_node->m_lhs);
+                if (this_node->m_rhs!= nullptr) q.push(this_node->m_rhs);
             }
         }
 
