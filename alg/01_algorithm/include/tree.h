@@ -256,7 +256,7 @@ namespace alg { namespace avl
         template<typename F> requires std::invocable<F,T>
         void dfs_pre_order_iterative(const node<T>* this_node, F& fct) const noexcept
         {
-            std::stack<const node<T>*> s; // there exists nullptr in s
+            std::stack<const node<T>*> s; // no nullptr in s
             if (this_node != nullptr) s.push(this_node);
 
             while(!s.empty())
@@ -283,7 +283,7 @@ namespace alg { namespace avl
         template<typename F> requires std::invocable<F,T>
         void dfs_in_order_iterative(const node<T>* this_node, F& fct) const noexcept
         {
-            std::stack<const node<T>*> s; // there are no nullptr in s
+            std::stack<const node<T>*> s; // no nullptr in s
 
             while(this_node || !s.empty())
             {
@@ -298,7 +298,6 @@ namespace alg { namespace avl
                 {
                     this_node = s.top(); 
                     s.pop();
-
                     fct(this_node->m_value);
                     this_node = this_node->m_rhs;
                 }
@@ -308,7 +307,7 @@ namespace alg { namespace avl
         template<typename F> requires std::invocable<F,T>
         void bfs_iterative(const node<T>* this_node, F& fct) const noexcept
         {
-            std::queue<const node<T>*> q; // there exists nullptr in q
+            std::queue<const node<T>*> q; // no nullptr in q
             if (this_node != nullptr) q.push(this_node);
 
             while(!q.empty())
