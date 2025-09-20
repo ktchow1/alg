@@ -119,7 +119,7 @@ namespace alg { namespace avl
         }
     }
 
-    template<typename T>
+    template<typename T, typename CMP = std::less<T>>
     class tree
     {
     public:
@@ -203,18 +203,18 @@ namespace alg { namespace avl
         //
         node<T>* insert(node<T>** this_node_ptr, const T& x) // BUG2 : need to use node<T>** for this_node_ptr
         {
-            if      (*this_node_ptr == nullptr)          { *this_node_ptr = new node<T>(x); return *this_node_ptr; }
-            else if (x < (*this_node_ptr)->m_value)      { return insert(&(*this_node_ptr)->m_lhs, x); }
-            else if (x > (*this_node_ptr)->m_value)      { return insert(&(*this_node_ptr)->m_rhs, x); }
+            if      (*this_node_ptr == nullptr)           { *this_node_ptr = new node<T>(x); return *this_node_ptr; }
+            else if (CMP{}(x, (*this_node_ptr)->m_value)) { return insert(&(*this_node_ptr)->m_lhs, x); }
+            else if (CMP{}((*this_node_ptr)->m_value, x)) { return insert(&(*this_node_ptr)->m_rhs, x); }
             else return *this_node_ptr;
         }
 
         const node<T>* find(const node<T>* this_node, const T& x) const noexcept
         {
-            if      (this_node == nullptr)                 return nullptr;
-            else if (x < this_node->m_value)               return find(this_node->m_lhs, x);
-            else if (x > this_node->m_value)               return find(this_node->m_rhs, x);
-            else                                           return this_node;
+            if      (this_node == nullptr)                  return nullptr;
+            else if (CMP{}(x, this_node->m_value))          return find(this_node->m_lhs, x);
+            else if (CMP{}(this_node->m_value, x))          return find(this_node->m_rhs, x);
+            else                                            return this_node;
         }
 
         std::uint32_t depth(const node<T>* this_node) const noexcept
