@@ -38,6 +38,13 @@
 //    check this_node       
 //    check this_node->m_lhs &
 //          this_node->m_rhs
+// -  for vector questions that involve recursion
+//    if recursion of (begin,end) into (begin,mid) & (mid,end), need to :
+//    check vec.size() == 0
+//    check vec.size() == 1
+//    if recursion of (begin,end) into (begin,mid) & (mid+1,end), need to :
+//    check vec.size() == 0 only
+//
 // **************************************************************************** //
   
 namespace alg
