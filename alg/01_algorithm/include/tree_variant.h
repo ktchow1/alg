@@ -95,10 +95,9 @@ namespace alg
 }
 
 
-// **********************************************************//
-// Implementation of ascent() and descend() is same as above.
-// With extra step to convert index into iterator.
-// **********************************************************//
+// **************************************************************//
+// Implementation of ascent() and descend() is similar to above.
+// **************************************************************//
 namespace alg
 {
     template<typename T, typename CMP = std::less<T>>
@@ -106,81 +105,76 @@ namespace alg
     {
     public:
         using value_type = T;
-        using iter_type = std::vector<T>::iterator;
+        using ITER = std::vector<T>::iterator;
 
-        heap_inplace(iter_type begin, iter_type end) : m_begin(begin), m_end(end)
+        heap_inplace(ITER begin, ITER end) 
         {
-            std::uint32_t size = std::distance(begin, end);
-            if (size > 0)
+            // *** step 1 : push into heap *** //
+            ITER iter = begin; 
+            for(++iter; iter!=end; ++iter)
             {
-                // *** step 1 : push *** //
-                for(std::uint32_t n=1; n!=size; ++n)
-                {
-                    ascend(n);
-                }
+                ascend(begin, iter);
+            }
 
-                // *** step 2 : pop *** //
-                for(std::uint32_t n=size-1; n!=0; --n)
-                {
-                    iter_type iter = m_begin + n;
-                    std::swap(*m_begin, *iter);
-                    descend(n);
-                }
+            // *** step 2 : pop from heap *** //
+            iter = end; 
+            for(--iter; iter!=begin; --iter)
+            {
+                std::swap(*begin, *iter);
+                descend(begin, iter);
             }
         }
 
     private:
-        void ascend(std::uint32_t n) //ascend element n
+        void ascend(ITER begin, ITER back) // support size >= 1
         {
-            while(n > 0)
+            ITER iter_n = back;
+            while(iter_n > begin)
             {
-                std::uint32_t m = (n-1)/2;
-                iter_type iter_n = m_begin + n; 
-                iter_type iter_m = m_begin + m; 
+                ITER iter_m = begin;
+                std::advance(iter_m, (std::distance(begin, iter_n)-1) / 2);
+                std::cout << "\n[dEBUG] n=" << std::distance(begin, iter_n) << " m=" << std::distance(begin, iter_m) << " end=" << std::distance(begin, back)+1 << std::flush;
+
                 if (CMP{}(*iter_n, *iter_m))
                 {
                     std::swap(*iter_n, *iter_m);
-                    n = m;
+                    iter_n = iter_m;
                 }
                 else return;
             }
         }
 
-        void descend(std::uint32_t new_size) // descend element 0
+        void descend(ITER begin, ITER end) // support size >= 0
         {
-            std::uint32_t n = 0;
-            while(n < new_size)
+            ITER iter_n = begin;
+            while(iter_n < end)
             {
-                std::uint32_t m0  = 2*n+1;
-                std::uint32_t m1  = 2*n+2;
-                iter_type iter_n  = m_begin + n; 
-                iter_type iter_m0 = m_begin + m0; 
-                iter_type iter_m1 = m_begin + m1; 
-                if (m1 < new_size)
+                ITER iter_m0 = begin; 
+                ITER iter_m1 = begin; 
+                std::advance(iter_m0, 2 * std::distance(begin, iter_n) + 1);
+                std::advance(iter_m1, 2 * std::distance(begin, iter_n) + 2);
+
+                if (iter_m1 < end)
                 {
                     if (CMP{}(*iter_m0, *iter_m1))
                     {
-                        if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); n = m0; }
+                        if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
                         else return;
                     }
                     else
                     {
-                        if (CMP{}(*iter_m1, *iter_n)) { std::swap(*iter_n, *iter_m1); n = m1; }
+                        if (CMP{}(*iter_m1, *iter_n)) { std::swap(*iter_n, *iter_m1); iter_n = iter_m1; }
                         else return;
                     }
                 }
-                else if (m0 < new_size)
+                else if (iter_m0 < end)
                 {
-                    if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); n = m0; }
+                    if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
                     else return;
                 }
                 else return;
             }
         }
-
-    private:
-        iter_type m_begin;
-        iter_type m_end;
     };
 }
 
