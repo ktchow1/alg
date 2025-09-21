@@ -426,37 +426,37 @@ namespace alg { namespace avl
     }                                                                                        // both are recursive, but in here, we reduce the size in next call every time. 
 
     template<typename T>
-    std::pair<node<T>*, node<T>*> create_doubly_list_from_avl_tree(node<T>* root) 
+    std::pair<node<T>*, node<T>*> create_doubly_list_from_avl_tree(node<T>* this_node) 
     {
         node<T>* head;    
         node<T>* tail;
 
         // Process LHS
-        if (root->m_lhs != nullptr) 
+        if (this_node->m_lhs != nullptr) 
         {
-            auto temp = create_doubly_list_from_avl_tree(root->m_lhs);
-            root->m_lhs = temp.second;
-            temp.second->m_rhs = root;
-            head = temp.first;
+            auto [lhs_head, lhs_tail] = create_doubly_list_from_avl_tree(this_node->m_lhs);
+             lhs_tail->m_rhs = this_node;
+            this_node->m_lhs =  lhs_tail;
+            head = lhs_head;
         }
         else
         {
-            root->m_lhs = nullptr;
-            head = root;
+        //  this_node->m_lhs = nullptr; // redundant
+            head = this_node;
         }
 
         // Process RHS
-        if (root->m_rhs != nullptr) 
+        if (this_node->m_rhs != nullptr) 
         {
-            auto temp = create_doubly_list_from_avl_tree(root->m_rhs);
-            root->m_rhs = temp.first;
-            temp.first->m_lhs = root;
-            tail = temp.second;
+            auto [rhs_head, rhs_tail] = create_doubly_list_from_avl_tree(this_node->m_rhs);
+             rhs_head->m_lhs = this_node;
+            this_node->m_rhs =  rhs_head;
+            tail = rhs_tail;
         }
         else
         {
-            root->m_rhs = nullptr;
-            tail = root;
+        //  this_node->m_rhs = nullptr; // redundant
+            tail = this_node;
         }
         return std::make_pair(head, tail);
     }
