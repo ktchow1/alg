@@ -237,13 +237,13 @@ namespace alg
             T temp = x;
 
             auto iter = m_parent.find(temp); 
-            while(true)
+            while(iter != m_parent.end())
             {
-                if (iter == m_parent.end()) return x;            // return x (query),    not return "temp"
                 if (iter->second == temp)   return iter->second; // return iter->second, not return "temp", which is temporary
                 temp = iter->second; 
                 iter = m_parent.find(temp); 
             }
+            return x;
         }
 
         const T& find_root_recursive(const T& x)
