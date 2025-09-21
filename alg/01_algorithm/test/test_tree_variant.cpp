@@ -48,7 +48,7 @@ void test_heap()
         }
 
         // 1. by heap_inplace
-        alg::heap_inplace<std::uint32_t, std::greater<std::uint32_t>> temp(vec1.begin(), vec1.end());
+        alg::heap_sort(vec1.begin(), vec1.end());
 
         if (!alg::is_equal(ans, vec0)) ++error0;
         if (!alg::is_equal(ans, vec1)) ++error1;

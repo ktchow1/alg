@@ -157,13 +157,4 @@ namespace alg
         merge(begin, mid, mid, end, std::back_inserter(vec));
         std::copy(vec.begin(), vec.end(), begin);
     }
-
-    template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
-    void heap_sort(ITER begin, ITER end) // random access iterator
-    {
-        using T = typename std::iterator_traits<ITER>::value_type;
-        using C = typename alg::comparator_traits<CMP>::opposite_type;
-
-        alg::heap_inplace<T,C> temp(begin, end);
-    }
 }

@@ -95,40 +95,17 @@ namespace alg
 }
 
 
-// **************************************************************//
-// Implementation of ascent() and descend() is similar to above.
-// **************************************************************//
+// ****************************** //
+// *** Inplace implementation *** //
+// ****************************** //
 namespace alg
 {
-    template<typename T, typename CMP = std::less<T>>
-    class heap_inplace
+    // when CMP = std::less,    sort sequence with std::less,    build heap with std::greater
+    // when CMP = std::greater, sort sequence with std::greater, build heap with std::less
+    namespace details
     {
-    public:
-        using value_type = T;
-        using ITER = std::vector<T>::iterator;
-
-        heap_inplace(ITER begin, ITER end) 
-        {
-            if (begin == end) return; // BUG : Dont miss this.
-
-            // *** step 1 : push into heap *** //
-            ITER iter = begin; 
-            for(++iter; iter!=end; ++iter)
-            {
-                ascend(begin, iter);
-            }
-
-            // *** step 2 : pop from heap *** //
-            iter = end; 
-            for(--iter; iter!=begin; --iter)
-            {
-                std::swap(*begin, *iter);
-                descend(begin, iter);
-            }
-        }
-
-    private:
-        void ascend(ITER begin, ITER back) // support size >= 1
+        template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
+        void ascend_with_inversed_comparator(ITER begin, ITER back) // support size >= 1
         {
             ITER iter_n = back;
             while(iter_n > begin)
@@ -136,7 +113,7 @@ namespace alg
                 ITER iter_m = begin;
                 std::advance(iter_m, (std::distance(begin, iter_n)-1) / 2);
 
-                if (CMP{}(*iter_n, *iter_m))
+                if (CMP{}(*iter_m, *iter_n)) 
                 {
                     std::swap(*iter_n, *iter_m);
                     iter_n = iter_m;
@@ -145,7 +122,8 @@ namespace alg
             }
         }
 
-        void descend(ITER begin, ITER end) // support size >= 0
+        template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
+        void descend_with_inversed_comparator(ITER begin, ITER end) // support size >= 0
         {
             ITER iter_n = begin;
             while(iter_n < end)
@@ -157,26 +135,47 @@ namespace alg
 
                 if (iter_m1 < end)
                 {
-                    if (CMP{}(*iter_m0, *iter_m1))
+                    if (CMP{}(*iter_m1, *iter_m0))
                     {
-                        if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
+                        if (CMP{}(*iter_n, *iter_m0)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
                         else return;
                     }
                     else
                     {
-                        if (CMP{}(*iter_m1, *iter_n)) { std::swap(*iter_n, *iter_m1); iter_n = iter_m1; }
+                        if (CMP{}(*iter_n, *iter_m1)) { std::swap(*iter_n, *iter_m1); iter_n = iter_m1; }
                         else return;
                     }
                 }
                 else if (iter_m0 < end)
                 {
-                    if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
+                    if (CMP{}(*iter_n, *iter_m0)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
                     else return;
                 }
                 else return;
             }
         }
-    };
+    }
+
+    template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
+    void heap_sort(ITER begin, ITER end) // random access iterator
+    {
+        if (begin == end) return; // BUG : Dont miss this.
+
+        // *** step 1 : push into heap *** //
+        ITER iter = begin; 
+        for(++iter; iter!=end; ++iter)
+        {
+            details::ascend_with_inversed_comparator<ITER,CMP>(begin, iter);
+        }
+
+        // *** step 2 : pop from heap *** //
+        iter = end; 
+        for(--iter; iter!=begin; --iter)
+        {
+            std::swap(*begin, *iter);
+            details::descend_with_inversed_comparator<ITER,CMP>(begin, iter);
+        }
+    }
 }
 
 
