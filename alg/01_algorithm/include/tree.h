@@ -363,26 +363,26 @@ namespace alg { namespace avl
 //
 namespace alg { namespace avl
 {
-    template<typename ITER>
+    template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
     bool is_vec_post_ordered(const ITER& begin, const ITER& end)
     {
         if (begin == end)  return true;
-        ITER last =  end;
-        --last;
+        ITER back =  end;
+        --back;
 
-        if (begin == last) return true;
+        ITER iter = begin;
+        for(; iter!=back; ++iter)
+        {
+            if (CMP{}(*back, *iter)) break;
+        }
+
         ITER mid = begin;
-
-        while(mid != last)
+        for(; iter!=back; ++iter) 
         {
-            if (*mid > *last) break;
-            ++mid; 
+            if (CMP{}(*iter, *back)) return false;
         }
-        for(ITER iter=mid; iter!=last; ++iter) // BUG : Dont forget this part
-        {
-            if (*iter < *last) return false;
-        }
-        return is_vec_post_ordered(begin,mid) && is_vec_post_ordered(mid,last);
+        return is_vec_post_ordered(begin, mid) && 
+               is_vec_post_ordered(mid, back);
     }
 
     template<typename T>
