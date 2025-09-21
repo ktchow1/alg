@@ -299,7 +299,8 @@ namespace alg
     //  };
 
     public:
-        const node& insert(const std::string& key, const V& value)
+        template<typename...ARGS>
+        const node& insert(const std::string& key, ARGS&&...args)
         {
             node* this_node = &m_root;
             for(std::uint32_t n=0; n!=key.size(); ++n)
@@ -311,10 +312,10 @@ namespace alg
                 }
                 else
                 {
-                    this_node = &(this_node->m_children[key[n]]);
+                    this_node = &this_node->m_children[key[n]];
                 }
             }
-            this_node->m_value = value;
+            new (&*(this_node->m_value)) V {std::forward<ARGS>(args)...};
             return *this_node;
         }
 

@@ -148,18 +148,18 @@ void test_prefix_tree()
          std::cout << "\nkey=" << key << ", value=" << value; 
     };
 
-    ptree.insert("abc", 123);
-    ptree.insert("abcdef", 123456);
-    ptree.insert("abcdeg", 123457);
-    ptree.insert("abcdeh", 123458);
-    ptree.insert("abd", 124);
-    ptree.insert("abe", 125);
-    ptree.insert("abf", 126);
-    ptree.insert("abghij", 127890);
-    ptree.insert("ac", 13);
-    ptree.insert("ad", 14);
-    ptree.insert("ae", 15);
-    ptree.insert("aefgh", 15678);
+    ptree.insert("abc",    std::uint64_t(123));
+    ptree.insert("abcdef", std::uint64_t(123456));
+    ptree.insert("abcdeg", std::uint64_t(123457));
+    ptree.insert("abcdeh", std::uint64_t(123458));
+    ptree.insert("abd",    std::uint64_t(124));
+    ptree.insert("abe",    std::uint64_t(125));
+    ptree.insert("abf",    std::uint64_t(126));
+    ptree.insert("abghij", std::uint64_t(127890));
+    ptree.insert("ac",     std::uint64_t(13));
+    ptree.insert("ad",     std::uint64_t(14));
+    ptree.insert("ae",     std::uint64_t(15));
+    ptree.insert("aefgh",  std::uint64_t(15678));
 
     assert(*ptree.find("abc") == 123);
     assert( ptree.find("aa") == std::nullopt);
@@ -187,7 +187,7 @@ void test_prefix_tree()
     assert( ptree.find("aef") == std::nullopt);
 
 //  ptree.traverse(fct);
-    ptree.insert("", 10001);
+    ptree.insert("", std::uint64_t(10001));
     assert(*ptree.find("") == 10001);
     assert( ptree.find("a") == std::nullopt);
     assert( ptree.find("b") == std::nullopt);
