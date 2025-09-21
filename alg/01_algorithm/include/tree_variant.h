@@ -109,6 +109,8 @@ namespace alg
 
         heap_inplace(ITER begin, ITER end) 
         {
+            if (begin == end) return; // BUG : Dont miss this.
+
             // *** step 1 : push into heap *** //
             ITER iter = begin; 
             for(++iter; iter!=end; ++iter)
@@ -133,7 +135,6 @@ namespace alg
             {
                 ITER iter_m = begin;
                 std::advance(iter_m, (std::distance(begin, iter_n)-1) / 2);
-                std::cout << "\n[dEBUG] n=" << std::distance(begin, iter_n) << " m=" << std::distance(begin, iter_m) << " end=" << std::distance(begin, back)+1 << std::flush;
 
                 if (CMP{}(*iter_n, *iter_m))
                 {
