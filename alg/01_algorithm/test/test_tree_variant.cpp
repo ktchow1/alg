@@ -143,11 +143,9 @@ void test_disjoint_set()
 void test_prefix_tree()
 {
     alg::prefix_tree<std::uint64_t> ptree;
-    alg::prefix_tree<std::uint64_t>::fct_type fct = [](const auto& key, const auto& optional_value)
+    auto fct = [](const auto& key, std::uint64_t value)
     { 
-        if (optional_value) 
-             std::cout << "\nkey=" << key << ", value=" << *optional_value; 
-        else std::cout << "\nkey=" << key << ", value=null"; 
+         std::cout << "\nkey=" << key << ", value=" << value; 
     };
 
     ptree.insert("abc", 123);

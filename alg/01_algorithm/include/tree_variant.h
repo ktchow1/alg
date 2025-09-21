@@ -311,8 +311,7 @@ namespace alg
                 }
                 else
                 {
-                    auto [iter0, flag0] = this_node->m_children.insert({ key[n], node{} });
-                    this_node = &iter0->second;
+                    this_node = &(this_node->m_children[key[n]]);
                 }
             }
             this_node->m_value = value;
@@ -338,20 +337,25 @@ namespace alg
         }
     
     public:
-        using fct_type = std::function<void(const std::string&, const std::optional<V>&)>;
-
-        void traverse(fct_type& fct) const noexcept
+        template<typename F>
+        requires std::invocable<F, std::string, V>
+        void traverse(F& fct) const noexcept
         {   
             dfs_pre_order_recursive(std::string{}, &m_root, fct);
         }
 
     private:
-        void dfs_pre_order_recursive(const std::string& key, const node* this_node, fct_type& fct) const noexcept
+        template<typename F>
+        requires std::invocable<F, std::string, V>
+        void dfs_pre_order_recursive(const std::string& key, const node* this_node, F& fct) const noexcept
         {
-            fct(key, this_node->m_value);
-            for(const auto& x:this_node->m_children)
+            if (this_node->m_value)
             {
-                dfs_pre_order_recursive(key+x.first, &x.second, fct);
+                fct(key, *(this_node->m_value));
+            }
+            for(const auto& [c, next_node]:this_node->m_children)
+            {
+                dfs_pre_order_recursive(key+c, &next_node, fct);
             }
         }
     
