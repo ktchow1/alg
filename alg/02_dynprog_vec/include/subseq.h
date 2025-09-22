@@ -56,7 +56,7 @@ namespace alg
 
         std::int32_t sub0 = 0;      // exclude the last element  
         std::int32_t sub1 = vec[0]; // include the last element  
-        std::int32_t ans  = sub1;    
+        std::int32_t ans  = sub1;
         for(std::uint32_t n=1; n!=vec.size(); ++n)
         {
             auto tmp0 = sub0;
@@ -91,10 +91,10 @@ namespace alg
     // Puzzle game (from SMarket)
     //
     // Given a vector of unsorted numbers :
-    // * 2 player in turn pick a number
+    // * 1 player pick numbers repeatedly
     // * all elements equal that number     are removed, add to player's score
     // * all elements equal that number+/-1 are removed
-    // * repeat until vector becomes empty, player with higher score win.
+    // * repeat until vector becomes empty, try maximise score
     // ************************************************************************** //
     std::int32_t max_puzzle_game(const std::vector<std::int32_t>& vec) 
     {
@@ -132,7 +132,7 @@ namespace alg
             else
             {
                 sub0 = std::max(tmp0, tmp1); 
-                sub1 = 0;
+                sub1 = std::max(tmp0 + 0, 0);
                 ans  = std::max(ans, sub1); // should be no change
             }
         }
