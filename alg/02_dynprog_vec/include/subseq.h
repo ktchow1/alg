@@ -306,15 +306,18 @@ namespace alg
     // *************************************************************** //
     // Remark : Consider target = 10
     //
-    // cum  | cum / target | min n in hist, such that cum / n < target 
-    // -----+--------------+-------------------------------------------
-    // 28   | 2.8          | 3     as 28 / 3 < 10
-    // 29   | 2.9          | 3     as 29 / 3 < 10
-    // 30   | 3.0          | 4     as 30 / 4 < 10
-    // 31   | 3.1          | 4     as 31 / 4 < 10
-    // 32   | 3.2          | 4     as 32 / 4 < 10
+    // cum  | cum / target | min n in hist,        | min n in hist,        
+    //      |              | s.t. cum/n <= target  | s.t. cum/n < target 
+    // -----+--------------+-----------------------+------------------------
+    // 28   | 2.8          | 3, as 28 / 3 <= 10    | 3, as 28 / 3 < 10
+    // 29   | 2.9          | 3, as 29 / 3 <= 10    | 3, as 29 / 3 < 10
+    // 30   | 3.0          | 3, as 30 / 3 <= 10    | 4, as 30 / 4 < 10
+    // 31   | 3.1          | 4, as 31 / 4 <= 10    | 4, as 31 / 4 < 10
+    // 32   | 3.2          | 4, as 32 / 4 <= 10    | 4, as 32 / 4 < 10
     //
-    // hence we have : n = upper_bound(cum/target)
+    // hence we have : 
+    // n = lower_bound(std::ceil (cum/target))   for product <= target
+    // n = upper_bound(std::floor(cum/target))   for product <  target
     // *************************************************************** //
     template<bool INCLUDE_EQUAL>
     std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target)
