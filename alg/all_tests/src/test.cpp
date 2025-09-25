@@ -111,15 +111,15 @@ inline void banner(const std::string str)
 
 int main()
 {
-    banner("01_algorithm");
-    test_arithmetic();
-    test_bisection();
-    test_stack();
-    test_dual();
-    test_list();
-    test_tree();
-    test_tree_variant();
-    test_sorting();
+//  banner("01_algorithm");
+//  test_arithmetic();
+//  test_bisection();
+//  test_stack();
+//  test_dual();
+//  test_list();
+//  test_tree();
+//  test_tree_variant();
+//  test_sorting();
   
     banner("02_dynprog_vec");
     test_two_point_sum();

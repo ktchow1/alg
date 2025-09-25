@@ -43,16 +43,16 @@ void test_subseq_sum()
                  std::bind(alg::count_target_divisible_subseq_sum_bmk, _1, 8),
                  num_trial); 
 
-    benchmark<1>("longest_target_subseq_sum", 
-                 std::bind(gen_random_vec<std::int32_t>, 30, -20, +20), 
-                 std::bind(alg::longest_target_subseq_sum,     _1, 20),
-                 std::bind(alg::longest_target_subseq_sum_bmk, _1, 20),
+    benchmark<1>("count_less_than_or_equal_to_target_subseq_sum", 
+                 std::bind(gen_random_vec<std::uint32_t>, 30, 1, 60), 
+                 std::bind(alg::count_less_than_target_subseq_sum<true>,     _1, 100),
+                 std::bind(alg::count_less_than_target_subseq_sum_bmk<true>, _1, 100),
                  num_trial); 
 
     benchmark<1>("count_less_than_target_subseq_sum", 
                  std::bind(gen_random_vec<std::uint32_t>, 30, 1, 60), 
-                 std::bind(alg::count_less_than_target_subseq_sum,     _1, 100),
-                 std::bind(alg::count_less_than_target_subseq_sum_bmk, _1, 100),
+                 std::bind(alg::count_less_than_target_subseq_sum<false>,     _1, 100),
+                 std::bind(alg::count_less_than_target_subseq_sum_bmk<false>, _1, 100),
                  num_trial); 
 
     benchmark<1>("count_less_than_target_subseq_prd", 
@@ -61,6 +61,12 @@ void test_subseq_sum()
                  std::bind(alg::count_less_than_target_subseq_prd_bmk, _1, 1234), 
                  num_trial); 
     
+    benchmark<1>("longest_target_subseq_sum", 
+                 std::bind(gen_random_vec<std::int32_t>, 30, -20, +20), 
+                 std::bind(alg::longest_target_subseq_sum,     _1, 20),
+                 std::bind(alg::longest_target_subseq_sum_bmk, _1, 20),
+                 num_trial); 
+
     benchmark<1>("longest_non_contiguous_increasing_subseq", 
                  std::bind(gen_random_vec<std::uint32_t>, 30, 1, 100), 
                  std::bind(alg::longest_non_contiguous_increasing_subseq,        _1),
