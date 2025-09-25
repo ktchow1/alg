@@ -257,16 +257,11 @@ namespace alg
         return ans;
     }
 
-    // ************************************************ //
-    // 1. Only count less-than-target (use upper_bound)
-    //    Don't count equal-to-target (not lower_bound)
-    // 2. Input numbers are positive (can be zero).
-    // ************************************************ //
     template<bool INCLUDE_EQUAL>
     std::uint32_t count_less_than_target_subseq_sum(const std::vector<std::uint32_t>& vec, std::uint32_t target)
     {
-        std::map<std::uint32_t, std::int32_t> index; // unlike prev question, ordered map needed
-    //  index[0] = -1;                               // unlike prev question, this is NOT needed
+        std::map<std::uint32_t, std::int32_t> index; // unlike longest_target_subseq_sum, ordered map needed
+    //  index[0] = -1;                               // unlike longest_target_subseq_sum, this is NOT needed
 
         std::uint32_t cum = 0;
         std::uint32_t ans = 0;
@@ -321,26 +316,38 @@ namespace alg
     //
     // hence we have : n = upper_bound(cum/target)
     // *************************************************************** //
+    template<bool INCLUDE_EQUAL>
     std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target)
     {
         std::map<std::uint64_t, std::int32_t> index;
-        index[0] = -1; 
+    //  index[0] = -1; 
 
         std::uint64_t cum = 1; 
         std::uint32_t ans = 0;
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
             cum *= vec[n];
-            if (cum < target)
+            if constexpr (INCLUDE_EQUAL)
             {
-                ans += n+1;
-            }        
-        //  else if (auto iter=index.lower_bound(std::ceil((double)cum/target)); iter!=index.end())  // <--- incorrect 
-        //  else if (auto iter=index.upper_bound(std::ceil((double)cum/target)); iter!=index.end())  // <--- incorrect
-        //  else if (auto iter=index.lower_bound(cum/target); iter!=index.end())                     // <--- incorrect 
-            else if (auto iter=index.upper_bound(cum/target); iter!=index.end())                     // <---   correct (why? see remark)
+                if (cum <= target)
+                {
+                    ans += n+1;
+                }        
+                else if (auto iter=index.lower_bound(std::ceil((double)cum/target)); iter!=index.end()) // Amazing, why's that?
+                {
+                    ans += n-iter->second;
+                }
+            }
+            else
             {
-                ans += n-iter->second;
+                if (cum < target)
+                {
+                    ans += n+1;
+                }        
+                else if (auto iter=index.upper_bound(cum/target); iter!=index.end()) // implied std::floor 
+                {
+                    ans += n-iter->second;
+                }
             }
             if (index.find(cum)==index.end())
             {
@@ -511,6 +518,7 @@ namespace alg
         return ans;
     }
 
+    template<bool INCLUDE_EQUAL>
     std::uint32_t count_less_than_target_subseq_prd_bmk(const std::vector<std::uint32_t>& vec, std::uint64_t target)
     {
         if (vec.size()==0) return 0;
@@ -522,7 +530,8 @@ namespace alg
             for(std::uint32_t m=n; m!=vec.size(); ++m) 
             {
                 cum *= vec[m];
-                if (cum < target) ++ans;
+                if constexpr (INCLUDE_EQUAL) { if (cum <= target) ++ans; }
+                else                         { if (cum <  target) ++ans; }
             }
         }
         return ans;

@@ -55,10 +55,16 @@ void test_subseq_sum()
                  std::bind(alg::count_less_than_target_subseq_sum_bmk<false>, _1, 100),
                  num_trial); 
 
+    benchmark<1>("count_less_than_or_equal_to_target_subseq_prd", 
+                 std::bind(gen_random_vec<std::uint32_t>, 10, 1, 12), 
+                 std::bind(alg::count_less_than_target_subseq_prd<true>,     _1, 1234),
+                 std::bind(alg::count_less_than_target_subseq_prd_bmk<true>, _1, 1234), 
+                 num_trial); 
+
     benchmark<1>("count_less_than_target_subseq_prd", 
                  std::bind(gen_random_vec<std::uint32_t>, 10, 1, 12), 
-                 std::bind(alg::count_less_than_target_subseq_prd,     _1, 1234),
-                 std::bind(alg::count_less_than_target_subseq_prd_bmk, _1, 1234), 
+                 std::bind(alg::count_less_than_target_subseq_prd<false>,     _1, 1234),
+                 std::bind(alg::count_less_than_target_subseq_prd_bmk<false>, _1, 1234), 
                  num_trial); 
     
     benchmark<1>("longest_target_subseq_sum", 
