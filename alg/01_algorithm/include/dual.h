@@ -36,8 +36,7 @@ namespace alg
             // *************************** //
             // *** Exist - update time *** //
             // *************************** //
-            auto map_iter = m_map.find(key);
-            if (map_iter != m_map.end())
+            if (auto map_iter = m_map.find(key); map_iter != m_map.end())
             {
                 m_list.splice(m_list.begin(), m_list, map_iter->second); // move list iterator to the front
                 map_iter->second->second = value;
@@ -61,8 +60,7 @@ namespace alg
             // *************************** //
             // *** Exist - update time *** //
             // *************************** //
-            auto map_iter = m_map.find(key);
-            if (map_iter != m_map.end())
+            if (auto map_iter = m_map.find(key); map_iter != m_map.end())
             {
                 m_list.splice(m_list.begin(), m_list, map_iter->second); // move list iterator to the front
                 return std::make_optional(map_iter->second->second);
@@ -120,8 +118,7 @@ namespace alg
     public:
         void set(const K& key, const V& value) // key = symbol, value = price
         {
-            auto map_iter = m_map.find(key);
-            if (map_iter != m_map.end())
+            if (auto map_iter = m_map.find(key); map_iter != m_map.end())
             {
             //  map_iter->second->first = value; // BUG : KEY of map1 cannot be modified, need to erase and re-insert
                 
