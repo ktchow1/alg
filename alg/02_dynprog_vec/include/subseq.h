@@ -257,6 +257,9 @@ namespace alg
         return ans;
     }
 
+    // ******************************* //
+    // Input numbers are non-negative.
+    // ******************************* //
     template<bool INCLUDE_EQUAL>
     std::uint32_t count_less_than_target_subseq_sum(const std::vector<std::uint32_t>& vec, std::uint32_t target)
     {
@@ -299,10 +302,7 @@ namespace alg
     }
 
     // *************************************************************** //
-    // 1. Only count less-than-target (use upper_bound)
-    //    Don't count equal-to-target (not lower_bound)
-    // 2. Input numbers are strictly positive (cannot be zero).
-    //    We set cum = 1, unlike max_subseq_prd_bmk.
+    // Input numbers are strictly positive (cannot be zero).
     // *************************************************************** //
     // Remark : Consider target = 10
     //
