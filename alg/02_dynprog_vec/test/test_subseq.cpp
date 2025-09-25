@@ -5,7 +5,7 @@
 
 void test_subseq_sum()
 {
-    std::uint32_t num_trial = 1000;
+    std::uint32_t num_trial = 8000;
 
     benchmark<1>("max_subseq_sum",           
                  std::bind(gen_random_vec<std::int32_t>, 50, -30, +30), 
@@ -44,25 +44,25 @@ void test_subseq_sum()
                  num_trial); 
 
     benchmark<1>("count_less_than_or_equal_to_target_subseq_sum", 
-                 std::bind(gen_random_vec<std::uint32_t>, 30, 1, 60), 
+                 std::bind(gen_random_vec<std::uint32_t>, 40, 0, 30), 
                  std::bind(alg::count_less_than_target_subseq_sum<true>,     _1, 100),
                  std::bind(alg::count_less_than_target_subseq_sum_bmk<true>, _1, 100),
                  num_trial); 
 
     benchmark<1>("count_less_than_target_subseq_sum", 
-                 std::bind(gen_random_vec<std::uint32_t>, 30, 1, 60), 
+                 std::bind(gen_random_vec<std::uint32_t>, 40, 0, 30), 
                  std::bind(alg::count_less_than_target_subseq_sum<false>,     _1, 100),
                  std::bind(alg::count_less_than_target_subseq_sum_bmk<false>, _1, 100),
                  num_trial); 
 
     benchmark<1>("count_less_than_or_equal_to_target_subseq_prd", 
-                 std::bind(gen_random_vec<std::uint32_t>, 10, 1, 12), 
+                 std::bind(gen_random_vec<std::uint32_t>, 12, 1, 12), 
                  std::bind(alg::count_less_than_target_subseq_prd<true>,     _1, 1234),
                  std::bind(alg::count_less_than_target_subseq_prd_bmk<true>, _1, 1234), 
                  num_trial); 
 
     benchmark<1>("count_less_than_target_subseq_prd", 
-                 std::bind(gen_random_vec<std::uint32_t>, 10, 1, 12), 
+                 std::bind(gen_random_vec<std::uint32_t>, 12, 1, 12), 
                  std::bind(alg::count_less_than_target_subseq_prd<false>,     _1, 1234),
                  std::bind(alg::count_less_than_target_subseq_prd_bmk<false>, _1, 1234), 
                  num_trial); 
