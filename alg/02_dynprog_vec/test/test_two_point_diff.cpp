@@ -7,12 +7,14 @@ void test_two_point_diff()
 {
     std::uint32_t num_trial = 1000;
 
+    // *** Maximization *** //
     benchmark<1>("max_profit",           
                  std::bind(gen_random_vec<std::int32_t>, 30, 100, 500), 
                  std::bind(alg::max_profit,     _1),     
                  std::bind(alg::max_profit_bmk, _1),
                  num_trial); 
     
+    // *** Counting *** //
     benchmark<1>("count_target_profit", 
                  std::bind(gen_random_vec<std::int32_t>, 100, 100, 300),
                  std::bind(alg::count_target_profit,     _1, 40),     

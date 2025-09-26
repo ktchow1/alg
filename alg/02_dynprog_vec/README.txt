@@ -1,9 +1,35 @@
+Two points diff (1+2)
+* max profit
+* count target prfit
+* count target abs prfit
+
+Subseq (5+6)
+* max subseq sum
+* max subseq prd
+* max non contiguous subseq sum
+* max non contiguous subseq sum (strictly)
+* max non contiguous subseq sum (strictly, puzzle game)
+* count target subseq sum
+* count target divisible subseq sum
+* count less than target subseq sum (or equal to)
+* count less than target subseq prd (or equal to)
+* longest target subseq sum
+* longest non contiguous increasing subseq sum
+
+
+
+
+
+
+
+
+
 ***************************************************************
 *** Explanation of count_less_than_target_subseq_prd<false> ***
 ***************************************************************
 Find PROD < 20
                     (double)     (int)     
-       prev_cum     curr_cum     curr_cum    increase in
+vec    prev_cum     curr_cum     curr_cum    increase in
                     / target     / target    subseq num    subseq
 -------------------------------------------------------------------------
 4          4              -           -         +1         {4}   
@@ -34,7 +60,7 @@ m_hist.upper_bound(curr_cum / target)
 **************************************************************
 Find PROD <= 20
                     (double)     ceil(double)     
-       prev_cum     curr_cum     curr_cum    increase in
+vec    prev_cum     curr_cum     curr_cum    increase in
                     / target     / target    subseq num    subseq
 -------------------------------------------------------------------------
 4          4              -           -         +1         {4}   

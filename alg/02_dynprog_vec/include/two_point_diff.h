@@ -37,9 +37,9 @@ namespace alg
 
 
 
-// *********************************************** //
-// *** Maximization - benchmark implementation *** //
-// *********************************************** //
+// ******************************** //
+// *** Maximization - benchmark *** //
+// ******************************** //
 namespace alg
 {
     std::int32_t max_profit_bmk(const std::vector<std::int32_t>& vec)
@@ -121,9 +121,9 @@ namespace alg
 
 
 
-// ******************************************* //
-// *** Counting - benchmark implementation *** //
-// ******************************************* //
+// **************************** //
+// *** Counting - benchmark *** //
+// **************************** //
 namespace alg
 {
     std::uint32_t count_target_profit_bmk(const std::vector<std::int32_t>& vec, std::int32_t target)
