@@ -13,14 +13,15 @@ Find PROD < 20
 2       1008        >   50.4     >   50         +2         {7,2} {2}
 5       5040        >  252.0     >  252         +2         {2,5} {5}
 4      20160        > 1008.0     > 1008         +1         {4}
+-------------------------------------------------------------------------
                                         total = 11
 
 Since prev_cum is integer, 
 
 (int) prev_cum > (double) curr_cum / (int) target           is always equivalent to ...
-(int) prev_cum >    (int) curr_cum / (int) target 
+(int) prev_cum >    (int) curr_cum / (int) target           where > is done by upper_bound.
 
-and we search for > by upper_bound. Therefore, count_less_than_target_subseq_prd<false> is implemented as : 
+Therefore, count_less_than_target_subseq_prd<false> is implemented as : 
 
 m_hist.upper_bound(curr_cum / target)
 
@@ -43,14 +44,15 @@ Find PROD <= 20
 2       1008       >=   50.4    >=   51         +2         {7,2} {2}
 5       5040       >=  252.0    >=  252         +2         {2,5} {5}
 4      20160       >= 1008.0    >= 1008         +2         {5,4} {4}   
+-------------------------------------------------------------------------
                                         total = 12
 
 Since prev_cum is integer, 
 
 (int) prev_cum >=      (double) curr_cum / (int) target     is always equivalent to ...
-(int) prev_cum >= ceil (double) curr_cum / (int) target 
+(int) prev_cum >= ceil (double) curr_cum / (int) target     where >= is done by lower_bound. 
 
-and we search for >= by lower_bound. Therefore, count_less_than_target_subseq_prd<true> is implemented as : 
+Therefore, count_less_than_target_subseq_prd<true> is implemented as : 
 
 m_hist.lower_bound(curr_cum / target)
 
