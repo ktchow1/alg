@@ -257,11 +257,8 @@ namespace alg
         return ans;
     }
 
-    // ******************************* //
-    // Input numbers are non-negative.
-    // ******************************* //
     template<bool INCLUDE_EQUAL>
-    std::uint32_t count_less_than_target_subseq_sum(const std::vector<std::uint32_t>& vec, std::uint32_t target)
+    std::uint32_t count_less_than_target_subseq_sum(const std::vector<std::uint32_t>& vec, std::uint32_t target) // vec[n] >= 0
     {
         std::map<std::uint32_t, std::int32_t> index; // unlike longest_target_subseq_sum, ordered map needed
     //  index[0] = -1;                               // unlike longest_target_subseq_sum, this is NOT needed
@@ -302,8 +299,6 @@ namespace alg
     }
 
     // *************************************************************** //
-    // Input numbers are strictly positive (cannot be zero).
-    // *************************************************************** //
     // Remark : Consider target = 10
     //
     // cum  | cum / target | min n in hist,        | min n in hist,        
@@ -320,7 +315,7 @@ namespace alg
     // n = upper_bound(std::floor(cum/target))   for product <  target
     // *************************************************************** //
     template<bool INCLUDE_EQUAL>
-    std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target)
+    std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target) // vec[n] > 0
     {
         std::map<std::uint64_t, std::int32_t> index;
     //  index[0] = -1; 
