@@ -469,8 +469,7 @@ namespace alg
             //  if (vec[m] <= vec[n]) // <--- BUG1
                 if (vec[m] <  vec[n])
                 {
-                   if (sub[n] < sub[m]+1)
-                       sub[n] = sub[m]+1;
+                    sub[n] = std::max(sub[n], sub[m]+1);
                 }
             }
         }

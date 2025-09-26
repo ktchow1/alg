@@ -1,9 +1,14 @@
+Two points sum
+*
+*
+*
+
 Two points diff (1+2)
 * max profit
 * count target prfit
 * count target abs prfit
 
-Subseq (5+6)
+Subseq (5+4+2)
 * max subseq sum
 * max subseq prd
 * max non contiguous subseq sum
