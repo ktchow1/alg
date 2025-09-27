@@ -65,19 +65,13 @@ namespace alg
         {
             if (s.empty())
             {
-                if (vec[n] > 0) 
-                {
-                    ans += vec[n];
-                    s.push(vec[n]);
-                }
+                ans += vec[n];
+                s.push(vec[n]);
             }
             else if (vec[n] > s.top())
             {
-                if (vec[n] > 0) 
-                {
-                    ans += vec[n]-s.top();
-                    s.push(vec[n]);
-                }
+                ans += vec[n]-s.top();
+                s.push(vec[n]);
             }
             else
             {
@@ -85,10 +79,7 @@ namespace alg
                 {
                     s.pop();
                 }
-                if (vec[n] > 0) 
-                {
-                    s.push(vec[n]);
-                }
+                s.push(vec[n]);
             }
         }
         return ans;
