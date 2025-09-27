@@ -461,10 +461,12 @@ namespace alg
     std::uint32_t longest_non_contiguous_increasing_subseq(const std::vector<std::uint32_t>& vec)
     {
         std::vector<std::uint32_t> sub(vec.size(), 0); // sub[n] means the subproblem that must end with vec[n]
+        std::uint32_t ans = 0;
+
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            sub[n] = 1; 
-            for(std::uint32_t m=0; m!=n; ++m) // consider all previous subprob m for next subprob n, where m < n
+            sub[n] = 1;                       // consider if we pick element n only
+            for(std::uint32_t m=0; m!=n; ++m) // consider if we can pick previous subprob m
             {
             //  if (vec[m] <= vec[n]) // <--- BUG1
                 if (vec[m] <  vec[n])
@@ -472,9 +474,10 @@ namespace alg
                     sub[n] = std::max(sub[n], sub[m]+1);
                 }
             }
+            ans = std::max(ans, sub[n]);
+            
         }
-    //  return sub[sub.size()-1]; // <--- BUG2
-        return *std::max_element(sub.begin(), sub.end());
+        return ans;
     }
 
     // ************************************************************************************ //
