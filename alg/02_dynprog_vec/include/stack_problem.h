@@ -17,15 +17,14 @@ namespace alg
 
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            const auto& x = vec[n];
-            while(!s0.empty() && x < s0.top())
+            while(!s0.empty() && vec[n] < s0.top())
             {
                 push0 = false;
                 s0.pop();
             }
             if (push0)
             {
-                s0.push(x);
+                s0.push(vec[n]);
             }
         }
         if (s0.size()==vec.size()) return 0;
@@ -38,15 +37,14 @@ namespace alg
 
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            const auto& x = vec[vec.size()-n-1];
-            while(!s1.empty() && x > s1.top())
+            while(!s1.empty() && vec[vec.size()-1-n] > s1.top())
             {
                 push1 = false;
                 s1.pop();
             }
             if (push1)
             {
-                s1.push(x);
+                s1.push(vec[vec.size()-1-n]);
             }
         }
         if (s1.size()==vec.size()) return 0; // <--- should never happen
@@ -65,32 +63,31 @@ namespace alg
 
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            const auto& x = vec[n];
             if (s.empty())
             {
-                if (x > 0) 
+                if (vec[n] > 0) 
                 {
-                    ans += x;
-                    s.push(x);
+                    ans += vec[n];
+                    s.push(vec[n]);
                 }
             }
-            else if (x > s.top())
+            else if (vec[n] > s.top())
             {
-                if (x > 0) 
+                if (vec[n] > 0) 
                 {
-                    ans += x-s.top();
-                    s.push(x);
+                    ans += vec[n]-s.top();
+                    s.push(vec[n]);
                 }
             }
             else
             {
-                while(!s.empty() && x <= s.top()) 
+                while(!s.empty() && vec[n] <= s.top()) 
                 {
                     s.pop();
                 }
-                if (x > 0) 
+                if (vec[n] > 0) 
                 {
-                    s.push(x);
+                    s.push(vec[n]);
                 }
             }
         }
