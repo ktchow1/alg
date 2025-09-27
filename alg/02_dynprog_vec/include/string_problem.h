@@ -53,10 +53,11 @@ namespace alg
     //
     // Now only consider odd palindrome-in-palindrome. 
     // ************************************************************** //
+    // Remark 1 : Rollback of "n" is necessary
+    //            for continuing to detect RHS sub-palindrome 
+    //            after failing to grow parent-palindrome, like 
     //
-    // case A1. when LHS sub-palindrome is completely inside parent-palindrome, like M*ABA.T.ABA*N
-    // checking sub > 0, to avoid infinity loop
-    //
+    //            M***ABA...T...ABA***N
     // ************************************************************** //
     std::uint32_t longest_odd_palindrome_substr(const std::string& str) 
     {
@@ -73,13 +74,13 @@ namespace alg
                 }
                 else 
                 {
-                    if (sub > 0) n -= sub; // Remark 1 
+                    n -= sub; // Remark 1 
                     sub = 0;
                 }
             }
             else
             {
-                if (sub > 0) n -= sub; // checking sub > 0, to avoid infinity loop
+                n -= sub; // Remark 1
                 sub = 0;
             }
 
