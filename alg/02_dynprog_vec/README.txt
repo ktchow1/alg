@@ -1,7 +1,12 @@
-Two points sum
-*
-*
-*
+Two points sum (3+2+3)
+* max 2 point sum-distance
+* max 2 point equal-digit-sum
+* max 2 point sum (non attacking rook)
+* find  target 2 point sum in 1 sorted vec
+* find  target 2 point sum in 2 sorted vec
+* count target 2 point sum in 1 unsorted vec
+* count target 3 point sum in 1 unsorted vec
+* count target 4 point sum in 1 unsorted vec
 
 Two points diff (1+2)
 * max profit
