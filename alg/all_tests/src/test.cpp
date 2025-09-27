@@ -121,13 +121,13 @@ int main()
 //  test_tree_variant();
 //  test_sorting();
   
-    banner("02_dynprog_vec");
-    test_two_point_sum();
-    test_two_point_diff();
-    test_subseq_sum();
+//  banner("02_dynprog_vec");
+//  test_two_point_sum();
+//  test_two_point_diff();
+//  test_subseq_sum();
     test_string_problem();
-//  test_stack_problem();
-//  test_sorting_problem();
+    test_stack_problem();
+    test_sorting_problem();
 //
 //  banner("03_dynprog");
 //  test_dp_matrix_and_graph();

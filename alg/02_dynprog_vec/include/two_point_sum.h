@@ -159,7 +159,7 @@ namespace alg
         std::uint32_t ans = 0;
         return ans;
     }
-}
+}  
 
 
 

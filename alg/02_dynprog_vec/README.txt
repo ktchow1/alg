@@ -26,7 +26,19 @@ Subseq (5+4+2)
 * longest target subseq sum
 * longest non contiguous increasing subseq sum
 
+Substr 
+* longest non-duplicate substr
+* longest palindrome substr
 
+Stack trick
+* shortest unsorted subseq
+* count stroke in histogram
+* biggest rect in histogram
+* trapping water
+
+Sorting variant
+* order statistic (quick sort)
+* number of swap (bubble sort)
 
 
 
