@@ -37,8 +37,8 @@ Stack trick
 * trapping water
 
 Sorting variant
-* order statistic (quick sort)
-* number of swap (bubble sort)
+* order statistic (quick sort variant)
+* number of swap (bubble sort variant)
 
 
 
