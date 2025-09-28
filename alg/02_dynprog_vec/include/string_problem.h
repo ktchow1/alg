@@ -22,7 +22,7 @@ namespace alg
         {
             if (auto iter=index.find(str[n]); iter!=index.end())
             {
-                if (iter->second < n-sub)
+                if (iter->second < n-sub) // BUG : Dont miss this
                 {
                     sub = sub + 1;
                     ans = std::max(ans, sub);

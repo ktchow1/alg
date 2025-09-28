@@ -79,7 +79,7 @@ namespace alg
                 {
                     s.pop();
                 }
-                s.push(vec[n]); // This is needed, s.t. next increment in Remark 1 is correct.
+                s.push(vec[n]); // BUG : This is needed, s.t. next increment in Remark 1 is correct.
             }
         }
         return ans;
