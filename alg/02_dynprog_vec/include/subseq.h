@@ -1,4 +1,5 @@
 #include<iostream>
+#include<cassert>
 #include<cstdint>
 #include<cmath>
 #include<vector>
@@ -278,6 +279,7 @@ namespace alg
                 {
                     ans += n-iter->second;  
                 }
+            //  else implies : vec[n] > target (with single element)
             }
             else
             {
@@ -289,6 +291,7 @@ namespace alg
                 {
                     ans += n-iter->second;  
                 }
+            //  else implies : vec[n] >= target (with single element)
             }
             if (index.find(cum)==index.end()) 
             {
