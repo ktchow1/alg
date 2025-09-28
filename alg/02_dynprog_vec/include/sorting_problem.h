@@ -5,11 +5,13 @@
 
 namespace alg
 {  
-    // *************************** //
+    // ****************************************** //
     // Using combination of :
     // 1. inner loop - quick sort 
     // 2. outer loop - bisection
-    // *************************** //
+    //
+    // cost = O(N + N/2 + N/4 + N/8 ...) = O(2N)
+    // ****************************************** //
     std::uint32_t order_statistics(const std::vector<std::uint32_t>& vec, std::uint32_t kth_order)
     {
         if (kth_order >= vec.size()) return 0;
@@ -68,8 +70,8 @@ namespace alg
             {
                 if (orig_pos[m] > orig_pos[n]) ++num_swap;
                 // when this happens, 
-                // m > orig_pos[m]-2
-                //   > orig_pos[n]-2 <--- optimization is possible
+                // m >= orig_pos[m]-2
+                //   >= orig_pos[n]-2 <--- optimization is possible
             }
         }
         return num_swap;
@@ -98,8 +100,8 @@ namespace alg
             {
                 if (orig_pos[m] > orig_pos[n]) ++num_swap;
                 // when this happens, 
-                // m > orig_pos[m]-2
-                //   > orig_pos[n]-2 <--- optimization is possible
+                // m >= orig_pos[m]-2
+                //   >= orig_pos[n]-2 <--- optimization is possible
             }
         }
         return num_swap;
@@ -114,8 +116,8 @@ namespace alg
             {
                 if (orig_pos[m] < orig_pos[n]) ++num_swap;
                 // when this happens, 
-                // n > orig_pos[n]-2
-                //   > orig_pos[m]-2 <--- no optimization
+                // n >= orig_pos[n]-2
+                //   >= orig_pos[m]-2 <--- no optimization
             }
         }
         return num_swap;
