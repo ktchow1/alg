@@ -1,7 +1,7 @@
 #include<iostream>
 #include<iomanip>
 #include<cassert>
-#include<dual.h>
+#include<tree_dual.h>
 #include<utility.h>
 
 
@@ -205,7 +205,7 @@ void test_value_indexed_map()
 }
 
 
-void test_dual()
+void test_tree_dual()
 {
     test_lru_map();
     test_value_indexed_map();

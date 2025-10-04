@@ -4,10 +4,10 @@
 void test_arithmetic();
 void test_bisection();
 void test_stack();
-void test_dual();
 void test_list();
 void test_tree();
 void test_tree_variant();
+void test_tree_dual();
 void test_sorting();
 
 // *** 02_dynprog_vec *** //
@@ -112,22 +112,22 @@ inline void banner(const std::string str)
 int main()
 {
 //  banner("01_algorithm");
-//  test_arithmetic();
-//  test_bisection();
-//  test_stack();
-//  test_dual();
-//  test_list();
-//  test_tree();
-//  test_tree_variant();
-//  test_sorting();
+    test_arithmetic();
+    test_bisection();
+    test_stack();
+    test_list();
+    test_tree();
+    test_tree_variant();
+    test_tree_dual();
+    test_sorting();
   
 //  banner("02_dynprog_vec");
 //  test_two_point_sum();
 //  test_two_point_diff();
-    test_subseq_sum();
-    test_string_problem();
-    test_stack_problem();
-    test_sorting_problem();
+//  test_subseq_sum();
+//  test_string_problem();
+//  test_stack_problem();
+//  test_sorting_problem();
 //
 //  banner("03_dynprog");
 //  test_dp_matrix_and_graph();
