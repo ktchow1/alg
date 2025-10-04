@@ -92,7 +92,7 @@ namespace alg
     std::uint32_t edit_distance_recursive(const std::string& str0, const std::string& str1)
     {
         if (str0.size()==0 && str1.size()==0) return 0;
-        if (str0.size()!=0 && str1.size()==0) return str0.size();
+        if (str0.size()!=0 && str1.size()==0) return str0.size(); 
         if (str0.size()==0 && str1.size()!=0) return str1.size();
 
         std::string trim_str0(str0); 
@@ -187,7 +187,7 @@ namespace alg
 
                 // hori_dist between diagonal & (n,m) = m-n
                 // vert_dist between diagonal & (n,m) = m-n
-                for(std::uint32_t k=0; k!=m-n ; ++k)
+                for(std::uint32_t k=0; k!=diag; ++k)
                 {
                 //  if (input[  k].m_logic == logic::OR) // BUG
                     if (input[n+k].m_logic == logic::OR)

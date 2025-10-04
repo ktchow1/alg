@@ -4,6 +4,9 @@ Subproblems in 1D array
 * Bell number                       (not implemented)
 
 
+
+
+
 Subproblems in 2D matrix
 * longest common subseq 
 * connecting bridge                 (same implementation)
@@ -13,6 +16,12 @@ Subproblems in 2D matrix
 * shortest distance - 2 travellers  (not implemented)
 * shortest distance - bitonic tour  (not implemented)
 * piecewise linear fitting
+
+- implementation 1 : recursion in matrix, boundary case when vec size == 0
+- implementation 2 : iteration in matrix, boundary case when vec size == 1
+
+
+
 
 
 Subproblems in graph
@@ -25,6 +34,7 @@ Subproblems in graph
 * equal partition
 * box stacking
 * bin packing
-- implementation 1 : moving between 2 map
-- implementation 2 : use 1 map and region grow with a stack / queue
+
+- implementation 1 : use 2 unordered_map, std::move one to another
+- implementation 2 : use 1 unordered_map, region grow with a stack / queue
 
