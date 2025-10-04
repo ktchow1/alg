@@ -143,7 +143,7 @@ namespace alg
         // ***************************** //
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            while(!s.empty() && vec[n] < vec[s.top()])
+            while(!s.empty() && vec[n] <= vec[s.top()])
             {
                 std::uint32_t m = s.top();
                 s.pop();
