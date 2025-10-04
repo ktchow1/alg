@@ -33,7 +33,8 @@
 //
 // 3. For each function :
 // -  provide interface without node<T>* input
-// -  provide recursive implemenation with node<T>* or node<T>** input
+//    provide recursive implementation with node<T>*  for const input
+//    provide recursive implementation with node<T>** for mutable input
 // -  provide null checking, either :
 //    check this_node       
 //    check this_node->m_lhs &

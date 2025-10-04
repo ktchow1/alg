@@ -22,15 +22,15 @@ namespace alg
         {
             if (auto iter=index.find(str[n]); iter!=index.end())
             {
-                if (iter->second < n-sub) // BUG : Dont miss this
+                if (iter->second >= n-sub) // BUG : Dont miss this
                 {
-                    sub = sub + 1;
+                    sub = n - iter->second;
                     ans = std::max(ans, sub);
                     iter->second = n;
                 }
                 else
                 {
-                    sub = n - iter->second;
+                    sub = sub + 1;
                     ans = std::max(ans, sub);
                     iter->second = n;
                 }
