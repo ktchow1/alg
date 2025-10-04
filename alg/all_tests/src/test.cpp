@@ -120,18 +120,18 @@ int main()
 //  test_tree_variant();
 //  test_tree_dual();
 //  test_sorting();
-  
-    banner("02_dynprog_vec");
-    test_two_point_sum();
-    test_two_point_diff();
-    test_subseq_sum();
-    test_string_problem();
-    test_stack_problem();
-    test_sorting_problem();
 //
-//  banner("03_dynprog");
-//  test_dp_matrix_and_graph();
-//  test_dp_matrix_only();  
+//  banner("02_dynprog_vec");
+//  test_two_point_sum();
+//  test_two_point_diff();
+//  test_subseq_sum();
+//  test_string_problem();
+//  test_stack_problem();
+//  test_sorting_problem();
+//
+    banner("03_dynprog");
+    test_dp_matrix_only();  
+    test_dp_matrix_and_graph();
 //
 //  banner("04_fundalmental");
 //  test_cast();

@@ -17,23 +17,23 @@ Subseq (5+4+2)
 * max subseq sum
 * max subseq prd
 * max non contiguous subseq sum
-* max non contiguous subseq sum (strictly)
+* max non contiguous subseq sum (strictly) 
 * max non contiguous subseq sum (strictly, puzzle game)
 * count target subseq sum
 * count target divisible subseq sum
-* count less than target subseq sum (or equal to)
-* count less than target subseq prd (or equal to)
+* count less than target subseq sum (or equal to)          1. instead of init hist, do checking 
+* count less than target subseq prd (or equal to)          1. instead of init hist, do checking 2. std::floor vs std::ceil
 * longest target subseq sum
 * longest non contiguous increasing subseq sum
 
 Substr 
-* longest non-duplicate substr
-* longest palindrome substr
+* longest non-duplicate substr                             1. sub is needed, 2. check prev duplicate inside sub
+* longest palindrome substr                                1. sub is needed, 2. check access outside str
 
 Stack trick
 * shortest unsorted subseq
-* count stroke in histogram
-* biggest rect in histogram
+* count stroke in histogram                                1. pushing new vec[n] is needed, pop all equal out
+* biggest rect in histogram                                1. pushing new vec[n] is needed, pop all equal out
 * trapping water
 
 Sorting variant
