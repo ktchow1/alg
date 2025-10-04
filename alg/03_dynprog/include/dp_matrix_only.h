@@ -179,14 +179,11 @@ namespace alg
         }
 
         // Iterate from main diagonal to UR
-        for(std::uint32_t diag=1; diag!=N; ++diag) // shift of diagonal = diag
+        for(std::uint32_t diag=1; diag!=N; ++diag)
         {
-            for(std::uint32_t n=0; n!=N-diag; ++n) // length of diagonal = N-diag
+            for(std::uint32_t n=0; n!=N-diag; ++n) 
             {
                 std::uint32_t m = n+diag;
-
-                // hori_dist between diagonal & (n,m) = m-n
-                // vert_dist between diagonal & (n,m) = m-n
                 for(std::uint32_t k=0; k!=diag; ++k)
                 {
                 //  if (input[  k].m_logic == logic::OR) // BUG
