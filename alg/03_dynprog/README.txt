@@ -1,4 +1,4 @@
-Subproblems in 1D array
+Subproblems in 1D array (3)
 * all problem in "02_dynprog_vec"   (see chap 02)
 * L shape block                     (not implemented)
 * Bell number                       (not implemented)
@@ -7,7 +7,7 @@ Subproblems in 1D array
 
 
 
-Subproblems in 2D matrix
+Subproblems in 2D matrix (8)
 * longest common subseq 
 * connecting bridge                 (same implementation)
 * edit distance
@@ -24,11 +24,12 @@ Subproblems in 2D matrix
 
 
 
-Subproblems in graph
+Subproblems in graph (10)
 * Viterbi algorithm                 (not implemented)
 * assembly line                     (not implemented)
 * retrospective trader              (not implemented)
-* coin change
+* coin change - min 
+* coin change - count
 * knapsack
 * job schedule
 * equal partition

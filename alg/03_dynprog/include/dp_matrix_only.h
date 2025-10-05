@@ -380,13 +380,13 @@ namespace alg
 namespace alg
 {
     double sum_of_error_square(const std::vector<double>::const_iterator& begin, 
-                               const std::vector<double>::const_iterator& end)
+                               const std::vector<double>::const_iterator& last)
     {
-        double Dx  = (double)std::distance(begin, end-1);
-        double Dy  = *(end-1) - *begin;
+        double Dx  = (double)std::distance(begin, last);
+        double Dy  = *last - *begin;
         double ans = 0;
 
-        for(auto iter=begin; iter!=end; ++iter)
+        for(auto iter=begin; iter<=last; ++iter)
         {
             double dx  = (double)std::distance(begin, iter);
             double dy  = *iter - *begin;
@@ -416,7 +416,7 @@ namespace alg
         // 1st column
         for(std::uint32_t n=2; n!=N; ++n)
         {
-            mat(n,0) = sum_of_error_square(ys.begin(), ys.begin()+n+1);
+            mat(n,0) = sum_of_error_square(ys.begin(), ys.begin()+n);
         }
 
         // Iterate to UR
@@ -427,7 +427,7 @@ namespace alg
                 double min_err = std::numeric_limits<double>::max();
                 for(std::uint32_t k=m; k!=n; ++k)
                 {
-                    double err = mat(k,m-1) + sum_of_error_square(ys.begin()+k, ys.begin()+n+1);
+                    double err = mat(k,m-1) + sum_of_error_square(ys.begin()+k, ys.begin()+n);
                     if (min_err > err)
                         min_err = err;
                 }
