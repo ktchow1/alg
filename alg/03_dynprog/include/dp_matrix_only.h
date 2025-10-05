@@ -424,14 +424,12 @@ namespace alg
         {
             for(std::uint32_t n=m+2; n!=N; ++n) // n = index of last data point in subproblem mat(n,m)
             {
-                double min_err = std::numeric_limits<double>::max();
+                mat(n,m) = std::numeric_limits<double>::max();
                 for(std::uint32_t k=m; k!=n; ++k)
                 {
                     double err = mat(k,m-1) + sum_of_error_square(ys.begin()+k, ys.begin()+n);
-                    if (min_err > err)
-                        min_err = err;
+                    mat(n,m) = std::min(mat(n,m), err);
                 }
-                mat(n,m) = min_err;
             }
         }
         return mat(N-1,M-1); 
