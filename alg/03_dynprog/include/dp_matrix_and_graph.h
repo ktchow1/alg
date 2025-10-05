@@ -455,7 +455,7 @@ namespace alg
                 ans = mat(objects.size()-1, m);
         }
         return ans;
-    }// 
+    }
 }
 
 
@@ -477,7 +477,7 @@ namespace alg
     struct job_state
     {
         std::uint32_t m_total_profit;
-        std::uint32_t m_next_allowed_job;
+        std::uint32_t m_next_allowed_job; // need for graph-approach, no need for matrix-approach
     };
 
     bool operator==(const job_state& lhs, const job_state& rhs) // required by job_state_hash
