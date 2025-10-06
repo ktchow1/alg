@@ -69,59 +69,39 @@ namespace alg
     }
 }
 
-// ************************************************************************************************************************************************************************** //
+// **************************************************************************************************** //
 // [Concepts]
 //                       coin change        knapsack           job schedule       equal partition        
 // ------------------------------------------------------------------------------------------------
 // 1.             x      coin value         obj weight         task workload      num  
 // 2.             y      1                  obj value          task profit        num 
-// 3.       param p      coin num           obj num            task done (0/1)    num picked (0/1)     for p[n] = bool, each x is picked once, how to apply this constraint?
+// 3.       param p      coin num           obj num            task done (0/1)    num picked (0/1)  
 // 4.       state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])
 // 5.       value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])
-// 6.   coin change      min v under constraint  s[N-1] == target                                      for == target, return matrix(N-1,M) is ok
-//         knapsack      max v under constraint  s[N-1] <= weight_limit                                for <= limit,  return optimal in bottom row of matrix
+// 6.   coin change      min v under constraint  s[N-1] == target        
+//         knapsack      max v under constraint  s[N-1] <= weight_limit 
 //     job schedule      max v under constraints s[n]   <= deadline[n] for all n=[0,N-1]
 //     eq partition      max v under constraint  s = v  <= sum(num)/2
 //
-// ************************************************************************************************************************************************************************** //
+//
+//
 // Approaches 
-// 1. recursive in state_graph
-// 2. recursive in state_subproblem_matrix
-// 3. iterative in state_graph                implemented as region_growing
-// 4. iterative in state_subproblem_matrix    implemented as scanning
+// A. recursive in state_graph
+// B. recursive in state_subproblem_matrix
+// C. iterative in state_graph                implemented as region_growing
+// D. iterative in state_subproblem_matrix    implemented as scanning
 //
 //
-// 1. Recursion in state_graph connects a vertex with its neighbours in the same problem size
 //
-//    f(coins, target) = min[ f(coins, target-coins[0]) + 1,
-//                            f(coins, target-coins[1]) + 1,
-//                            f(coins, target-coins[2]) + 1,
-//                            ... ] 
+// For point 3, if param = 0/1, x[n] can be picked once only, how can we implement this constraint?
+// * in state_graph  implementation, we introduce "m_next_allowed_xxx" in state 
+// * in state_matrix implementation, we link matrix(n,m) with matrix(n-1,m-x[n]) 
+//                           instead of link matrix(n,m) with matrix(n  ,m-x[m])
 //
+// For point 6, if constraint is   equality s[N-1] == target, we just need to return matrix(N-1,N)
+//              if constraint is inequality S[N-1] <= limit,  we need to scan last row matrix(N-1,:)
 //
-// 2. Recursion in state_subproblem_matrix connects a cell with its neighbours in different problem size
-//
-//    f(coins, target) = min[ f(coins, target-coins[0]) + 1,
-//                            f(coins.exclude(coins[0]), target) ] 
-//
-//
-// 3. State_graph consisted of : 
-// *  vertices  = all possible states (i.e. 0, 1, 2, ..., target)
-// *  edges     = between any 2 states, whenever they can be connected by a coin
-// *  objective = minimize distance from state_0 to state_target
-// *  implement = region_growing (Dijkstra) on the state_graph, represented as unordered_map<state,value>
-//
-//
-// 4. State_subproblem_matrix is a 2D matrix of "states" vs "subproblem size" :
-// *  row[0] = subproblem with coins[0] only
-// *  row[1] = subproblem with coins[0] and coins[1]
-//    ...
-// *  col[0] = state 0 as target
-// *  col[1] = state 1 as target
-//    ...
-//    Todo : in fact, no need to store whole matrix, just cache this_row and prev_row
-//
-// ************************************************************************************************************************************************************************** //
+// **************************************************************************************************** //
 
 
 // *********************** //
