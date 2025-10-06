@@ -69,24 +69,21 @@ namespace alg
     }
 }
 
-// ************************************************************************************************* //
+// ************************************************************************************************************************************************************************** //
 // [Concepts]
-//                   coin change        knapsack           job schedule       equal partition        
-// --------------------------------------------------------------------------------------------------
-//            x      coin value         obj weight         task workload      num  
-//            y      1                  obj value          task profit        num 
-//      param p      coin num           obj num            task done (0/1)    num picked (0/1)
-//  prob size N     #coin type         #obj type          #task type         #num
-// 
-//      state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])
-//      value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])
-// 
-//  coin change      min v under constraint  s[N-1] == target
-//     knapsack      max v under constraint  s[N-1] <= weight_limit
-// job schedule      max v under constraints s[n]   <= deadline[n] for all n=[0,N-1]
-// eq partition      max v under constraint  s = v  <= sum(num)/2
+//                       coin change        knapsack           job schedule       equal partition        
+// ------------------------------------------------------------------------------------------------
+// 1.             x      coin value         obj weight         task workload      num  
+// 2.             y      1                  obj value          task profit        num 
+// 3.       param p      coin num           obj num            task done (0/1)    num picked (0/1)     for p[n] = bool, each x is picked once, how to apply this constraint?
+// 4.       state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])
+// 5.       value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])
+// 6.   coin change      min v under constraint  s[N-1] == target                                      for == target, return matrix(N-1,M) is ok
+//         knapsack      max v under constraint  s[N-1] <= weight_limit                                for <= limit,  return optimal in bottom row of matrix
+//     job schedule      max v under constraints s[n]   <= deadline[n] for all n=[0,N-1]
+//     eq partition      max v under constraint  s = v  <= sum(num)/2
 //
-// ************************************************************************************************* //
+// ************************************************************************************************************************************************************************** //
 // Approaches 
 // 1. recursive in state_graph
 // 2. recursive in state_subproblem_matrix
@@ -124,48 +121,7 @@ namespace alg
 //    ...
 //    Todo : in fact, no need to store whole matrix, just cache this_row and prev_row
 //
-//
-// Speed
-// * iterative is much faster than recursive
-// * extend state_graph in time, it will become state_subproblem_matrix (subproblem size = time)
-//   (a) if links between rows in matrix is dense,  implies duplication in graph, so matrix is faster
-//   (b) if links between rows in matrix is sparse, implies redundancy in matrix, so graph is faster
-//
-// ************************************************************************************************* //
-// Remark 1. For min coin change : 
-// * all 4 implementations involve "std::numeric_limits<T>::max() + 1" 
-// * overflow will happen, which can be avoided by either :
-//   (a) $1 is always in the coin set 
-//   (b) using alg::inf<T>, alg::one<T> and alg::add(x,y)
-//
-// Remark 2. For knapsack :
-// * there is a change in constraint
-//   state == target       for coin change
-//   state <= weight_limit for knapsack 
-// * hence at the end of algo, we need to :
-//   (a) scan for optimum in state_graph            
-//   (b) scan for optimum in state_subproblem_matrix
-//  
-// Remark 3. For job schedule : 
-// * there are constraints on param
-//   (a) takes 0/1 only 
-//   (b) tasks[i] cannot be done after tasks[j], if i < j
-// * to handle these constraints 
-//   (a) state_graph             needs to add next_allowed_job as part of the state
-//   (b) state_subproblem_matrix needs to modify recursion eq, so that it depends on prev rows only
-//
-// Remark 4. For equal partition 
-// * it is a simiplified version of job schedule 
-//   (a) with same constraints on param
-//   (b) no constraint on state
-//   (c) with value = state 
-//
-// Remark 5. For box stacking 
-// * it is like job schedule, as param = {0,1}
-// * state is not a scaler (plus next_allowed_item)
-// * state is a 2D vector  (plus next_allowed_item) 
-//
-// ************************************************************************************************* //
+// ************************************************************************************************************************************************************************** //
 
 
 // *********************** //
