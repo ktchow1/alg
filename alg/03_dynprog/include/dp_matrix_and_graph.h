@@ -476,13 +476,13 @@ namespace alg
 { 
     struct job_state
     {
-        std::uint32_t m_total_profit;
+        std::uint32_t m_total_workload;
         std::uint32_t m_next_allowed_job; // need for graph-approach, no need for matrix-approach
     };
 
     bool operator==(const job_state& lhs, const job_state& rhs) // required by job_state_hash
     {
-        return lhs.m_total_profit == rhs.m_total_profit &&
+        return lhs.m_total_workload == rhs.m_total_workload &&
                lhs.m_next_allowed_job == rhs.m_next_allowed_job;
     }
 
@@ -490,7 +490,7 @@ namespace alg
     {
         size_t operator()(const job_state& state) const noexcept
         {
-            size_t h0 = std::hash<std::uint32_t>{}(state.m_total_profit);
+            size_t h0 = std::hash<std::uint32_t>{}(state.m_total_workload);
             size_t h1 = std::hash<std::uint32_t>{}(state.m_next_allowed_job);
             return (h0 << 16) ^ h1;
         }
@@ -516,9 +516,9 @@ namespace alg
             // for each neighbour (Remark 3. Ensure no duplicated task. Ensure task in sequence.)
             for(std::uint32_t n=s_prev.m_next_allowed_job; n!=tasks.size(); ++n)
             {
-                std::uint32_t s = s_prev.m_total_profit + std::get<0>(tasks[n]);
-                std::uint32_t v = v_prev                + std::get<1>(tasks[n]);
-                std::uint32_t deadline =                  std::get<2>(tasks[n]);
+                std::uint32_t s = s_prev.m_total_workload + std::get<0>(tasks[n]);
+                std::uint32_t v = v_prev                  + std::get<1>(tasks[n]);
+                std::uint32_t deadline =                    std::get<2>(tasks[n]);
                 
                 if (s <= deadline && euler_update<std::greater<std::uint32_t>>(graph, job_state{s,n+1}, v)) 
                 {
