@@ -754,7 +754,7 @@ namespace alg
     {
     //  std::map          <boxes_state, std::uint32_t, boxes_state_less> graph; // value = total height (slower)
         std::unordered_map<boxes_state, std::uint32_t, boxes_state_hash> graph; // value = total height (faster)
-        graph[{0, inf<std::uint32_t>, inf<std::uint32_t>}] = 0;
+        graph[{0, 0, 0}] = 0;
 
         std::queue<boxes_state> queue; 
         queue.push({0, 0, 0});
