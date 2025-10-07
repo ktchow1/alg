@@ -16,6 +16,7 @@ Subproblems in 2D matrix
 6. shortest distance - 2 travellers  (not implemented)
 7. shortest distance - bitonic tour  (not implemented)
 8. piecewise linear fitting          (iteration in matrix)
+9. bin packing                       (iteration in matrix vs iteration with region grow) <--- its defined in another header, but better classified as this group
 
 - for recursion in matrix, boundary case when vec size == 0
 - for iteration in matrix, boundary case when vec size == 1
@@ -25,14 +26,13 @@ Subproblems in 2D matrix
 
 
 Subproblems in graph
- 1. Viterbi algorithm                (not implemented)
- 2. assembly line                    (not implemented)
- 3. retrospective trader             (not implemented)
- 4. coin change - count              (iteration in matrix)
- 5. coin change - min                (iteration in matrix vs iteration with region grow)
- 6. knapsack                         (iteration in matrix vs iteration with region grow)
- 7. job schedule                     (iteration in matrix vs iteration with region grow)
- 8. equal partition                  (iteration in matrix vs iteration with region grow)
- 9. box stacking                     (iteration in matrix vs iteration with region grow)
-10. bin packing                      (iteration in matrix vs iteration with region grow)
+1. Viterbi algorithm                 (not implemented)
+2. assembly line                     (not implemented)
+3. retrospective trader              (not implemented)
+4. coin change - count               (iteration in matrix)
+5. coin change - min                 (iteration in matrix vs iteration with region grow)
+6. knapsack                          (iteration in matrix vs iteration with region grow)
+7. job schedule                      (iteration in matrix vs iteration with region grow)
+8. equal partition                   (iteration in matrix vs iteration with region grow)
+9. box stacking                      (iteration in matrix vs iteration with region grow)
 
