@@ -17,7 +17,7 @@ Subproblems in 2D matrix
 6. shortest distance - 2 travellers  (not implemented)
 7. shortest distance - bitonic tour  (not implemented)
 8. piecewise linear fitting          (iteration in matrix)
-9. bin packing                       (iteration in matrix vs iteration with region grow) <--- it is defined in dp_matrix_and_graph.h, but better classified as this group
+9. bin packing                       (iteration in matrix) <--- it is defined in dp_matrix_and_graph.h, but better classified as this group
 
 
 Subproblems in graph
@@ -39,18 +39,19 @@ Subproblems in graph
 *** Subproblems in graph ***
 ****************************
 
-Concepts              coin change        knapsack           job schedule       equal partition        
-------------------------------------------------------------------------------------------------
-1.             x      coin value         obj weight         task workload      num  
-2.             y      1                  obj value          task profit        num 
-3.       param p      coin num           obj num            task done (0/1)    num picked (0/1)  
-4.       state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])
-5.       value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])
+Concepts              coin change        knapsack           job schedule       equal partition        box stacking 
+----------------------------------------------------------------------------------------------------------------------------------------------
+1.             x      coin value         obj weight         task workload      num                    box width & length
+2.             y      1                  obj value          task profit        num                    box height 
+3.       param p      coin num           obj num            task done (0/1)    num picked (0/1)       x/y/z/none as height
+4.       state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])                                         s[N-1] = width/length of last picked box
+5.       value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])                                         v[N-1] = sum  (height of all picked boxes)        
 6.  constraint 
      coin change      min v under constraint  s[N-1] == target        
         knapsack      max v under constraint  s[N-1] <= weight_limit 
     job schedule      max v under constraints s[n]   <= deadline[n] for all n=[0,N-1]
     eq partition      max v under constraint  s = v  <= sum(num)/2
+    box stacking      max v under constraint  width[n] >= width[n-1], length[n] >= length[n-1]
 
 
 Approaches 
