@@ -69,40 +69,6 @@ namespace alg
     }
 }
 
-// **************************************************************************************************** //
-// [Concepts]
-//                       coin change        knapsack           job schedule       equal partition        
-// ------------------------------------------------------------------------------------------------
-// 1.             x      coin value         obj weight         task workload      num  
-// 2.             y      1                  obj value          task profit        num 
-// 3.       param p      coin num           obj num            task done (0/1)    num picked (0/1)  
-// 4.       state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])
-// 5.       value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])
-// 6.   coin change      min v under constraint  s[N-1] == target        
-//         knapsack      max v under constraint  s[N-1] <= weight_limit 
-//     job schedule      max v under constraints s[n]   <= deadline[n] for all n=[0,N-1]
-//     eq partition      max v under constraint  s = v  <= sum(num)/2
-//
-//
-//
-// Approaches 
-// A. recursive in state_graph
-// B. recursive in state_subproblem_matrix
-// C. iterative in state_graph                implemented as region_growing
-// D. iterative in state_subproblem_matrix    implemented as scanning
-//
-//
-//
-// For point 3, if param = 0/1, x[n] can be picked once only, how can we implement this constraint?
-// * in state_graph  implementation, we introduce "m_next_allowed_xxx" in state 
-// * in state_matrix implementation, we link matrix(n,m) with matrix(n-1,m-x[n]) 
-//                           instead of link matrix(n,m) with matrix(n  ,m-x[m])
-//
-// For point 6, if constraint is   equality s[N-1] == target, we just need to return matrix(N-1,N)
-//              if constraint is inequality S[N-1] <= limit,  we need to scan last row matrix(N-1,:)
-//
-// **************************************************************************************************** //
-
 
 // *********************** //
 // *** Min coin change *** //
