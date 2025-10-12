@@ -445,13 +445,14 @@ namespace alg
         matrix<std::uint32_t> mat(tasks.size(), hard_deadline+1, 0);
         
         // init 1st row (coz main iteration does not include 1st row)
+        for(std::uint32_t m=1; m<=hard_deadline; ++m)
         {
             std::uint32_t workload = std::get<0>(tasks[0]);
             std::uint32_t profit   = std::get<1>(tasks[0]);
             std::uint32_t deadline = std::get<2>(tasks[0]);
-            if (workload <= deadline)
+            if (m >= workload && m <= deadline)
             {
-                mat(0,workload) = profit; 
+                mat(0,m) = profit; 
             }
         }
         // init 1st col (redundant)
