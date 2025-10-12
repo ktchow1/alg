@@ -790,7 +790,7 @@ namespace alg
     //
     // Dont confuse tensor (n,m,k) with boxes (z,y,x)
     // ********************************************** // 
-    std::uint32_t box_stacking_iterative_in_matrix(const std::vector<box>& boxes)
+    std::uint32_t box_stacking_iterative_in_tensor(const std::vector<box>& boxes)
     {
         std::uint32_t side = max_box_side(boxes);
         tensor<std::uint32_t> ten(boxes.size(), side+1, side+1, 0); // value = max height achieved by base mxk

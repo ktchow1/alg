@@ -92,7 +92,7 @@ void test_box_stacking()
     benchmark<1>("box_stacking ------------ graph vs matrix (iterative)",           
                  std::bind(gen_random_boxes, 80, 5, 50), 
                  std::bind(alg::box_stacking_iterative_in_graph,  _1),      
-                 std::bind(alg::box_stacking_iterative_in_matrix, _1), 
+                 std::bind(alg::box_stacking_iterative_in_tensor, _1), 
                  num_trial); 
 }
 
