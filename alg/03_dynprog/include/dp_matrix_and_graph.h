@@ -701,18 +701,6 @@ namespace alg
             return (h0 << 16) ^ (h1 << 8) ^ h2;
         }
     };
-
-    std::uint32_t max_box_side(const std::vector<box>& boxes)
-    {
-        std::uint32_t ans = 0;
-        for(const auto& b:boxes)
-        {
-            if (ans < b.m_x) ans = b.m_x;
-            if (ans < b.m_y) ans = b.m_y;
-            if (ans < b.m_z) ans = b.m_z;
-        }
-        return ans;
-    }
 }
 
 namespace alg
@@ -849,74 +837,6 @@ namespace alg
         }
         return ans;
     }
-
-    // ********************************************** // 
-    // Since state is 2D { base_min * base_max }
-    // need tensor for iterative implementation
-    // * tensor.n <---> subproblem size 
-    // * tensor.m <---> base_min
-    // * tensor.k <---> base_max 
-    //
-    // Dont confuse tensor (n,m,k) with boxes (z,y,x)
-    // ********************************************** // 
-    std::uint32_t box_stacking_iterative_in_tensor(const std::vector<box>& boxes)
-    {
-        std::uint32_t side = max_box_side(boxes);
-        tensor<std::uint32_t> ten(boxes.size(), side+1, side+1, 0); // value = max height achieved by base mxk
-        
-        // init 1st layer
-        ten(0,boxes[0].m_y,boxes[0].m_z) = std::max(ten(0,boxes[0].m_y,boxes[0].m_z), boxes[0].m_x);
-        ten(0,boxes[0].m_x,boxes[0].m_z) = std::max(ten(0,boxes[0].m_x,boxes[0].m_z), boxes[0].m_y);
-        ten(0,boxes[0].m_x,boxes[0].m_y) = std::max(ten(0,boxes[0].m_x,boxes[0].m_y), boxes[0].m_z);
-  
-        // main iteration
-        for(std::uint32_t n=1; n!=boxes.size(); ++n)
-        {
-            for(std::uint32_t m=0; m<=side; ++m)
-            {
-                for(std::uint32_t k=m; k<=side; ++k) // k >= m
-                {
-                    // no pick boxes[n]
-                    ten(n,m,k) = std::max(ten(n,m,k), ten(n-1,m,k)); 
-
-                    // pick boxes[n] in x_up 
-                    if (m <= boxes[n].m_y && k <= boxes[n].m_z)
-                    {
-                        std::uint32_t m0 = boxes[n].m_y;
-                        std::uint32_t k0 = boxes[n].m_z;
-                        ten(n,m0,k0) = std::max(ten(n,m0,k0), ten(n-1,m,k) + boxes[n].m_x);
-                    }
-
-                    // pick boxes[n] in y_up 
-                    if (m <= boxes[n].m_x && k <= boxes[n].m_z)
-                    {
-                        std::uint32_t m0 = boxes[n].m_x;
-                        std::uint32_t k0 = boxes[n].m_z;
-                        ten(n,m0,k0) = std::max(ten(n,m0,k0), ten(n-1,m,k) + boxes[n].m_y);
-                    }
-
-                    // pick boxes[n] in z_up 
-                    if (m <= boxes[n].m_x && k <= boxes[n].m_y)
-                    {
-                        std::uint32_t m0 = boxes[n].m_x;
-                        std::uint32_t k0 = boxes[n].m_y;
-                        ten(n,m0,k0) = std::max(ten(n,m0,k0), ten(n-1,m,k) + boxes[n].m_z);
-                    }
-                }
-            }
-        }
-  
-        std::uint32_t ans = 0;
-        for(std::uint32_t m=0; m<=side; ++m)
-        {
-            for(std::uint32_t k=m; k<=side; ++k) 
-            {
-                if (ans < ten(boxes.size()-1, m, k))
-                    ans = ten(boxes.size()-1, m, k);
-            }
-        }
-        return ans;
-    } 
 }
 
 // ******************* //
