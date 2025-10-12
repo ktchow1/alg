@@ -781,6 +781,75 @@ namespace alg
         return ans;
     } 
    
+    // ********************************************************************************** //
+    // state matrix col 0 means using x as height, (y,z) as base
+    // state matrix col 1 means using y as height, (x,z) as base
+    // state matrix col 2 means using z as height, (x,y) as base
+    //
+    // state matrix does not need to include the current base size
+    // state is memoryless in this question, we can derive base size from current state
+    // ********************************************************************************** //
+    auto get_height(const box& b, std::uint32_t ori)
+    {
+         if      (ori == 0)  return b.m_x;
+         else if (ori == 1)  return b.m_y;
+         else                return b.m_z;
+    }
+
+    auto get_base(const box& b, std::uint32_t ori)
+    {
+         if      (ori == 0)  return std::make_pair(std::min(b.m_y, b.m_z), std::max(b.m_y, b.m_z));
+         else if (ori == 1)  return std::make_pair(std::min(b.m_x, b.m_z), std::max(b.m_x, b.m_z));
+         else                return std::make_pair(std::min(b.m_x, b.m_y), std::max(b.m_x, b.m_y));
+    }
+
+    std::uint32_t box_stacking_iterative_in_matrix(const std::vector<box>& boxes)
+    {
+        matrix<std::uint32_t> mat(boxes.size(), 3, 0);
+
+        // 1st row 
+        mat(0,0) = boxes[0].m_x; 
+        mat(0,1) = boxes[0].m_y;
+        mat(0,2) = boxes[0].m_z;
+
+        // min iteration
+        for(std::uint32_t n=1; n!=boxes.size(); ++n)
+        {
+            for(std::uint32_t m=0; m!=3; ++m)
+            {
+                // consider stack with one box only
+                auto [base_min, base_max] = get_base(boxes[n], m);
+                auto height = get_height(boxes[n], m); 
+                mat(n,m) = height;
+
+                // consider stack this box on all previous states
+                for(std::uint32_t n0=0; n0!=n; ++n0) 
+                {
+                    for(std::uint32_t m0=0; m0!=3; ++m0)
+                    {
+                        auto [base_min0, base_max0] = get_base(boxes[n0], m0);
+                        if (base_min >= base_min0 &&
+                            base_max >= base_max0)
+                        {
+                            mat(n,m) = std::max(mat(n,m), mat(n0,m0) + height);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Again, since this is memoryless, need to scan whole matrix, instead of just last row
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=boxes.size(); ++n)
+        {
+            for(std::uint32_t m=0; m!=3; ++m)
+            {
+                ans = std::max(ans, mat(n,m));
+            }
+        }
+        return ans;
+    }
+
     // ********************************************** // 
     // Since state is 2D { base_min * base_max }
     // need tensor for iterative implementation

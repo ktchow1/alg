@@ -92,7 +92,7 @@ void test_box_stacking()
     benchmark<1>("box_stacking ------------ graph vs matrix (iterative)",           
                  std::bind(gen_random_boxes, 80, 5, 50), 
                  std::bind(alg::box_stacking_iterative_in_graph,  _1),      
-                 std::bind(alg::box_stacking_iterative_in_tensor, _1), 
+                 std::bind(alg::box_stacking_iterative_in_matrix, _1), 
                  num_trial); 
 }
 
@@ -119,10 +119,10 @@ void test_bin_packing()
 
 void test_dp_matrix_and_graph()
 {
-    test_coin_change();
-    test_knapsack();
-    test_job_schedule();
-    test_equal_partition();
+//  test_coin_change();
+//  test_knapsack();
+//  test_job_schedule();
+//  test_equal_partition();
     test_box_stacking();
-    test_bin_packing();
+//  test_bin_packing();
 }

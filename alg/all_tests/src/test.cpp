@@ -129,8 +129,8 @@ int main()
 //  test_stack_problem();
 //  test_sorting_problem();
 //
-    banner("03_dynprog");
-    test_dp_matrix_only();  
+//  banner("03_dynprog");
+//  test_dp_matrix_only();  
     test_dp_matrix_and_graph();
 //
 //  banner("04_fundalmental");
