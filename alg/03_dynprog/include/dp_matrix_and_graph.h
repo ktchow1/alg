@@ -616,89 +616,39 @@ namespace alg
 //
 namespace alg
 { 
-    enum class orientation : std::uint8_t
+    auto get_height(const box& b, std::uint32_t ori)
     {
-        x_up,
-        y_up,
-        z_up
-    };
+         if      (ori == 0)  return b.m_x;
+         else if (ori == 1)  return b.m_y;
+         else                return b.m_z;
+    }
+
+    auto get_base(const box& b, std::uint32_t ori)
+    {
+         if      (ori == 0)  return std::make_pair(std::min(b.m_y, b.m_z), std::max(b.m_y, b.m_z));
+         else if (ori == 1)  return std::make_pair(std::min(b.m_x, b.m_z), std::max(b.m_x, b.m_z));
+         else                return std::make_pair(std::min(b.m_x, b.m_y), std::max(b.m_x, b.m_y));
+    }
 
     struct boxes_state
     {
-        std::uint32_t m_base_min;
-        std::uint32_t m_base_max;
-        std::uint32_t m_next_allowed_box; 
-
-        bool is_smaller_eq(const box& b, orientation b_ori) const noexcept // assuming each box has x <= y <= z
-        {
-            if (b_ori == orientation::x_up)
-            {
-                if (m_base_min > b.m_y) return false;
-                if (m_base_max > b.m_z) return false;
-            }
-            else if (b_ori == orientation::y_up)
-            {
-                if (m_base_min > b.m_x) return false;
-                if (m_base_max > b.m_z) return false;
-            }
-            else
-            {
-                if (m_base_min > b.m_x) return false;
-                if (m_base_max > b.m_y) return false;
-            }
-            return true;
-        }
-
-        void update(const box& b, orientation b_ori, std::uint32_t next_allowed_box) 
-        {
-            if (b_ori == orientation::x_up)
-            {
-                m_base_min = b.m_y;
-                m_base_max = b.m_z;
-            }
-            else if (b_ori == orientation::y_up)
-            {
-                m_base_min = b.m_x;
-                m_base_max = b.m_z;
-            }
-            else
-            {
-                m_base_min = b.m_x;
-                m_base_max = b.m_y;
-            }
-            m_next_allowed_box = next_allowed_box;
-        } 
+        std::uint32_t m_last_box;     // std::numeric_limits<std::uint32_t>::max for empty stack
+        std::uint32_t m_last_box_ori; // 0,1,2
     };
 
     bool operator==(const boxes_state& lhs, const boxes_state& rhs) // required by boxes_state_hash
     {
-        return lhs.m_base_min == rhs.m_base_min &&
-               lhs.m_base_max == rhs.m_base_max &&
-               lhs.m_next_allowed_box == rhs.m_next_allowed_box;
+        return lhs.m_last_box     == rhs.m_last_box &&
+               lhs.m_last_box_ori == rhs.m_last_box_ori;
     }
-
-    struct boxes_state_less // required by std::map
-    {
-        bool operator()(const boxes_state& lhs, const boxes_state& rhs) const noexcept
-        {
-            if      (lhs.m_base_min < rhs.m_base_min)                 return  true;
-            else if (lhs.m_base_min > rhs.m_base_min)                 return false;
-            else if (lhs.m_base_max < rhs.m_base_max)                 return  true;
-            else if (lhs.m_base_max > rhs.m_base_max)                 return false;
-            else if (lhs.m_next_allowed_box < rhs.m_next_allowed_box) return  true;
-            else if (lhs.m_next_allowed_box > rhs.m_next_allowed_box) return false;
-            else                                                      return false; 
-        }
-    };
 
     struct boxes_state_hash // required by std::unordered_map
     {
         size_t operator()(const boxes_state& state) const noexcept
         {
-            size_t h0 = std::hash<std::uint32_t>{}(state.m_base_min);
-            size_t h1 = std::hash<std::uint32_t>{}(state.m_base_max);
-            size_t h2 = std::hash<std::uint32_t>{}(state.m_next_allowed_box);
-            return (h0 << 16) ^ (h1 << 8) ^ h2;
+            size_t h0 = std::hash<std::uint32_t>{}(state.m_last_box);
+            size_t h1 = std::hash<std::uint32_t>{}(state.m_last_box_ori);
+            return (h0 << 16) ^ h1;
         }
     };
 }
@@ -707,12 +657,11 @@ namespace alg
 { 
     std::uint32_t box_stacking_iterative_in_graph(const std::vector<box>& boxes) 
     {
-    //  std::map          <boxes_state, std::uint32_t, boxes_state_less> graph; // value = total height (slower)
-        std::unordered_map<boxes_state, std::uint32_t, boxes_state_hash> graph; // value = total height (faster)
-        graph[{0, 0, 0}] = 0;
+        std::unordered_map<boxes_state, std::uint32_t, boxes_state_hash> graph; 
+        graph[{std::numeric_limits<std::uint32_t>::max(), 0}] = 0;
 
         std::queue<boxes_state> queue; 
-        queue.push({0, 0, 0});
+        queue.push({std::numeric_limits<std::uint32_t>::max(), 0});
   
         while(!queue.empty())
         {
@@ -720,42 +669,26 @@ namespace alg
             auto v_prev = graph[queue.front()];
             queue.pop();
 
-            for(std::uint32_t n=s_prev.m_next_allowed_box; n!=boxes.size(); ++n)
+            for(std::uint32_t n=s_prev.m_last_box+1; n!=boxes.size(); ++n)
             {
-                // ********* //
-                // *** x *** //
-                // ********* //
-                if (s_prev.is_smaller_eq(boxes[n], orientation::x_up)) // current base is smaller next box 
+                std::uint32_t prev_base_min = 0;
+                std::uint32_t prev_base_max = 0;
+                if (s_prev.m_last_box != std::numeric_limits<std::uint32_t>::max())
                 {
-                    auto s = s_prev;
-                    auto v = v_prev + boxes[n].m_x; 
-                    s.update(boxes[n], orientation::x_up, n+1);
-
-                    if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s); // get a greater height
+                    std::tie(prev_base_min, prev_base_max) = get_base(boxes[s_prev.m_last_box], s_prev.m_last_box_ori);
                 }
 
-                // ********* //
-                // *** y *** //
-                // ********* //
-                if (s_prev.is_smaller_eq(boxes[n], orientation::y_up))
+                for(std::uint32_t m=0; m!=3; ++m)
                 {
-                    auto s = s_prev;
-                    auto v = v_prev + boxes[n].m_y; 
-                    s.update(boxes[n], orientation::y_up, n+1);
+                    auto [this_base_min, this_base_max] = get_base(boxes[n], m);
+                    if (this_base_min >= prev_base_min &&
+                        this_base_max >= prev_base_max)
+                    {
+                        auto s = boxes_state{n,m};
+                        auto v = v_prev + get_height(boxes[n], m);
 
-                    if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s);
-                }
-
-                // ********* //
-                // *** z *** //
-                // ********* //
-                if (s_prev.is_smaller_eq(boxes[n], orientation::z_up))
-                {
-                    auto s = s_prev;
-                    auto v = v_prev + boxes[n].m_z; 
-                    s.update(boxes[n], orientation::z_up, n+1);
-
-                    if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s);
+                        if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s); 
+                    }
                 }
             }
         }
@@ -777,20 +710,6 @@ namespace alg
     // state matrix does not need to include the current base size
     // state is memoryless in this question, we can derive base size from current state
     // ********************************************************************************** //
-    auto get_height(const box& b, std::uint32_t ori)
-    {
-         if      (ori == 0)  return b.m_x;
-         else if (ori == 1)  return b.m_y;
-         else                return b.m_z;
-    }
-
-    auto get_base(const box& b, std::uint32_t ori)
-    {
-         if      (ori == 0)  return std::make_pair(std::min(b.m_y, b.m_z), std::max(b.m_y, b.m_z));
-         else if (ori == 1)  return std::make_pair(std::min(b.m_x, b.m_z), std::max(b.m_x, b.m_z));
-         else                return std::make_pair(std::min(b.m_x, b.m_y), std::max(b.m_x, b.m_y));
-    }
-
     std::uint32_t box_stacking_iterative_in_matrix(const std::vector<box>& boxes)
     {
         matrix<std::uint32_t> mat(boxes.size(), 3, 0);
