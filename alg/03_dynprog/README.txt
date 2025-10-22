@@ -68,12 +68,6 @@ Approaches
 *** Remarks ***
 ***************
 
-Subproblems in 2D matrix
-1. How to check boundary condition? 
-*  for recursion in matrix, check for boundary condition "vec size == 0"
-*  for iteration in matrix, check for boundary condition "vec size == 1"
-
-Subproblems in graph
 1. How to apply equality or inequality constraint to state? Like :
      equality constraint : total_coin_value    == target
    inequality constraint : total_object_weight <= limit 

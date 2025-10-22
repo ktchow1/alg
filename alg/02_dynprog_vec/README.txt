@@ -10,8 +10,8 @@ Two points sum (3+2+3)
 
 Two points diff (1+2)
 * max profit
-* count target prfit
-* count target abs prfit
+* count target profit
+* count target abs profit
 
 Subseq (5+4+2)
 * max subseq sum
@@ -56,7 +56,7 @@ vec    prev_cum     curr_cum     curr_cum    increase in
 -------------------------------------------------------------------------
 4          4              -           -         +1         {4}   
 3         12              -           -         +2         {4,3} {3}
-6         72        >    3.6     >    3         +2         (3,6} (6}
+6         72        >    3.6     >    3         +2         {3,6} {6}
 7        504        >   25.2     >   25         +1         {7}
 2       1008        >   50.4     >   50         +2         {7,2} {2}
 5       5040        >  252.0     >  252         +2         {2,5} {5}
