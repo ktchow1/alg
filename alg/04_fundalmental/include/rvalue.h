@@ -208,6 +208,12 @@ namespace alg
 namespace alg
 {
     struct X{};
+    struct Y
+    { 
+        Y() = default;
+        Y(const X&) {}
+        void this_is_Y(){}
+    };
 
     template<typename EXPECTED_TYPE, typename T> void universal_reference_fct(T&& x)
     {
@@ -246,6 +252,26 @@ namespace alg
         static_assert(std::is_same_v<rvalue_reference & , X& >, "universal reference collapsing incorrect");
         static_assert(std::is_same_v<rvalue_reference &&, X&&>, "universal reference collapsing incorrect");
     }
+
+
+    // *********************************************************************************** //
+    // When to use auto&&? Its rarely use, one possible use case : 
+    //
+    // f(const X& x, const Y& y, auto& z)
+    // 
+    // if we invoke y f(x,y,a), where type A can be converted into type Z implicitly, 
+    // then a temporary copy of Z is created, which has to be binded by rvalue auto&&.
+    // *********************************************************************************** //
+    inline void universal_ref_auto0(auto&  y) { y.this_is_Y(); }
+    inline void universal_ref_auto1(auto&& y) { y.this_is_Y(); }
+
+    inline void why_need_universal_ref_auto()
+    {
+        X x;
+//      universal_ref_auto0(Y{x}); // cannot compile
+        universal_ref_auto1(Y{x});
+    }
 }
+
 
 
