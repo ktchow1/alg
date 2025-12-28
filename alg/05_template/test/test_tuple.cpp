@@ -77,94 +77,6 @@ void test_construct()
 }
 
 
-// ******************************************************** //
-// *** Start from here, use std::tuple (not alg::tuple) *** //
-// ******************************************************** //
-void test_make_tuple_and_tie() // and structural_binding
-{
-    bool b,b0,b1;
-    char c,c0,c1;
-    int  i,i0,i1;
-   
-    // case 1 : make_tuple<T>
-    b = true, c = 'a', i = 123;
-    auto tup0 = alg::make_tuple(b,c,i);
-    assert(std::get<0>(tup0) == true);
-    assert(std::get<1>(tup0) == 'a');
-    assert(std::get<2>(tup0) == 123);
-
-    b = false, c = 'b', i = 234;
-    assert(std::get<0>(tup0) == true);
-    assert(std::get<1>(tup0) == 'a');
-    assert(std::get<2>(tup0) == 123); // modify failed
-
-    // case 2 : make_tuple<T&>
-    b = true, c = 'a', i = 123;
-    auto tup1 = alg::make_tuple<bool&,char&,int&>(b,c,i);
-    assert(std::get<0>(tup1) == true);
-    assert(std::get<1>(tup1) == 'a');
-    assert(std::get<2>(tup1) == 123);
-
-    b = false, c = 'b', i = 234;
-    assert(std::get<0>(tup1) == false);
-    assert(std::get<1>(tup1) == 'b');
-    assert(std::get<2>(tup1) == 234); // modify succeed
-
-    // case 3 : tie to tuple<T>
-    alg::tie(b0,c0,i0) = tup0;
-    assert(b0 == true);
-    assert(c0 == 'a');
-    assert(i0 == 123);
-
-    std::get<0>(tup0) = false;
-    std::get<1>(tup0) = 'b';
-    std::get<2>(tup0) = 234;
-    assert(b0 == true);
-    assert(c0 == 'a');
-    assert(i0 == 123); // tied variables cannot track tuple<T> change
-
-    // case 4 : tie to tuple<T&>
-    alg::tie(b1,c1,i1) = tup1;
-    assert(b1 == false);
-    assert(c1 == 'b');
-    assert(i1 == 234);
-
-    std::get<0>(tup1) = true;
-    std::get<1>(tup1) = 'c';
-    std::get<2>(tup1) = 345;
-    assert(b1 == false);
-    assert(c1 == 'b');
-    assert(i1 == 234); // tied variables cannot track tuple<T&> change
-
-    // case 5 : structural binding of variables to tuple<T>
-    auto [b2,c2,i2] = tup0;
-    assert(b2 == false);
-    assert(c2 == 'b');
-    assert(i2 == 234);
-
-    std::get<0>(tup0) = true;
-    std::get<1>(tup0) = 'c';
-    std::get<2>(tup0) = 345;
-    assert(b2 == false);
-    assert(c2 == 'b');
-    assert(i2 == 234); // modify failed
-
-    // case 6 : structural binding of references to tuple<T>
-    auto& [b3,c3,i3] = tup0;
-    assert(b3 == true);
-    assert(c3 == 'c');
-    assert(i3 == 345);
-
-    std::get<0>(tup0) = false;
-    std::get<1>(tup0) = 'd';
-    std::get<2>(tup0) = 456;
-    assert(b3 == false);
-    assert(c3 == 'd');
-    assert(i3 == 456); // modify succeed
-    print_summary("tuple - make and tie", "succeeded in compile time");
-}
-
-
 void test_size_and_element()
 {
     using T0 = std::tuple<char, std::uint32_t, std::string, std::pair<double,double>, double>;
@@ -226,7 +138,7 @@ void test_shuffle()
 {
     using T   = std::tuple<char, std::uint32_t, std::string, std::pair<double,double>, double>;
     using X0  = alg::shuffle_tuple <T,3,2,1>::type;
-    using X1  = alg::shuffle_tuple2<T,alg::idx_seq<3,2,1>>::type;
+    using X1  = alg::shuffle_tuple2<T,alg::index_seq<3,2,1>>::type;
     using ANS = std::tuple<std::pair<double,double>, std::string, std::uint32_t>;
 
     static_assert(std::is_same_v<X0, ANS>, "failed to shuffle_tuple");
@@ -240,7 +152,7 @@ void test_shuffle()
 
     // *** Factory *** //
     auto t  = T{'a', 12345, "wxyz", std::make_pair(3.1415, 1.4141), 0.98765};
-    auto x2 = alg::make_shuffle_tuple(t, alg::idx_seq<3,2,1>{}); // remember to construct an object here
+    auto x2 = alg::make_shuffle_tuple(t, alg::index_seq<3,2,1>{}); // remember to construct an object here
 
     static_assert(std::is_same_v<decltype(x2),ANS>, "failed to make_shuffle_tuple");
     assert(std::get<1>(t) == std::get<2>(x2));
@@ -342,7 +254,7 @@ void test_reverse()
 
     // *** Factory *** //
     auto  t  = T{'a', 12345, "wxyz", std::make_pair(3.1415, 1.4141), std::vector<double>{0.1,0.2,0.3,0.4}, 0.98765};
-    auto  x4 = alg::make_reverse_tuple_helper(t, alg::idx_seq<0,1,3,4,5>{}); 
+    auto  x4 = alg::make_reverse_tuple_helper(t, alg::index_seq<0,1,3,4,5>{}); 
     auto  x5 = alg::make_reverse_tuple(t); 
     using T4 = std::tuple<double, std::vector<double>, std::string, std::uint32_t, char>;
     using T5 = ANS;
@@ -559,7 +471,6 @@ void test_cherry_pick()
 void test_tuple()
 {
     test_construct();
-    test_make_tuple_and_tie(); // and structural_binding
     test_size_and_element();
     test_shuffle();
     test_push_front();

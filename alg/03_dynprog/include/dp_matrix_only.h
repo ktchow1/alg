@@ -92,7 +92,7 @@ namespace alg
     std::uint32_t edit_distance_recursive(const std::string& str0, const std::string& str1)
     {
         if (str0.size()==0 && str1.size()==0) return 0;
-        if (str0.size()!=0 && str1.size()==0) return str0.size();
+        if (str0.size()!=0 && str1.size()==0) return str0.size(); 
         if (str0.size()==0 && str1.size()!=0) return str1.size();
 
         std::string trim_str0(str0); 
@@ -179,15 +179,12 @@ namespace alg
         }
 
         // Iterate from main diagonal to UR
-        for(std::uint32_t diag=1; diag!=N; ++diag) // shift of diagonal = diag
+        for(std::uint32_t diag=1; diag!=N; ++diag)
         {
-            for(std::uint32_t n=0; n!=N-diag; ++n) // length of diagonal = N-diag
+            for(std::uint32_t n=0; n!=N-diag; ++n) 
             {
                 std::uint32_t m = n+diag;
-
-                // hori_dist between diagonal & (n,m) = m-n
-                // vert_dist between diagonal & (n,m) = m-n
-                for(std::uint32_t k=0; k!=m-n ; ++k)
+                for(std::uint32_t k=0; k!=diag; ++k)
                 {
                 //  if (input[  k].m_logic == logic::OR) // BUG
                     if (input[n+k].m_logic == logic::OR)
@@ -321,8 +318,9 @@ namespace alg
 {
     std::uint32_t coin_game_recursive(const std::vector<std::uint32_t>& coins) 
     {
+        if (coins.size() == 0) return 0;
         if (coins.size() == 1) return coins[0];
-        if (coins.size() == 2) return std::max(coins[0], coins[1]);
+//      if (coins.size() == 2) return std::max(coins[0], coins[1]);
         std::uint32_t N = coins.size();
 
         std::vector<std::uint32_t> trim_coins_20(coins.begin()+2, coins.end()  );
@@ -382,13 +380,13 @@ namespace alg
 namespace alg
 {
     double sum_of_error_square(const std::vector<double>::const_iterator& begin, 
-                               const std::vector<double>::const_iterator& end)
+                               const std::vector<double>::const_iterator& last)
     {
-        double Dx  = (double)std::distance(begin, end-1);
-        double Dy  = *(end-1) - *begin;
+        double Dx  = (double)std::distance(begin, last);
+        double Dy  = *last - *begin;
         double ans = 0;
 
-        for(auto iter=begin; iter!=end; ++iter)
+        for(auto iter=begin; iter<=last; ++iter)
         {
             double dx  = (double)std::distance(begin, iter);
             double dy  = *iter - *begin;
@@ -418,7 +416,7 @@ namespace alg
         // 1st column
         for(std::uint32_t n=2; n!=N; ++n)
         {
-            mat(n,0) = sum_of_error_square(ys.begin(), ys.begin()+n+1);
+            mat(n,0) = sum_of_error_square(ys.begin(), ys.begin()+n);
         }
 
         // Iterate to UR
@@ -426,14 +424,12 @@ namespace alg
         {
             for(std::uint32_t n=m+2; n!=N; ++n) // n = index of last data point in subproblem mat(n,m)
             {
-                double min_err = std::numeric_limits<double>::max();
+                mat(n,m) = std::numeric_limits<double>::max();
                 for(std::uint32_t k=m; k!=n; ++k)
                 {
-                    double err = mat(k,m-1) + sum_of_error_square(ys.begin()+k, ys.begin()+n+1);
-                    if (min_err > err)
-                        min_err = err;
+                    double err = mat(k,m-1) + sum_of_error_square(ys.begin()+k, ys.begin()+n);
+                    mat(n,m) = std::min(mat(n,m), err);
                 }
-                mat(n,m) = min_err;
             }
         }
         return mat(N-1,M-1); 

@@ -8,11 +8,11 @@ void test_two_point_sum()
     std::uint32_t num_trial = 1000;
 
     benchmark<1>("max_2_point_sum_distance",           
-                 std::bind(gen_random_vec<std::int32_t>, 100, -100, +100),
+                 std::bind(gen_random_vec<std::int32_t>, 100, -20, +20),
                  std::bind(alg::max_2_point_sum_distance,     _1),     
                  std::bind(alg::max_2_point_sum_distance_bmk, _1),
                  num_trial);
-
+  
     benchmark<1>("max_2_point_sum_with_equal_digit_sum",           
                  std::bind(gen_random_vec<std::uint32_t>, 50, 0, +1000), 
                  std::bind(alg::max_2_point_sum_with_equal_digit_sum,     _1),     
@@ -47,5 +47,5 @@ void test_two_point_sum()
                  std::bind(gen_random_vec<std::int32_t>, 50, -40, +40),  
                  std::bind(alg::count_target_4_point_sum,     _1, 100),      
                  std::bind(alg::count_target_4_point_sum_bmk, _1, 100),          
-                 num_trial);  
+                 num_trial); 
 }

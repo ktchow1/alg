@@ -1,0 +1,18 @@
+std::string s("FOAT23");
+const int zero11 = '0'*10 + '0';
+
+int i0 = std::stoi(s.substr(4,2));     // Method 0 : slow
+int i1 = (s[4]-'0')*10 + (s[5]-'0');   // Method 1 : suggested by me
+int i2 = s[4]*10 + s[5] - zero11;      // Method 2 : suggested by code review
+
+
+From chatGPT
+* In optimized builds, both method 1&2 get compiled into identical assembly.
+* Method 1 involves 2 subtractions, it is safer and clearer.
+* Method 2 involves 1 subtraction, but will become 2 subtractions in assembly, as compiler will avoid overflow / underflow of "char" <--- comment from ChatGPT, not sure if its correct.
+
+
+
+
+
+

@@ -20,11 +20,25 @@ namespace alg
         return static_cast<typename std::remove_reference<T>::type&&>(x);
     }
 
+
+    // Note : 
+    // T is not deduced by compiler
+    // T is given explicitly by caller, recall std::forward<T>(x)
+    // 
+    // Why design this way? Because ... 
+    // std::forward is always used in another template with parameter T,
+    // std::forward has to capture what T is, as deduced by compiler.
+    //
+    // 1. caller deduction as T   :   X    X&   X&&
+    // 2. bind named input as T&  :   X&   X&   X&
+    // 3. return as reference T&& :   X&&  X&   X&&  
+    //
     template<typename T> T&& forward(typename std::remove_reference<T>::type& x) noexcept
     {
         return static_cast<T&&>(x);
     }
 }
+
 
 namespace alg
 {
@@ -63,7 +77,8 @@ namespace alg
     template<typename T> void binding_lvalue_ref(T&) {}               //           N   |    Y   |    N   |    N
     template<typename T> void binding_rvalue_ref(T&&) {}              //           N   |    N   |    Y   |    Y
     template<typename T> void binding_value(T) {}                     //           Y   |    Y   |    Y   |    Y
-}    
+}   
+
 
 //                          | DC  CC  CA  MC  MA  DD 
 // -------------------------+-------------------------
@@ -185,6 +200,7 @@ namespace alg
     };
 }
 
+
 // Universal reference T&& or auto&&
 // T ---> X& for lvalue 
 // T ---> X  for rvalue
@@ -192,6 +208,12 @@ namespace alg
 namespace alg
 {
     struct X{};
+    struct Y
+    { 
+        Y() = default;
+        Y(const X&) {}
+        void this_is_Y(){}
+    };
 
     template<typename EXPECTED_TYPE, typename T> void universal_reference_fct(T&& x)
     {
@@ -230,6 +252,26 @@ namespace alg
         static_assert(std::is_same_v<rvalue_reference & , X& >, "universal reference collapsing incorrect");
         static_assert(std::is_same_v<rvalue_reference &&, X&&>, "universal reference collapsing incorrect");
     }
+
+
+    // *********************************************************************************** //
+    // When to use auto&&? Its rarely use, one possible use case : 
+    //
+    // f(const X& x, const Y& y, auto& z)
+    // 
+    // if we invoke y f(x,y,a), where type A can be converted into type Z implicitly, 
+    // then a temporary copy of Z is created, which has to be binded by rvalue auto&&.
+    // *********************************************************************************** //
+    inline void universal_ref_auto0(auto&  y) { y.this_is_Y(); }
+    inline void universal_ref_auto1(auto&& y) { y.this_is_Y(); }
+
+    inline void why_need_universal_ref_auto()
+    {
+        X x;
+//      universal_ref_auto0(Y{x}); // cannot compile
+        universal_ref_auto1(Y{x});
+    }
 }
+
 
 

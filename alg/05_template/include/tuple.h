@@ -1,6 +1,6 @@
 #pragma once
 #include<tuple>
-#include<tuple_idx_seq.h>
+#include<index_seq.h>
 
 // *************************** //
 // *** Design my own tuple *** //
@@ -52,36 +52,6 @@ namespace alg
     }
 }
 
-// ******************************************************** //
-// *** Start from here, use std::tuple (not alg::tuple) *** //
-// ******************************************************** //
-// Difference between std::make_tuple and std::tie :
-// * std::make_tuple copies element by value
-// * std:tuple takes reference to element 
-//
-// Difference between structural binding and std::tie :
-// * structural binding declares new variable, while std::tie binds existing variables
-// * structural binding works for tuple/array, while std::tie works for std::tuple only
-// * structural binding can be 
-//   assigned by value     : auto  [x,y,z] = fct();
-//   assigned by reference : auto& [x,y,z] = fct(); 
-//   for latter case, we can modify the source values inside fct() via x,y,z
-//
-  
-namespace alg
-{
-    template<typename...Ts>
-    auto make_tuple(const Ts&...ts)
-    {
-        return std::tuple<Ts...>{ts...}; 
-    }
-
-    template<typename...Ts>
-    auto tie(Ts&...ts)
-    {
-        return std::tuple<Ts&...>{ts...}; 
-    }
-}
 
 
 // ******************************************************************************************* //
@@ -111,14 +81,14 @@ namespace alg
     };
 
     template<typename...Ts>
-    struct tuple_size<std::tuple<Ts...>>               // <--- Change in interface, for std::tuple
+    struct tuple_size<std::tuple<Ts...>>                       // <--- Change in interface, for std::tuple
     {
         using type = std::integral_constant<std::size_t, sizeof...(Ts)>;
         static const std::size_t value = type::value;
     };
 
     template<typename...Ts>
-    struct tuple_size<alg::tuple<Ts...>>               // <--- Change in interface, for alg::tuple
+    struct tuple_size<alg::tuple<Ts...>>                       // <--- Change in interface, for alg::tuple
     {
         using type = std::integral_constant<std::size_t, sizeof...(Ts)>;
         static const std::size_t value = type::value;
@@ -132,18 +102,18 @@ namespace alg
 namespace alg
 {
     // *** Method 1 *** //
-    template<std::size_t N, typename TUP>              // <--- This is interface.
+    template<std::size_t N, typename TUP>                      // <--- This is interface.
     struct tuple_element 
     {
     };
 
-    template<std::size_t N, typename T, typename...Ts> // <--- This is recursion.
+    template<std::size_t N, typename T, typename...Ts>         // <--- This is recursion.
     struct tuple_element<N, std::tuple<T,Ts...>>
     {
         using type = tuple_element<N-1, std::tuple<Ts...>>::type;
     };
 
-    template<typename T, typename...Ts>                // <--- This is boundary case.
+    template<typename T, typename...Ts>                        // <--- This is boundary case.
     struct tuple_element<0, std::tuple<T,Ts...>>
     {
         using type = T;
@@ -163,8 +133,8 @@ namespace alg
 // *** Shuffle tuple *** //
 // ********************* //
 // Slight difference in interface between method 1&2, results are the same.
-// 1. shuffle_tuple         <TUP,1,3,5,7>
-// 2. shuffle_tuple2<idx_seq<TUP,1,3,5,7>>
+// 1. shuffle_tuple           <TUP,1,3,5,7>
+// 2. shuffle_tuple2<index_seq<TUP,1,3,5,7>>
 //
 namespace alg
 {
@@ -182,14 +152,14 @@ namespace alg
     };
 
     template<typename TUP, std::size_t...Ns> 
-    struct shuffle_tuple2<TUP, idx_seq<Ns...>> 
+    struct shuffle_tuple2<TUP, index_seq<Ns...>> 
     {
         using type = std::tuple<typename std::tuple_element<Ns,TUP>::type...>; 
     };
 
     // *** Factory *** //
     template<typename TUP, std::size_t...Ns>
-    auto make_shuffle_tuple(const TUP& tup, idx_seq<Ns...>)    // <--- This is mainly for facilitating other tuple algo with helper.
+    auto make_shuffle_tuple(const TUP& tup, index_seq<Ns...>)  // <--- This is mainly for facilitating other tuple algo with helper.
     {
         return std::make_tuple(std::get<Ns>(tup)...);
     }
@@ -242,47 +212,47 @@ namespace alg
     // - introduce a helper to do conversion
     //
     template<typename TUP, typename...Ts>
-    auto make_push_front_tuple(const TUP& tup, const Ts&...xs)                                                   // <--- This is interface, delegate to helper.
+    auto make_push_front_tuple(const TUP& tup, const Ts&...xs)                                               // <--- This is interface, delegate to helper.
     {
-        return make_push_front_tuple_helper(tup, typename idx_seq_generator<std::tuple_size<TUP>::value>::type{}, xs...);
+        return make_push_front_tuple_helper(tup, typename index_seq_generator<std::tuple_size<TUP>::value>::type{}, xs...);
     }
 
     template<typename TUP, std::size_t...Ns, typename T, typename...Ts>
-    auto make_push_front_tuple_helper(const TUP& tup, idx_seq<Ns...> dummy, const T& x, const Ts&...xs)          // <--- This is recursion of helper.
+    auto make_push_front_tuple_helper(const TUP& tup, index_seq<Ns...> dummy, const T& x, const Ts&...xs)    // <--- This is recursion of helper.
     {
         return make_push_front_tuple_helper
         (
             std::make_tuple(x, std::get<Ns>(tup)...),
-            typename idx_seq_generator<std::tuple_size<TUP>::value + 1>::type{},
+            typename index_seq_generator<std::tuple_size<TUP>::value + 1>::type{},
             xs...
         );
     }
 
     template<typename TUP, std::size_t...Ns>
-    auto make_push_front_tuple_helper(const TUP& tup, idx_seq<Ns...> dummy)                                      // <--- This is boundary case of helper.
+    auto make_push_front_tuple_helper(const TUP& tup, index_seq<Ns...> dummy)                                // <--- This is boundary case of helper.
     {
         return tup;
     }
 
     template<typename TUP, typename...Ts>
-    auto make_push_back_tuple(const TUP& tup, const Ts&...xs)                                                    // <--- This is interface, delegate to helper.
+    auto make_push_back_tuple(const TUP& tup, const Ts&...xs)                                                // <--- This is interface, delegate to helper.
     {
-        return make_push_back_tuple_helper(tup, typename idx_seq_generator<std::tuple_size<TUP>::value>::type{}, xs...);
+        return make_push_back_tuple_helper(tup, typename index_seq_generator<std::tuple_size<TUP>::value>::type{}, xs...);
     }
 
     template<typename TUP, std::size_t...Ns, typename T, typename...Ts>
-    auto make_push_back_tuple_helper(const TUP& tup, idx_seq<Ns...> dummy, const T& x, const Ts&...xs)           // <--- This is recursion of helper.
+    auto make_push_back_tuple_helper(const TUP& tup, index_seq<Ns...> dummy, const T& x, const Ts&...xs)     // <--- This is recursion of helper.
     {
         return make_push_back_tuple_helper
         (
             std::make_tuple(std::get<Ns>(tup)..., x),
-            typename idx_seq_generator<std::tuple_size<TUP>::value + 1>::type{},
+            typename index_seq_generator<std::tuple_size<TUP>::value + 1>::type{},
             xs...
         );
     }
 
     template<typename TUP, std::size_t...Ns>
-    auto make_push_back_tuple_helper(const TUP& tup, idx_seq<Ns...> dummy)                                       // <--- This is boundary case of helper.
+    auto make_push_back_tuple_helper(const TUP& tup, index_seq<Ns...> dummy)                                 // <--- This is boundary case of helper.
     {
         return tup;
     }
@@ -324,7 +294,7 @@ namespace alg
 // ********************* //
 namespace alg
 {
-    // *** Method 1 (using same implementation as reverse_idx_seq) *** //
+    // *** Method 1 (using same implementation as reverse_index_seq) *** //
     template<typename T>
     struct reverse_tuple                                       // <--- This is interface.
     {
@@ -342,22 +312,22 @@ namespace alg
         using type = std::tuple<>; 
     };
 
-    // *** Method 2 (using inv_idx_seq_generator) *** //
+    // *** Method 2 (using inv_index_seq_generator) *** //
     template<typename TUP>
     struct reverse_tuple2
     {
-        using type = typename shuffle_tuple2<TUP, typename inv_idx_seq_generator<std::tuple_size<TUP>::value>::type>::type;
+        using type = typename shuffle_tuple2<TUP, typename inv_index_seq_generator<std::tuple_size<TUP>::value>::type>::type;
     };
 
     // *** Factory *** //
     template<typename TUP>
     auto make_reverse_tuple(const TUP& tup)
     {
-        return make_reverse_tuple_helper(tup, typename idx_seq_generator<std::tuple_size<TUP>::value>::type{});
+        return make_reverse_tuple_helper(tup, typename index_seq_generator<std::tuple_size<TUP>::value>::type{});
     }
 
     template<typename TUP, std::size_t...Ns> 
-    auto make_reverse_tuple_helper(const TUP& tup, idx_seq<Ns...> dummy)
+    auto make_reverse_tuple_helper(const TUP& tup, index_seq<Ns...> dummy)
     {
         return std::make_tuple(std::get<std::tuple_size<TUP>::value-1-Ns>(tup)...); // BUG : Don't forget minus one, otherwise it goes out of tuple range
     }
@@ -367,7 +337,7 @@ namespace alg
 // *********************** //
 // **** Odd pick tuple *** //
 // *********************** //
-// using same implementation as odd_pick_idx_seq
+// using same implementation as odd_pick_index_seq
 //
 namespace alg
 {
@@ -399,26 +369,26 @@ namespace alg
     template<typename TUP>
     auto make_odd_pick_tuple(const TUP& tup)                   // <--- This is interface.
     {
-        return make_odd_pick_tuple_helper(tup, typename idx_seq_generator<std::tuple_size<TUP>::value>::type{}); 
+        return make_odd_pick_tuple_helper(tup, typename index_seq_generator<std::tuple_size<TUP>::value>::type{}); 
     }
 
     template<typename TUP, std::size_t N0, std::size_t N1, std::size_t...Ns> 
-    auto make_odd_pick_tuple_helper(const TUP& tup, idx_seq<N0,N1,Ns...> dummy) 
+    auto make_odd_pick_tuple_helper(const TUP& tup, index_seq<N0,N1,Ns...> dummy) 
     {
         return make_push_front_tuple                           // <--- This is recursion.
         (
-            make_odd_pick_tuple_helper(tup, idx_seq<Ns...>{}),  std::get<N0>(tup)
+            make_odd_pick_tuple_helper(tup, index_seq<Ns...>{}),  std::get<N0>(tup)
         );
     }
 
     template<typename TUP> 
-    auto make_odd_pick_tuple_helper(const TUP& tup, idx_seq<> dummy)
+    auto make_odd_pick_tuple_helper(const TUP& tup, index_seq<> dummy)
     {
         return std::tuple<>{};                                 // <--- This is boundary case for even size. 
     }
 
     template<typename TUP, std::size_t N> 
-    auto make_odd_pick_tuple_helper(const TUP& tup, idx_seq<N> dummy)
+    auto make_odd_pick_tuple_helper(const TUP& tup, index_seq<N> dummy)
     {
         return std::make_tuple(std::get<N>(tup));              // <--- This is boundary case for odd size.
     }
@@ -445,11 +415,11 @@ namespace alg
     template<typename TUP0, typename TUP1>  
     auto make_tuple_cat(const TUP0& tup0, const TUP1& tup1)    // <--- This is interface.
     {
-        return make_tuple_cat_helper(tup0, tup1, typename idx_seq_generator<std::tuple_size<TUP1>::value>::type{});
+        return make_tuple_cat_helper(tup0, tup1, typename index_seq_generator<std::tuple_size<TUP1>::value>::type{});
     }
 
     template<typename TUP0, typename TUP1, std::size_t...Ns>   // <--- This is recursion.
-    auto make_tuple_cat_helper(const TUP0& tup0, const TUP1& tup1, idx_seq<Ns...> dummy)
+    auto make_tuple_cat_helper(const TUP0& tup0, const TUP1& tup1, index_seq<Ns...> dummy)
     {
         return make_push_back_tuple(tup0, std::get<Ns>(tup1)...);
     }
@@ -476,11 +446,11 @@ namespace alg
     template<typename TUP0, typename TUP1>  
     auto make_tuple_zip(const TUP0& tup0, const TUP1& tup1)    // <--- This is interface.
     {
-        return make_tuple_zip_helper(tup0, tup1, typename idx_seq_generator<std::tuple_size<TUP1>::value>::type{});
+        return make_tuple_zip_helper(tup0, tup1, typename index_seq_generator<std::tuple_size<TUP1>::value>::type{});
     }
 
     template<typename TUP0, typename TUP1, std::size_t...Ns>   // <--- This is recursion.
-    auto make_tuple_zip_helper(const TUP0& tup0, const TUP1& tup1, idx_seq<Ns...> dummy)
+    auto make_tuple_zip_helper(const TUP0& tup0, const TUP1& tup1, index_seq<Ns...> dummy)
     {
         return std::make_tuple(std::make_pair(std::get<Ns>(tup0), std::get<Ns>(tup1)) ...);
     }
@@ -509,11 +479,11 @@ namespace alg
     template<typename TUP, typename F>
     void apply(TUP& tup, F& fct)                               // <--- This is interface.
     {
-        apply_helper(tup, typename idx_seq_generator<std::tuple_size<TUP>::value>::type{}, fct);
+        apply_helper(tup, typename index_seq_generator<std::tuple_size<TUP>::value>::type{}, fct);
     }
 
     template<typename TUP, std::size_t...Ns, typename F>
-    void apply_helper(TUP& tup, idx_seq<Ns...> dummy, F& fct)  // <--- This is implementation without recursion.
+    void apply_helper(TUP& tup, index_seq<Ns...> dummy, F& fct) // <--- This is implementation without recursion.
     {
         fct(std::get<Ns>(tup)...);
     }

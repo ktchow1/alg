@@ -7,24 +7,14 @@
 
 namespace alg 
 {
-    inline char itoc(std::uint32_t i) // i = [0,9]
-    {
-        return (char)('0'+i);
-    }
-
-    inline std::uint32_t ctoi(char c)
-    {
-        return (std::uint32_t)(c-'0');
-    }
-
     inline std::uint32_t get_n_LSD(const std::string& x, std::uint32_t n) // n_lsd = n-th least significant digit
     {
-        return ctoi(x[x.size()-1-n]);
+        return (std::uint32_t)(x[x.size()-1-n] - '0');
     }
 
     inline void add_before_MSD(std::string& x, std::uint32_t i) // msd = most significant digit
     {
-        x.insert(x.begin(), itoc(i));
+        x.insert(x.begin(), (char)(i + '0'));
     }
 
     inline bool is_zero(const std::string& x)
@@ -125,8 +115,8 @@ namespace alg
         std::uint64_t z = 0;
         while(x > 0)
         {
-            z = z*10 + x%10;
-            x = x/10;
+            z = z * 10 + x % 10;
+            x = x / 10;
         }
         return z;
     }
@@ -136,8 +126,8 @@ namespace alg
         std::uint64_t z = 0;
         while(x > 0)
         {
-            z = z + x%2;
-            x = x/2;
+            z = z + x % 2;
+            x = x >> 1;
         }
         return z;
     }
@@ -147,9 +137,9 @@ namespace alg
         std::uint64_t z = 0;
         while(x > 0)
         {
-            if (x%2 == 1) z = z + n;
-            x = x/2;
-            n = n*2;
+            if (x %2 == 1) z = z + n; // (n*1)*LSB[0] + (n*2)*LSB[1] + (n*4)*LSB[2] + (n*8)*LSB[3] + ...
+            x = x / 2;
+            n = n << 1;
         }
         return z;
     }
@@ -159,30 +149,33 @@ namespace alg
         std::uint64_t z = 1;
         while(x > 0)
         {
-            if (x%2 == 1) z = z * n;
-            x = x/2;
-            n = n*n;
+            if (x % 2 == 1) z = z * n; // (n^1)^LSB[0] * (n^2)^LSB[1] * (n^4)^LSB[2] * (n^8)^LSB[3] * ...
+            x = x / 2;
+            n = n * n;
         }
         return z;
     }
 
     inline std::uint64_t divide(std::uint64_t n, std::uint64_t x) // output = n / x
     {
-        // ***************************************** //
-        // *** Max sx = x*2^M, such that sx <= n *** //
-        // ***************************************** //
-        std::uint64_t sx = x;
-        std::uint64_t M  = 0;
-        while(sx <= n)
+        if (x == 0) return 0; // divided by zero
+
+        // ***************************************************** //
+        // *** Max scaled_x = x*2^M, such that scaled_x <= n *** //
+        // ***************************************************** //
+        std::uint64_t scaled_x = x;
+        std::uint64_t M = 0;
+        while(scaled_x <= n)
         {
-            sx = sx * 2;
+            scaled_x = (scaled_x << 1);
             ++M;
         }
         if (M > 0)
         {
-            sx = sx / 2;
+            scaled_x = (scaled_x >> 1);
             --M;
         }
+        else return 0;
 
         // ********************* //
         // *** Update answer *** //
@@ -190,16 +183,16 @@ namespace alg
         std::uint64_t z = 0;
         for(std::uint32_t m=0; m!=M+1; ++m) // BUG : M+1 instead of M
         {
-            if (n >= sx)
+            if (n >= scaled_x)
             {
-                z = z*2 + 1;
-                n = n - sx;
-                sx = sx / 2;
+                z = (z << 1) + 1;
+                n = n - scaled_x;
+                scaled_x = (scaled_x >> 1);
             }
             else
             {
-                z = z*2;
-                sx = sx / 2;
+                z = (z << 1);
+                scaled_x = (scaled_x >> 1);
             }
         }
         return z;

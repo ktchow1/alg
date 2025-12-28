@@ -1,0 +1,35 @@
+1. Out-of-order execution (OoO) — the big umbrella
+
+The CPU may execute any instructions (loads, stores, ALU ops, branches, etc.)
+in an order different from the program order, as long as architectural correctness is preserved.
+
+This includes:
+* register operations
+* memory loads
+* memory stores
+* speculative execution
+* branch prediction
+
+This happens inside one core.
+
+
+
+
+2. Memory reordering — a restricted subset
+
+The visibility and ordering of memory operations (loads and stores)
+as observed by other cores (or devices).
+
+Memory reordering is:
+* only about memory ops
+* only observable in concurrent contexts
+
+
+
+
+
+
+
+
+Out-of-order execution = order can be enforced with assembly instruction "CPUID"
+Memory reordering      = order can be enforced with std::memory_xxxx

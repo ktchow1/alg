@@ -1,0 +1,19 @@
+There is used case in which we keep adding RFQ into a container, the RFQs are kept for whole life time of process.
+- Iterators of RFQs are passed around, and should not be invalidated.
+- There is push back.
+- There is no push front.
+- There is no erase.
+
+
+std::vector<RFQ>
+- iterator will be invalidated whenever reallocation 
+
+std::list<RFQ>
+- overkills, as there is no erase
+- no cache friendly
+
+std::deque<RFQ>
+- best choice, cache friendly
+- does not rellocate, it is a map of contiguous buffer
+- does not invalidate itertor, unless there is erasure
+- deque's main objective is to avoid re-allocation in std::vector

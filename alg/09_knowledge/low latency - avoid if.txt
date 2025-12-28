@@ -1,0 +1,53 @@
+*****************
+*** Example 1 ***
+*****************
+
+// method 1
+if (x > 0)
+{
+    --x;
+}
+
+// method 2
+x -= static_cast<bool>(x);
+
+
+
+
+
+*****************
+*** Example 2 ***
+*****************
+
+// method 1
+if (flag) 
+    x += delta_x;
+
+// method 2
+x += (flag ? delta_x : 0);
+
+
+It depends ... if flag is likely true, then method 1 is faster, as it avoid +=0, which is redundant.
+
+
+
+
+
+*****************
+*** Example 3 ***
+*****************
+
+// method 1
+if (rand()%2 == 0)
+    side = ffwk::BID; // +1
+else 
+    side = ffwk::ASK; // -1
+
+// method 2
+side = 2 * rand()%2 - 1;
+
+// method 3
+side = (rand()%2) << 1 - 1;
+
+
+    

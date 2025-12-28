@@ -1,7 +1,92 @@
 #pragma once
 #include<iostream>
 #include<algorithm>
+#include<functional>
 #include<optional>
+#include<numeric> // std::accumulate is not in <algorithm>, but in <numeric>
+#include<ranges>
+
+
+// ******************************************* //
+// *** Naive implementation of std::reduce *** //
+// ******************************************* //
+// Most likely, std::iterator_traits<ITER>::value_type == T, but NOT necessary.
+//
+namespace alg
+{   
+    template<typename ITER, typename T, typename REDUCE>
+    T reduce(ITER begin, ITER end, T initial, const REDUCE& reduction_fct)  // <--- work
+//  T reduce(ITER begin, ITER end, T initial,       REDUCE& reduction_fct)  // <--- cannot compile
+//  T reduce(ITER begin, ITER end, T initial,       REDUCE  reduction_fct)  // <--- work
+    {
+        T ans = initial;
+        for(auto iter=begin; iter!=end; ++iter)
+        {
+            ans = reduction_fct(ans, *iter);
+        }
+        return ans;
+    }
+}
+
+
+// ********************************************* //
+// *** Various c++ ways to do vector average *** //
+// ********************************************* //
+namespace alg
+{   
+    inline std::optional<double> average_naive(const std::vector<std::int32_t>& vec)
+    {
+        if (vec.empty()) return std::nullopt;
+
+        std::int32_t sum = 0;
+        for(const auto& x:vec) sum += x;
+        return static_cast<double>(sum) / vec.size();
+    }
+
+    inline std::optional<double> average_for_each(const std::vector<std::int32_t>& vec)
+    {
+        if (vec.empty()) return std::nullopt;
+
+        std::int32_t sum = 0;
+        std::for_each(vec.begin(), vec.end(), [&sum](const auto& x) { sum += x; }); // <--- need to specify the operation
+        return static_cast<double>(sum) / vec.size();
+    }
+
+    inline std::optional<double> average_accumulate(const std::vector<std::int32_t>& vec)
+    {
+        if (vec.empty()) return std::nullopt;
+
+        std::int32_t sum = std::accumulate(vec.begin(), vec.end(), (std::int32_t)0); // <--- need to specify the initial
+        return static_cast<double>(sum) / vec.size();
+    }
+
+    inline std::optional<double> average_reduce(const std::vector<std::int32_t>& vec)
+    {
+        if (vec.empty()) return std::nullopt;
+
+        std::int32_t sum = std::reduce(vec.begin(), vec.end(), (std::int32_t)0, [](auto x, auto y) { return x+y; }); // <--- need to specify the initial and operation
+        return static_cast<double>(sum) / vec.size();
+    }
+
+    inline std::optional<double> average_reduce2(const std::vector<std::int32_t>& vec)
+    {
+        if (vec.empty()) return std::nullopt;
+
+        std::int32_t sum = alg::reduce(vec.begin(), vec.end(), (std::int32_t)0, [](auto x, auto y) { return x+y; }); // <--- need to specify the initial and operation
+        return static_cast<double>(sum) / vec.size();
+    }
+
+    // ************************** //
+    // *** For c++23 or above *** //
+    // ************************** //
+//  inline std::optional<double> average_ranges(const std::vector<std::int32_t>& vec)
+//  {
+//      if (vec.empty()) return std::nullopt;
+//
+//      std::int32_t sum = std::ranges::fold_left(vec, (std::int32_t)0, std::plus{});
+//      return static_cast<double>(sum) / vec.size();
+//  }
+}
 
 
 // ********************************************************************************************************* //

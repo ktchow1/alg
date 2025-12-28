@@ -1,0 +1,103 @@
+std::views is a light weight iteratable, usually contains 
+- begin and end 
+- support filter
+- support transform
+- lazy calculation
+
+
+std::range contains
+- concept
+- algorithm that work on range 
+- range is something that supports : std::begin(x) and std::end(x)
+- range = all STL containers + std::views
+- algorithm in <algorithm> works on begin_iterator and end_iterator
+- algorithm in <ranges>    works on range, i.e. all STL containers and std::views
+
+
+
+
+*****************
+*** Example 1 ***
+*****************
+Compare 2 long strings, lexicographically from last characters,
+while the 2 long strings are identical in front part, except few last characters.
+
+
+// Method 1
+std::string rev_a = a;
+std::string rev_b = b;
+std::reverse(rev_a.begin(), rev_a.end());
+std::reverse(rev_b.begin(), rev_b.end());
+return rev_a < rev_b;
+
+
+// Method 2 (Just a fancy way, no improvement)
+std::string rev_a = a;
+std::string rev_b = b;
+std::ranges::reverse(rev_a);
+std::ranges::reverse(rev_b);
+return rev_a < rev_b;
+
+
+// Method 3 (Improvement in performance)
+auto rev_a = std::views::reverse(a);
+auto rev_b = std::views::reverse(b);
+return std::ranges::lexicographical_compare(rev_a, rev_b); // Note : there is no operator <=> for std::views
+
+
+
+
+*****************
+*** Example 2 ***
+*****************
+// Method 1 
+bool firstItem = true;
+for(std::size_t n=0; n!=items.size(); ++n)
+{
+    if (m_ignoredItems.find(items[n]) == m_ignoredItems.end())
+    {
+        if (firstItem)
+            firstItem = false;
+        else oss << ",";
+
+        oss << items[n];
+    }
+}
+
+
+// Method 2 (using std::views)
+bool firstItem = true;
+auto validItems = items | std::views::filter([&](const auto& x) 
+                  {
+                      return m_ignoredItems.find(x) == m_ignoredItems.end();
+                  });
+
+for (const auto& x:items) // for-loop with x
+{
+    if (firstItem)
+        firstItem = false;
+    else oss << ",";
+
+    oss << x;
+}
+
+
+// Method 3 (using std::views)
+bool firstItem = true;
+auto validItems = std::ranges::views::iota(0) |
+                  std::views::take(items.size()) |
+                  std::views::filter([&](std::size_t n) 
+                  {
+                      return m_ignoredItems.find(items[n]) == m_ignoredItems.end();
+                  });
+
+for (std::size_t n : validItems) // for-loop with n <--- sometimes we may not able to use method 2, particularly when iterate 2 containers at the same time
+{
+    if (firstItem)
+        firstItem = false;
+    else oss << ",";
+
+    oss << items[n];
+}
+
+

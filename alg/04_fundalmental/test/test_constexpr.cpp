@@ -1,8 +1,9 @@
 #include<iostream>
+#include<cassert>
 #include<cstdint>
 #include<cstring>
-#include<cassert>
 #include<string>
+#include<concepts>
 #include<traits.h>
 #include<utility.h>
 
@@ -102,15 +103,20 @@ namespace test
         std::uint64_t m_y;
         std::uint64_t m_z;
     };
+}
 
-    // *************************************************************** //
-    // When to use "if constexpr" then? Only for template :
-    //
-    // - when we want to replace SFINAE
-    // - when we want to tell compiler NOT to compile some IF branches
-    // *************************************************************** //
+
+// ****************************************************************** //
+// When to use "if constexpr" then? Only for template :
+//
+// - when we want to replace SFINAE
+// - when we want to tell compiler NOT to compile some IF branches
+// - can return different types in different "if constexpr" branches
+// ****************************************************************** //
+namespace test
+{
     template<typename T> 
-    constexpr auto sum(const T& array_or_pair)
+    constexpr auto sum(const T& input)
     {
         // Unlike conditional_add, "if constexpr" is necessary here :
         //
@@ -120,16 +126,26 @@ namespace test
         if constexpr (alg::is_array_v<T>) 
         {
             typename T::value_type ans = 0;
-            for(const auto& x:array_or_pair)
+            for(const auto& x:input)
             {
                 ans += x;
             }
             return ans;
         }
-        else
+        else if constexpr (requires (T x) { x.first; x.second; } )
         {
-            return array_or_pair.first + array_or_pair.second;
+            return input.first + input.second;
         }
+        else if constexpr (std::same_as<T, std::vector<std::string>>)
+        {
+            std::string str;
+            for(const auto& s:input)
+            {
+                str.append(s);
+            }
+            return str;
+        }
+        else return 0;
     }
 
     constinit A global_a0{100,101,102};
@@ -217,6 +233,10 @@ void test_constexpr_usage()
     constexpr std::uint64_t s3 = test::sum(pair0);
     constexpr std::uint64_t s4 = test::sum(pair1);
     constexpr std::uint64_t s5 = test::sum(pair2);
+    const     std::string   s6 = test::sum(std::vector<std::string>{"ABC", "DEF", "---", "012"}); // no constexpr for std::string
+    const     std::string   s7 = test::sum(std::vector<std::string>{"ABC", "---", "0123456"});    // no constexpr for std::string
+    const     std::string   s8 = test::sum(std::vector<std::string>{"***", "0123456"});           // no constexpr for std::string
+    constexpr auto          s9 = test::sum(std::vector<std::vector<int>>{});
 
     static_assert(s0 ==  10, "failed to use constexpr");
     static_assert(s1 ==  21, "failed to use constexpr");
@@ -224,6 +244,16 @@ void test_constexpr_usage()
     static_assert(s3 == 111, "failed to use constexpr");
     static_assert(s4 == 222, "failed to use constexpr");
     static_assert(s5 == 333, "failed to use constexpr");
+    assert(s6 == std::string("ABCDEF---012"));
+    assert(s7 == std::string("ABC---0123456"));
+    assert(s8 == std::string("***0123456"));
+    static_assert(s9 ==   0, "failed to use constexpr");
+
+
+    // *************************** //
+    // *** if constexpr (more) *** //
+    // *************************** //
+
     print_summary("constexpr", "succeeded");
 }
 

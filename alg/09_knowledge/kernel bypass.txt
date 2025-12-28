@@ -1,0 +1,69 @@
+***********************
+*** What is onload? ***
+***********************
+Traditional flow for TCP / UDP packet : 
+
+      NIC             CPU                               CPU 
+fibre ---> NIC buffer ---> socket buffer (kernel space) -------------> c++ local buffer (user space)
+                                                        recv() in c++
+
+
+
+
+With DMA (NIC directly access memory)
+
+      NIC                               CPU 
+fibre ---> socket buffer (kernel space) -------------> c++ local buffer (user space)
+                                        recv() in c++
+
+
+
+
+With kernel bypass (Solarflare DPDK)
+
+      NIC                              CPU 
+fibre ---> RX ring buffer (user space) -------------> c++ local buffer (user space)
+                                       recv() in c++
+                                       as ethernet frame
+ 
+
+
+With kernel bypass (Solarflare "onload")
+
+      NIC                              CPU 
+fibre ---> RX ring buffer (user space) -------------> c++ local buffer (user space)
+                                       recv() in c++
+                                       as TCP/UDP packet
+
+
+
+
+recv() is a system call, that links between kernel space and user space.
+
+
+
+
+
+
+****************************
+*** What is TCP offload? ***
+****************************
+Solarflare onload and TCP offload sounds opposite things, but they are actually 2 different concepts.
+
+- We usually do not implement Solarflare onload and TCP offload together.
+- Traditional TCP/UDP stack is done in kernel space.
+-  "Onload" means moving TCP/UDP stack from kernel space to user space.
+- "Offload" means moving TCP/UDP stack from kernel space to NIC.
+-  "Onload" is for low latency.
+- "Offload" is for high throughput.
+
+
+
+
+
+
+
+
+****************************
+*** What is FPGA hijack? ***
+****************************

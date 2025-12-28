@@ -339,6 +339,12 @@ bool compare(VIEW0& v0, VIEW1& v1)
 // **************** //
 // *** Printing *** //
 // **************** //
+template<bool DEBUG>
+void debug(const std::string& message) 
+{
+    if constexpr (DEBUG) std::cout << "\n" << message << std::flush;
+}
+
 template<typename CONTAINER>
 void print(const std::string& header, const CONTAINER& c)
 {

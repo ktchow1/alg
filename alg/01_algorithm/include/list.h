@@ -2,7 +2,7 @@
 #include<iostream>
 #include<cstdint>
 #include<vector>
-// ******************************************* //
+// ********************************************* //
 // singly_list            doubly_list
 // --------------------+----------------------
 //                     |  insert_first_node
@@ -10,17 +10,31 @@
 //                     |  insert_after_tail
 // insert_before       |  insert_before
 // insert_after        |  insert_after
+// --------------------+----------------------
 //                     |  erase_only_node
 // erase_head          |  erase_head
 //                     |  erase_tail
 // erase               |  erase
+// --------------------+----------------------
 // get_prev_node       |
-// ******************************************* //
+//
+//
+// ********************************************* //
+// std::forward_list = singly_list
+// * do not have erase() as it cannot this_node
+// * do provide remove(T) as it does 1D scan
+//
+// std::list = doubly_list
+// * do provide erase() 
+// * do provide remove(T) to do 1D scan 
+//
+//
+// ********************************************* //
 // For push and pop, please :
 // 1. new or delete node
 // 2. update links involved
 // 3. update head or tail involved 
-// ******************************************* //
+// ********************************************* //
 
 
 namespace alg { namespace list
@@ -62,7 +76,7 @@ namespace alg { namespace list
         using value_type = T;
 
         template<typename...ARGS>
-        auto insert_before_head(ARGS&&...args)
+        auto insert_before_head(ARGS&&...args) // same as alg::obj_pool::stack::push
         {
             node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
             new_node->m_next  = m_head;
@@ -73,7 +87,7 @@ namespace alg { namespace list
         template<typename...ARGS>
         auto insert_before(node<T>* this_node, ARGS&&...args)
         {
-            if (this_node == m_head) return insert_before_head(std::forward<ARGS>(args)...);
+            if (this_node == m_head) return insert_before_head(std::forward<ARGS>(args)...); // we need this because there is no previous node for head
 
             node<T>*  new_node = new node<T>{std::forward<ARGS>(args)...};
             node<T>* prev_node = get_prev_node(this_node);
@@ -83,7 +97,7 @@ namespace alg { namespace list
         }
 
         template<typename...ARGS>
-        auto insert_after(node<T>* this_node, ARGS&&...args)
+        auto insert_after(node<T>* this_node, ARGS&&...args) // same as alg::obj_pool::stack::push
         {
             node<T>* new_node =  new node<T>{std::forward<ARGS>(args)...};
              new_node->m_next = this_node->m_next;
@@ -91,6 +105,7 @@ namespace alg { namespace list
             return new_node;
         }
         
+    public:
         void erase_head()
         {
             if (m_head == nullptr) return;
@@ -109,6 +124,7 @@ namespace alg { namespace list
             delete this_node;
         }
 
+    public:
         void reverse()
         {
             if (m_head == nullptr) return;
@@ -141,7 +157,7 @@ namespace alg { namespace list
         }
 
     private:
-        // Caller is responsible for checking :begin
+        // Caller is responsible for checking 
         // * head node is NOT nullptr
         // * this_node is NOT m_head
         node<T>* get_prev_node(node<T>* this_node) const noexcept
@@ -168,6 +184,7 @@ namespace alg { namespace list
     public:
         using value_type = T;
 
+    private:
         template<typename...ARGS>
         auto insert_first_node(ARGS&&...args)
         {
@@ -177,6 +194,7 @@ namespace alg { namespace list
             return new_node;
         }
 
+    public:
         template<typename...ARGS>
         auto insert_before_head(ARGS&&...args)
         {
@@ -184,7 +202,7 @@ namespace alg { namespace list
 
             node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
             new_node->m_next = m_head;
-            m_head->m_prev = new_node;
+            m_head->m_prev = new_node; // opposite link
             m_head = new_node;
             return new_node;
         }
@@ -196,7 +214,7 @@ namespace alg { namespace list
 
             node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
             new_node->m_prev = m_tail;
-            m_tail->m_next = new_node;
+            m_tail->m_next = new_node; // opposite link
             m_tail = new_node;
             return new_node;
         }
@@ -209,10 +227,10 @@ namespace alg { namespace list
 
             node<T>*  new_node = new node<T>{std::forward<ARGS>(args)...};
             node<T>* prev_node = this_node->m_prev;
-            new_node->m_prev = prev_node; 
-            new_node->m_next = this_node; 
-            prev_node->m_next = new_node;
-            this_node->m_prev = new_node;
+             new_node->m_next  = this_node; 
+            this_node->m_prev  =  new_node; // opposite link
+             new_node->m_prev  = prev_node; 
+            prev_node->m_next  =  new_node; // opposite link
             return new_node;
         }
  
@@ -222,15 +240,16 @@ namespace alg { namespace list
             if (this_node == m_tail) return insert_after_tail(std::forward<ARGS>(args)...);
             if (this_node == rend()) return insert_before_head(std::forward<ARGS>(args)...);
 
-            node<T>* new_node = new node<T>{std::forward<ARGS>(args)...};
+            node<T>*  new_node = new node<T>{std::forward<ARGS>(args)...};
             node<T>* next_node = this_node->m_next;
-            new_node->m_prev = this_node; 
-            new_node->m_next = next_node;
-            this_node->m_next = new_node;
-            next_node->m_prev = new_node;
+             new_node->m_next  = next_node;
+            next_node->m_prev  =  new_node; // opposite link
+             new_node->m_prev  = this_node; 
+            this_node->m_next  =  new_node; // opposite link
             return new_node;
         }
 
+    private:
         void erase_only_node()
         {
             if (m_head == nullptr) return;
@@ -242,14 +261,14 @@ namespace alg { namespace list
             delete this_node;
         }
 
+    public:
         void erase_head() 
         {
             if (m_head == m_tail) return erase_only_node();
 
             node<T>* this_node = m_head;
-            node<T>* next_node = m_head->m_next;
-            next_node->m_prev  = nullptr;
-            m_head = next_node;
+            m_head = m_head->m_next;
+            m_head->m_prev  = nullptr;
             delete this_node;
         }
 
@@ -258,9 +277,8 @@ namespace alg { namespace list
             if (m_head == m_tail) return erase_only_node();
 
             node<T>* this_node = m_tail;
-            node<T>* prev_node = m_tail->m_prev;
-            prev_node->m_next  = nullptr;
-            m_tail = prev_node;
+            m_tail = m_tail->m_prev;
+            m_tail->m_next  = nullptr; 
             delete this_node;
         }
 
@@ -276,10 +294,11 @@ namespace alg { namespace list
             delete this_node;
         }
 
+    public:
         void reverse()
         {
             node<T>* this_node = m_head;
-            while(this_node != nullptr)
+            while(this_node != nullptr) // should work for size=0 and size=1
             {
                 node<T>* next_node = this_node->m_next;
                 std::swap(this_node->m_prev, this_node->m_next);
@@ -361,12 +380,12 @@ namespace alg { namespace list
             while(true)
             {
                 slow = slow->m_next;
-                fast = fast->m_next;
-                if (fast == nullptr) return false;
-                fast = fast->m_next;
-                
                 if (slow == nullptr) return false;
+                fast = fast->m_next;
                 if (fast == nullptr) return false;
+                fast = fast->m_next;
+                if (fast == nullptr) return false;
+
                 if (slow == fast)  
                 {
                     m_meet = slow;
@@ -403,8 +422,8 @@ namespace alg { namespace list
         // N1 = list.size()-1
         // 
         // (M-H) * 2 = (M-H) + loop_length
-        //           = (M-H) + ((N-M) + (M-E) + 1)
-        //           = (M-H) + ((N-M) + (M-H) - (E-H) + 1)
+        //           = (M-H) + (N-E+1)
+        //       M-H = N-E+1
         //       E-H = N-M+1
 
         const node<T>* loop_entry_node()

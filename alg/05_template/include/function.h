@@ -1,25 +1,54 @@
 #pragma once
+#include<functional>
 #include<memory>
 
 
-// ************************** //
-// *** Interview question *** //
-// ************************** //
-// If we have an invocable argument as function input, 
-// we can declare it in 2 ways, what are the differences?
+// ************************************** //
+// *** std::bind is NOT std::function *** //
+// ************************************** //
+// std::function is a type-erased wrapper, which needs to know whole signature.
+// std::bind is a templated callable object, which needs to know all arg types.
+// std::bind's return type is NOT std::function.
 //
-// void invoker(std::function<void()>& fct)
-// void invoker(auto& fct)
 //
-// Version 2 can bind to
-// - function pointer
-// - functor
-// - lambda
-// - std::function, while keeping their original types.
+//               |   std::function       std::bind
+// --------------+-------------------------------------------
+// what is it    |   type erasure        templated callable                 
+// arg    type   |   known in compile    known in compile 
+// return type   |   known in compile    deduced
+// performance   |   slower              faster
 //
-// Version 1 can also bind to above types, 
-// but will convert all of them into std::function, which is slow.
+
+
+
+// *************************************************** // 
+// *** alg::function can bind to various callables *** //
+// *************************************************** // 
 //
+//                               |              direct function call      standardised call of std::invoke
+// ------------------------------+---------------------------------------------------------------------------
+// 1. function pointer           |              (*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 2. functor (rvalue)           |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//    functor (lvalue)           |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 3. member pointer             |          (obj.*f)(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 4. lambda                     |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 5. std::function              |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 6. std::bind                  |                f (arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+// 7. std::reference_wrapper<F>  |           f.get()(arg0,arg1,arg2)        std::invoke(f,arg0,arg1,arg2)
+//                               | or simply      f (arg0,arg1,arg2)
+//
+//
+// Remark 1 : 
+// Implementation with direct function call has different forms for different callables, hence not suitable for alg::function.
+// Implementation with standardised call can handle all callables, the complexity is delegated to std::invoke.
+//
+// Remark 2 : 
+// alg::simple_function does not support member pointer, even with std::invoke,
+// because it is nullary and no placeholder for passing the object.
+//
+// Remark 3 : 
+// There is std::reference_wrapper<T>::operator() for calling wrapped callable directly.
+
 
 
 // *************************************** //
@@ -46,7 +75,13 @@ namespace alg
 
             void call() const override
             {
-                _fct();
+                std::invoke(_fct);
+
+                 // The following implementation does not support :
+                 // * member pointer
+                 // * std::reference_wrapper
+                   
+            //  _fct();
             }
 
         private:
@@ -102,7 +137,8 @@ namespace alg
 
             R call(ARGS&&...args) const override
             {
-                return _fct(std::forward<ARGS>(args)...);
+                return std::invoke(_fct, std::forward<ARGS>(args)...);
+            //  return _fct(std::forward<ARGS>(args)...);
             }
 
         private:

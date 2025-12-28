@@ -1,0 +1,82 @@
+In qfilib (python quant library)
+
+step 1 : find futures daily return covariance 
+px_diff    = px_t - px_t1
+cov        = px_diff.cov()                               where data is zero-centred ...
+
+
+step 2 : find PCA reduction
+[Q,V]      = eigne_decompose(cov)                        where cov = Q * V * Q.'
+Q_reduced  = Q[:,-3:]
+V_reduced  = V[  -3:]
+cov0       = Q_reduced * V_reduced * Q_reduced.'
+weight     = 1 / sqrt(numpy.diag(cov))                   remark : 1 / variance for each futures
+residue    = numpy.diag(cov) - numpy.diag(cov0)          remark : diag() takes diagonal elements and place in a vector
+return ans = [Q_reduced, V_reduced, weight, residue]
+
+
+step 3 : find hedge weight matrix
+****************************************************************************************************************
+In ILP risk model, it operates on a portfolio of [FGBX, FGBS, FGBM, FGBL, FOAT, FBTS, FBTP]
+where each futures is equivalent in contributing to the overall risk.
+
+It is hard to control the flow of risk between more frequently traded futures and less frequently traded futures.
+For example, we would want to enable FGBM (5Y) futures :
+-         to hedge FGBS  (2Y) risk
+- but not to hedge FGBL (10Y) risk
+
+The idea is bed on risk tiers, top tier (frequently traded), mid tier and bottom tier (rarely traded) :
+-    top    FGBL(10Y)   FOAT(10Y)   FBTP(10Y)
+-    mid    FGBM(5Y)    FGBX(30Y) 
+- bottom    FGBS(2Y)                FBTS(2Y)
+
+Transform futures covariance matrix, with the hedge weights, so that :
+-    top tier futures can hedge the risk of top / mid / bottom tier futures
+-    mid tier futures can hedge the risk of       mid / bottom tier futures
+- bottom tier futures can hedge the risk of             bottom tier futures only
+
+This is the H from HPD : 
+- all 1   for futures hedging the same futures
+- zero    for futures hedging the same tier futures
+- zero    for futures hedging higher tier futures
+- nonzero for futures hedging  lower tier futures
+
+FGBL can hedge FGBL and FGBS/M/X, FBTS             <--- shown by column H[:, "FGBL"]
+FBTP can hedge FBTP and FGBS/M/X, FBTS             <--- shown by column H[:, "FBTP"]
+FOAT can hedge FOAT and FGBS/M/X, FBTS
+FGBM can hedge FGBM and FGBS, FBTS (but no FGBX)
+FGBX can hedge FGBX and FGBS, FBTS (but no FGBM)
+FGBS can hedge FGBS 
+FBTS can hedge FBTS
+
+If position vector (col) X is the real position of 7 futures, what is HX?
+* HX is risk-bucketed position (or synthetic position), not tradable
+* HX is internal risk representation
+****************************************************************************************************************
+qp(A,b,C,d) means
+
+min 1/2 * (X.'*A*X) + (b.'X)  s.t. C*B =< d
+ X 
+
+where 
+
+qp is called 4 times
+once for row FGBM in H, find 3 weights
+once for row FGBX in H, find 3 weights
+once for row FGBS in H, find 5 weights
+once for row FBTS in H, find 5 weights
+****************************************************************************************************************
+
+
+
+
+In ffwk (C++)
+
+step 1 : FCovar                cov_reduced = Q_reduced * V_reduced * Q_reduced.' + diag(residual) ~ cov ?
+step 2 : FResidualCovar        cov_residue = inv(H).' * cov_reduced * inv(H)
+step 3 : FRisk                        risk = X.' * cov_residue * X
+                                   or risk = X.' * cov_reduced * X
+step 4 : FAlgo how to use FRisk ? 
+
+
+

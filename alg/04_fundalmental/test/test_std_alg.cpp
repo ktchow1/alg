@@ -4,10 +4,39 @@
 #include<vector>
 #include<algorithm>
 
-
 // For alg
 #include<std_alg.h>
 #include<utility.h>
+
+
+
+inline bool check_double(double x, double y)
+{
+    double tol = 0.000001;
+    if (x < y - tol) return false;
+    if (x > y + tol) return false;
+    return true;
+}
+
+
+void test_average()
+{
+    std::vector<std::int32_t> vec = {1,2,3,4,5,6,7,8,9,10};
+
+    auto d0 = alg::average_naive(vec);
+    auto d1 = alg::average_for_each(vec);
+    auto d2 = alg::average_accumulate(vec);
+    auto d3 = alg::average_reduce(vec);
+    auto d4 = alg::average_reduce2(vec);
+
+    assert(check_double(*d0, 5.5));
+    assert(check_double(*d1, 5.5));
+    assert(check_double(*d2, 5.5));
+    assert(check_double(*d3, 5.5));
+    assert(check_double(*d4, 5.5));
+
+    print_summary("std_alg - avaerage", "succeeded");
+}
 
 
 void test_lower_upper_bound()
@@ -113,6 +142,7 @@ void test_hashmap()
 
 void test_std_alg()
 {
+    test_average();
     test_lower_upper_bound();
     test_permutation();
     test_hashmap();

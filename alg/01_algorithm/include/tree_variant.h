@@ -95,93 +95,87 @@ namespace alg
 }
 
 
-// **********************************************************//
-// Implementation of ascent() and descend() is same as above.
-// With extra step to convert index into iterator.
-// **********************************************************//
+// ****************************** //
+// *** Inplace implementation *** //
+// ****************************** //
 namespace alg
 {
-    template<typename T, typename CMP = std::less<T>>
-    class heap_inplace
+    // when CMP = std::less,    sort sequence with std::less,    build heap with std::greater
+    // when CMP = std::greater, sort sequence with std::greater, build heap with std::less
+    namespace details
     {
-    public:
-        using value_type = T;
-        using iter_type = std::vector<T>::iterator;
-
-        heap_inplace(iter_type begin, iter_type end) : m_begin(begin), m_end(end)
+        template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
+        void ascend_with_inversed_comparator(ITER begin, ITER back) // support size >= 1
         {
-            std::uint32_t size = std::distance(begin, end);
-            if (size > 0)
+            ITER iter_n = back;
+            while(iter_n > begin)
             {
-                // *** step 1 : push *** //
-                for(std::uint32_t n=1; n!=size; ++n)
-                {
-                    ascend(n);
-                }
+                ITER iter_m = begin;
+                std::advance(iter_m, (std::distance(begin, iter_n)-1) / 2);
 
-                // *** step 2 : pop *** //
-                for(std::uint32_t n=size-1; n!=0; --n)
-                {
-                    iter_type iter = m_begin + n;
-                    std::swap(*m_begin, *iter);
-                    descend(n);
-                }
-            }
-        }
-
-    private:
-        void ascend(std::uint32_t n) //ascend element n
-        {
-            while(n > 0)
-            {
-                std::uint32_t m = (n-1)/2;
-                iter_type iter_n = m_begin + n; 
-                iter_type iter_m = m_begin + m; 
-                if (CMP{}(*iter_n, *iter_m))
+                if (CMP{}(*iter_m, *iter_n)) 
                 {
                     std::swap(*iter_n, *iter_m);
-                    n = m;
+                    iter_n = iter_m;
                 }
                 else return;
             }
         }
 
-        void descend(std::uint32_t new_size) // descend element 0
+        template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
+        void descend_with_inversed_comparator(ITER begin, ITER end) // support size >= 0
         {
-            std::uint32_t n = 0;
-            while(n < new_size)
+            ITER iter_n = begin;
+            while(iter_n < end)
             {
-                std::uint32_t m0  = 2*n+1;
-                std::uint32_t m1  = 2*n+2;
-                iter_type iter_n  = m_begin + n; 
-                iter_type iter_m0 = m_begin + m0; 
-                iter_type iter_m1 = m_begin + m1; 
-                if (m1 < new_size)
+                ITER iter_m0 = begin; 
+                ITER iter_m1 = begin; 
+                std::advance(iter_m0, 2 * std::distance(begin, iter_n) + 1);
+                std::advance(iter_m1, 2 * std::distance(begin, iter_n) + 2);
+
+                if (iter_m1 < end)
                 {
-                    if (CMP{}(*iter_m0, *iter_m1))
+                    if (CMP{}(*iter_m1, *iter_m0))
                     {
-                        if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); n = m0; }
+                        if (CMP{}(*iter_n, *iter_m0)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
                         else return;
                     }
                     else
                     {
-                        if (CMP{}(*iter_m1, *iter_n)) { std::swap(*iter_n, *iter_m1); n = m1; }
+                        if (CMP{}(*iter_n, *iter_m1)) { std::swap(*iter_n, *iter_m1); iter_n = iter_m1; }
                         else return;
                     }
                 }
-                else if (m0 < new_size)
+                else if (iter_m0 < end)
                 {
-                    if (CMP{}(*iter_m0, *iter_n)) { std::swap(*iter_n, *iter_m0); n = m0; }
+                    if (CMP{}(*iter_n, *iter_m0)) { std::swap(*iter_n, *iter_m0); iter_n = iter_m0; }
                     else return;
                 }
                 else return;
             }
         }
+    }
 
-    private:
-        iter_type m_begin;
-        iter_type m_end;
-    };
+    template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
+    void heap_sort(ITER begin, ITER end) // random access iterator
+    {
+        if (begin == end) return; // BUG : Dont miss this.
+
+        // *** step 1 : push into heap *** //
+        ITER iter = begin; 
+        for(++iter; iter!=end; ++iter)
+        {
+            details::ascend_with_inversed_comparator<ITER,CMP>(begin, iter);
+        }
+
+        // *** step 2 : pop from heap *** //
+        iter = end; 
+        for(--iter; iter!=begin; --iter)
+        {
+            std::swap(*begin, *iter);
+            details::descend_with_inversed_comparator<ITER,CMP>(begin, iter);
+        }
+    }
 }
 
 
@@ -211,11 +205,6 @@ namespace alg
 
         const T& find(const T& x)
         {
-            auto iter = m_parent.find(x);
-            if (iter == m_parent.end()) 
-            {
-                m_parent[x] = x;
-            }
             if      (m_mode == find_mode::iterative)  return find_root_iterative(x);
             else if (m_mode == find_mode::recursive)  return find_root_recursive(x);
             else                                      return find_root_recursive_with_path_compression(x);
@@ -225,7 +214,8 @@ namespace alg
         {
             auto root_x = find(x);
             auto root_y = find(y);
-            m_parent[root_x] = root_y;
+            m_parent[root_x] = root_x;
+            m_parent[root_y] = root_x; // BUG : we need to update both
         }
 
         bool is_same_set(const T& x, const T& y) 
@@ -241,25 +231,28 @@ namespace alg
             T temp = x;
 
             auto iter = m_parent.find(temp); 
-            while(iter->second != temp)
+            while(iter != m_parent.end())
             {
+                if (iter->second == temp)   return iter->second; // return iter->second, not return "temp", which is temporary
                 temp = iter->second; 
                 iter = m_parent.find(temp); 
             }
-            return iter->second;
+            return x;
         }
 
         const T& find_root_recursive(const T& x)
         {
             auto iter = m_parent.find(x); 
-            if (iter->second == x) return x;
+            if (iter == m_parent.end())  return x;
+            if (iter->second == x)       return x;
             return find_root_recursive(iter->second);
         }
 
         const T& find_root_recursive_with_path_compression(const T& x)
         {
             auto iter = m_parent.find(x); 
-            if (iter->second == x) return x;
+            if (iter == m_parent.end())  return x;
+            if (iter->second == x)       return x;
             return iter->second = find_root_recursive(iter->second);
         }
 
@@ -278,11 +271,7 @@ namespace alg
 //   node in prefix tree may not contain value 
 // * node in avl    tree has 0-2  children
 //   node in prefix tree has 0-26 children
-//
-// Nullity
-// * m_root     is not a node pointer, as it must exist
-// * m_children is not a node pointer, as it must exist 
-// * hence unlike avl tree, no destructor is needed
+// * node are NOT pointers, they are struct
 // ********************************************************************************
 namespace alg
 {
@@ -295,9 +284,17 @@ namespace alg
             std::optional<V> m_value;
             std::unordered_map<char, node> m_children; 
         };
+        
+        // compare another design (in which, node must be pointer)
+    //  struct node
+    //  {
+    //      std::optional<V> m_value;
+    //      std::array<node*, 26> m_children; 
+    //  };
 
     public:
-        const node& insert(const std::string& key, const V& value)
+        template<typename...ARGS>
+        const node& insert(const std::string& key, ARGS&&...args)
         {
             node* this_node = &m_root;
             for(std::uint32_t n=0; n!=key.size(); ++n)
@@ -309,11 +306,10 @@ namespace alg
                 }
                 else
                 {
-                    auto [iter0, flag0] = this_node->m_children.insert({ key[n], node{} });
-                    this_node = &iter0->second;
+                    this_node = &this_node->m_children[key[n]];
                 }
             }
-            this_node->m_value = value;
+            new (&*(this_node->m_value)) V {std::forward<ARGS>(args)...};
             return *this_node;
         }
 
@@ -336,20 +332,25 @@ namespace alg
         }
     
     public:
-        using fct_type = std::function<void(const std::string&, const std::optional<V>&)>;
-
-        void traverse(fct_type& fct) const noexcept
+        template<typename F>
+        requires std::invocable<F, std::string, V>
+        void traverse(F& fct) const noexcept
         {   
             dfs_pre_order_recursive(std::string{}, &m_root, fct);
         }
 
     private:
-        void dfs_pre_order_recursive(const std::string& key, const node* this_node, fct_type& fct) const noexcept
+        template<typename F>
+        requires std::invocable<F, std::string, V>
+        void dfs_pre_order_recursive(const std::string& key, const node* this_node, F& fct) const noexcept
         {
-            fct(key, this_node->m_value);
-            for(const auto& x:this_node->m_children)
+            if (this_node->m_value)
             {
-                dfs_pre_order_recursive(key+x.first, &x.second, fct);
+                fct(key, *(this_node->m_value));
+            }
+            for(const auto& [c, next_node]:this_node->m_children)
+            {
+                dfs_pre_order_recursive(key+c, &next_node, fct);
             }
         }
     

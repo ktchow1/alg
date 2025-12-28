@@ -48,7 +48,7 @@ void test_simple_traits()
 
 void test_runtime_traits()
 {
-    // Maven interview : runtime traits
+    // Maven : runtime traits
     auto p0 = alg::value2type_hardcoded_runtime<1,2,4,8,16>::create( 1);       
     auto p1 = alg::value2type_hardcoded_runtime<1,2,4,8,16>::create( 2);
     auto p2 = alg::value2type_hardcoded_runtime<1,2,4,8,16>::create( 3);
@@ -108,6 +108,17 @@ void test_runtime_traits()
     print_summary("runtime traits", "succeeded");
 }
 
+
+namespace test
+{
+    struct my_class
+    {
+        void f0(int,int,int);
+        void f1(int,const std::string&);
+        void f2(const std::string&,
+                const std::string&);
+    };
+}
 
 void test_sfinae_traits()
 {
@@ -299,30 +310,6 @@ void test_sfinae_traits()
     static_assert(alg::is_vec_except_pointer_v<const std::list<int>* const> == false, "failed to use is_vec_except_pointer");
     static_assert(alg::is_vec_except_pointer_v<      std::list<int>* const> == false, "failed to use is_vec_except_pointer");
 
-    // inheritance
-    struct base {};
-    struct derived : public base {};
-    struct derder0 : public derived {};
-    struct derder1 : public derived {};
-    struct derpriv : private base {}; // failed to handle private inheritance
-
-    static_assert(alg::is_inherit_v<base,    base>    ==  true, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<base,    derived> ==  true, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<base,    derder0> ==  true, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<base,    derder1> ==  true, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derived, derder0> ==  true, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derived, derder1> ==  true, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<double,  int>     == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<base,    int>     == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derived, int>     == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derder0, int>     == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derived, base>    == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derder0, base>    == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derder1, base>    == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derder0, derived> == false, "failed to use is_inherit");
-    static_assert(alg::is_inherit_v<derder1, derived> == false, "failed to use is_inherit");
-//  std::cout <<  alg::is_inherit_v<base,    derpriv>; // cannot compile
-
     static_assert(alg::is_same_v<alg::condition< true,              int,std::string>::type, int>,         "failed to use condition");
     static_assert(alg::is_same_v<alg::condition<false,              int,std::string>::type, std::string>, "failed to use condition");
     static_assert(alg::is_same_v<alg::condition<alg::is_ptr_v<int*>,int,std::string>::type, int>,         "failed to use condition");
@@ -384,6 +371,11 @@ void test_sfinae_traits()
     assert((alg::perfect_forwarding(str) == true));
     assert((alg::perfect_forwarding(std::move(str)) == false));
     assert((alg::perfect_forwarding(std::string{ }) == false));
+    
+    alg::perfect_forward<std::string> perf;
+    assert(perf.m_value == 0);     perf.foo(str);
+    assert(perf.m_value == 1);     perf.foo(std::move(str));
+    assert(perf.m_value == 2);
 
     // example 2 : sfinae in class member function
     alg::sfinae_class<int>           x0;
@@ -411,6 +403,14 @@ void test_sfinae_traits()
     static_assert(alg::has_value_v<std::vector<int*>::iterator>       ==  true, "failed to use is_incrementable");
     static_assert(alg::has_value_v<std::vector<int*>::const_iterator> ==  true, "failed to use is_incrementable");
 
+    // This traits does not work when there are overloads with same member names.
+    static_assert(alg::has_mem<&test::my_class::f0, test::my_class, std::string, int, int>   ::value == false, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f1, test::my_class, std::string, std::string>::value == false, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f2, test::my_class, std::string, char>       ::value == false, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f0, test::my_class, int, int, int>           ::value ==  true, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f1, test::my_class, int, std::string>        ::value ==  true, "failed to use has_mem");
+    static_assert(alg::has_mem<&test::my_class::f2, test::my_class, std::string, std::string>::value ==  true, "failed to use has_mem");
+
     static_assert(alg::is_convertible_v<int, int>            ==  true, "failed to use is_convertible");
     static_assert(alg::is_convertible_v<int, double>         ==  true, "failed to use is_convertible");
     static_assert(alg::is_convertible_v<double, int>         ==  true, "failed to use is_convertible");
@@ -436,22 +436,46 @@ void test_sfinae_traits()
     static_assert(alg::is_convertible_v<int, src>  == false, "failed to use is_convertible");
     static_assert(alg::is_convertible_v<int, src2> == false, "failed to use is_convertible");
 
-    static_assert(alg::is_base_of_v<base,    base>    ==  true, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<base,    derived> ==  true, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<base,    derder0> ==  true, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<base,    derder1> ==  true, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derived, derder0> ==  true, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derived, derder1> ==  true, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<double,  int>     == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<base,    int>     == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derived, int>     == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derder0, int>     == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derived, base>    == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derder0, base>    == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derder1, base>    == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derder0, derived> == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<derder1, derived> == false, "failed to use is_base_of");
-    static_assert(alg::is_base_of_v<base,    derpriv> == false, "failed to use is_base_of"); // cannot detect private inheritance
+    // inheritance
+    struct base {};
+    struct derived : public base {};
+    struct derder0 : public derived {};
+    struct derder1 : public derived {};
+    struct derpriv : private base {}; // failed to handle private inheritance
+
+    static_assert(alg::is_base_of_v <base,    base>    ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <base,    derived> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <base,    derder0> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <base,    derder1> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derived, derder0> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derived, derder1> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <double,  int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <base,    int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derived, int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derder0, int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derived, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derder0, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derder1, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derder0, derived> == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <derder1, derived> == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v <base,    derpriv> == false, "failed to use is_base_of"); // cannot detect private inheritance
+
+    static_assert(alg::is_base_of_v1<base,    base>    ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<base,    derived> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<base,    derder0> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<base,    derder1> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derived, derder0> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derived, derder1> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<double,  int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<base,    int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derived, int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derder0, int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derived, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derder0, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derder1, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derder0, derived> == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<derder1, derived> == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v1<base,    derpriv> == false, "failed to use is_base_of"); // cannot detect private inheritance
 
     static_assert(alg::is_base_of_v2<base,    base>    ==  true, "failed to use is_base_of");
     static_assert(alg::is_base_of_v2<base,    derived> ==  true, "failed to use is_base_of");
@@ -468,7 +492,24 @@ void test_sfinae_traits()
     static_assert(alg::is_base_of_v2<derder1, base>    == false, "failed to use is_base_of");
     static_assert(alg::is_base_of_v2<derder0, derived> == false, "failed to use is_base_of");
     static_assert(alg::is_base_of_v2<derder1, derived> == false, "failed to use is_base_of");
-//  static_assert(alg::is_base_of_v2<base,    derpriv> == false, "failed to use is_base_of"); // cannot even compile, no matter whether we put true / false in static_assert
+//  static_assert(alg::is_base_of_v2<base,    derpriv> == false, "failed to use is_base_of"); // cannot even compile
+
+    static_assert(alg::is_base_of_v3<base,    base>    ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<base,    derived> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<base,    derder0> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<base,    derder1> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derived, derder0> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derived, derder1> ==  true, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<double,  int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<base,    int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derived, int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derder0, int>     == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derived, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derder0, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derder1, base>    == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derder0, derived> == false, "failed to use is_base_of");
+    static_assert(alg::is_base_of_v3<derder1, derived> == false, "failed to use is_base_of");
+//  static_assert(alg::is_base_of_v3<base,    derpriv> == false, "failed to use is_base_of"); // cannot even compile
 
     // example 3 : sfinae in inheritance  
     struct sfinae_derived : public alg::sfinae_base{};

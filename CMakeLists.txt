@@ -31,7 +31,7 @@ include_directories(
     alg/06_threading/include0 
     alg/06_threading/include1 
     alg/07_cpp20/include 
-    alg/08_interview/include 
+    alg/08_problems/include 
     alg/all_tests/include 
     /mnt/d/dev/cpp_dependency/boost_1_84_0 
 )
@@ -54,8 +54,8 @@ file(GLOB SOURCES
      "alg/06_threading/test/*.cpp"
      "alg/07_cpp20/src/*.cpp"
      "alg/07_cpp20/test/*.cpp"
-     "alg/08_interview/src/*.cpp"
-     "alg/08_interview/test/*.cpp"
+     "alg/08_problems/src/*.cpp"
+     "alg/08_problems/test/*.cpp"
      "alg/all_tests/src/*.cpp"
 )
 add_executable(Test ${SOURCES})       # for building executable

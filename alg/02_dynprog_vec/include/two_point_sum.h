@@ -12,6 +12,9 @@
 // ******************** //
 namespace alg
 {
+    // This implemenation cannot handle the case with multiple max, 
+    // which should have optimal ans = {last max element, first max element}.
+    //
     std::int32_t max_2_point_sum_distance(const std::vector<std::int32_t>& vec)
     {
         if (vec.size()<2) return 0;
@@ -156,7 +159,7 @@ namespace alg
         std::uint32_t ans = 0;
         return ans;
     }
-}
+}  
 
 
 
@@ -273,7 +276,7 @@ namespace alg
         }
         return ans;
     }
-    
+
     std::uint32_t count_target_4_point_sum(const std::vector<std::int32_t>& vec, std::int32_t target)
     {
         if (vec.size()<4) return false;

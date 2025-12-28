@@ -17,15 +17,14 @@ namespace alg
 
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            const auto& x = vec[n];
-            while(!s0.empty() && x < s0.top())
+            while(!s0.empty() && vec[n] < s0.top())
             {
                 push0 = false;
                 s0.pop();
             }
             if (push0)
             {
-                s0.push(x);
+                s0.push(vec[n]);
             }
         }
         if (s0.size()==vec.size()) return 0;
@@ -38,15 +37,14 @@ namespace alg
 
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            const auto& x = vec[vec.size()-n-1];
-            while(!s1.empty() && x > s1.top())
+            while(!s1.empty() && vec[vec.size()-1-n] > s1.top())
             {
                 push1 = false;
                 s1.pop();
             }
             if (push1)
             {
-                s1.push(x);
+                s1.push(vec[vec.size()-1-n]);
             }
         }
         if (s1.size()==vec.size()) return 0; // <--- should never happen
@@ -65,33 +63,23 @@ namespace alg
 
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            const auto& x = vec[n];
             if (s.empty())
             {
-                if (x > 0) 
-                {
-                    ans += x;
-                    s.push(x);
-                }
+                ans += vec[n];
+                s.push(vec[n]);
             }
-            else if (x > s.top())
+            else if (vec[n] > s.top())
             {
-                if (x > 0) 
-                {
-                    ans += x-s.top();
-                    s.push(x);
-                }
+                ans += vec[n]-s.top(); // Remark 1
+                s.push(vec[n]);
             }
             else
             {
-                while(!s.empty() && x <= s.top()) 
+                while(!s.empty() && vec[n] <= s.top()) 
                 {
                     s.pop();
                 }
-                if (x > 0) 
-                {
-                    s.push(x);
-                }
+                s.push(vec[n]); // BUG : This is needed, s.t. next increment in Remark 1 is correct.
             }
         }
         return ans;
@@ -100,16 +88,22 @@ namespace alg
     // ************************************************************************************** //
     // [Explanation about biggest rect in hist]
     // ************************************************************************************** //
+    // Consider the animation :
+    // * invert the histogram profile
+    // * water pumping from LHS and fill the trough
+    // * once 1st trough is full, water flows into 2nd trough
+    // * once 2nd trough is full, water flows ...
+    // * some troughs may merge to form larger trough
+    // * water will escape from RHS edge
+    // * remove all water-filled troughs (flatten them)
+    // * perform final scan of whole monotonic landscape
+    //
+    // ************************************************************************************** //
     // To define a rect in hist, we need 3 parameters :
     // * LHS edge of rect
     // * RHS edge of rect
     // * height of rect
     //  
-    // In O(N2) exhaustive search :
-    // * iterate vec[n] as LHS edge in outer for-loop
-    // * iterate vec[m] as RHS edge in inner for-loop
-    // * find max height such that h <= vec[n,n+1,...,m]
-    //
     // In O(N) dynprog search :
     // * iterate vec[n] as height
     // * extend LHS-edge to as far as possible, keeping height const at vec[n]
@@ -130,25 +124,15 @@ namespace alg
     // * flatten crest by const height vec[n]
     // * unlike other algo, we store index n (instead of value vec[n]) in stack
     //
-    // Consider the animation :
-    // * invert the histogram profile
-    // * water pumping from LHS and fill the trough
-    // * once 1st trough is full, water flows into 2nd trough
-    // * once 2nd trough is full, water flows ...
-    // * some troughs may merge to form larger trough
-    // * water will escape from RHS edge
-    // * remove all water-filled troughs (flatten them)
-    // * perform final scan of whole monotonic landscape
     // ************************************************************************************** //
     // A bin in hist is defined as :
     //
     // LHS edge = s.next_top()+1
     // RHS edge = s.top()
     // height   = vec[s.top()]
-    //
     // where s stores index n
-    // ************************************************************************************** //
     //
+    // ************************************************************************************** //
     std::uint32_t biggest_rect_in_hist(const std::vector<std::uint32_t>& vec)
     {
         std::stack<std::uint32_t> s; // for index, not for value
@@ -159,25 +143,23 @@ namespace alg
         // ***************************** //
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            while(!s.empty() && vec[n] < vec[s.top()])
+            while(!s.empty() && vec[n] <= vec[s.top()])
             {
                 std::uint32_t m = s.top();
                 s.pop();
 
                 if (s.empty())
                 {
-                    std::uint32_t area = vec[m] * ((n-1)+1); // BUG : cannot replace n-1 by m, see remark 1
+                    std::uint32_t area = vec[m] * ((n-1)+1); // BUG : cannot replace n-1 by m, see remark 2
                     ans = std::max(ans, area);
                 }
                 else
                 {
-                    std::uint32_t area = vec[m] * ((n-1)-s.top()); // BUG : cannot replace n-1 by m, see remark 1
+                    std::uint32_t area = vec[m] * ((n-1)-s.top()); // BUG : cannot replace n-1 by m, see remark 2
                     ans = std::max(ans, area);
                 }
             }
-            // [Remark 1]
-            // It may involve multiple pop in while-loop, 
-            // m works in the 1st pop, but not for other.
+            // Remark 2 : May involve multiple pop in while-loop, m works in the 1st pop, but not for other pop.
 
             s.push(n); 
         }
@@ -204,10 +186,7 @@ namespace alg
         return ans;
     }
 
-    // ********************************** //
-    // *** No benchmark for this algo *** //
-    // ********************************** //
-    std::uint32_t total_trapped_water(const std::vector<std::uint32_t>& vec)
+    std::uint32_t total_trapped_water(const std::vector<std::uint32_t>& vec) // No benchmark for total_trapped_water()
     {
         std::vector<std::uint32_t> LHS_profile(vec.size());
         std::vector<std::uint32_t> RHS_profile(vec.size());

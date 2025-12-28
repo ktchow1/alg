@@ -42,7 +42,7 @@ namespace alg
 // ********************** //
 // *** Runtime traits *** //
 // ********************** //
-// Inspired by Maven interview : 
+// Inspired by Maven : 
 // * objective is given by hardcoded approach
 // * please re-implement in variadic approach
 //
@@ -90,8 +90,9 @@ namespace alg
 
     // 2. variadic approach  
     //
-    // Question : Can we remove interface and consider recursion as interface? 
-    //            No, recursion requires at least 1 int, while boundary has 0 int.
+    // Question : Can we remove interface?
+    //            No, if we remove interface, there will be compile error,
+    //            as recursion requires at least 1 int, while boundary has 0 int.
     //
     template<int...Ns> 
     struct value2type_variadic_runtime                     // interface
@@ -126,7 +127,7 @@ namespace alg
         using type = typename value2type_variadic_compiletime<N,Ns...>::type; 
     }; 
     template<int N, int...Ns>
-    struct value2type_variadic_compiletime<N,N,Ns...>      // boundary case
+    struct value2type_variadic_compiletime<N,N,Ns...>      // recursion
     { 
         using type = derivedN<N>; 
     }; 
@@ -225,15 +226,7 @@ namespace alg
     template<typename V> 
     constexpr bool is_vec_except_pointer_v = is_vec_except_pointer<V>::type::value;
 
-
-    // is_convertible will be replaced by is_base_of
-    template<typename B> false_type is_inherit_impl(const void*); // general case (no need to implement, used in decltype)
-    template<typename B>  true_type is_inherit_impl(const B*);    // special case (no need to implement, used in decltype)
-    template<typename B, typename D> struct is_inherit : public decltype(is_inherit_impl<B>(std::declval<D*>())) {}; // BUG : compile error without <B>, as special case can bind to any type
-    template<typename B, typename D> constexpr bool is_inherit_v = is_inherit<B,D>::value;
-
   
-
     // **************************** //
     // *** step 4 : conditional *** //
     // **************************** //
@@ -242,8 +235,8 @@ namespace alg
     template<        typename T, typename F> struct condition<true,T,F> { using type = T; };
     
     // Allow compilation (or not) depending on boolean value B
-    template<bool B, typename T=void> struct enable_if         {                 }; // no type here, this case will trigger compilation error
-    template<        typename T     > struct enable_if<true,T> { using type = T; }; 
+    template<bool B, typename T> struct enable_if         {                 }; // no type here, this case will trigger compilation error
+    template<        typename T> struct enable_if<true,T> { using type = T; }; 
 
 
     // *********************** //
@@ -325,6 +318,37 @@ namespace alg
     }
 
 
+    // *********************************************** //
+    // *** example 1A : perfect forwarding (again) *** //
+    // *********************************************** //
+    template<typename T> 
+    struct perfect_forward
+    {
+        void bar(const T&  x) {  m_value = 1; }
+        void bar(      T&& x) {  m_value = 2; }
+
+        template<typename U> // for universal reference
+        void foo(U&& x)
+        {
+            bar(std::forward<U>(x));
+        }
+
+        std::uint32_t m_value{0};
+    };
+
+    template<typename T, typename enable_if<!std::is_lvalue_reference<T>::value, int>::type dummy = 0> 
+    bool perfect_forwarding_bar(T&& arg)
+    {
+        return false;
+    }
+
+    template<typename T>
+    bool perfect_forwarding_foo(T&& arg) 
+    {
+        return perfect_forwarding_impl(std::forward<T>(arg));
+    }
+
+
     // *************************************************** //
     // *** example 2 : sfinae in class member function *** //
     // *************************************************** //
@@ -386,33 +410,73 @@ namespace alg
     struct has_value : public false_type {};
     template<typename T>
     struct has_value<T,map_to_default<typename T::value_type>> : public true_type {};
+
+
+    // has memfct
+    template<auto mem_ptr, typename T, typename CONSTRAINT = default_type, typename...ARGS>
+    struct has_mem_impl : public false_type {};
+    template<auto mem_ptr, typename T, typename...ARGS>
+    struct has_mem_impl
+    <   
+        mem_ptr, T,
+        map_to_default<decltype
+        (
+            (std::declval<T>().*mem_ptr)(std::declval<ARGS>()...)
+        )>,
+        ARGS...
+    >
+    : public true_type {};
+
+    template<auto mem_ptr, typename T, typename...ARGS>
+    struct has_mem : public has_mem_impl<mem_ptr, T, default_type, ARGS...> {};
     
+    // Remark
+    // * this traits does not work properly, does not support overloads 
+    // * mem_ptr is NTTP, not TTP, user needs to specify the exact member name when using the traits
+    // * using same pattern as is_incrementable, but involves 2 layers : implemenation and interface
+    // * using concepts is simpler than using traits, as no need to have generic case and speciailization
+    // * using concepts alg::invocable 
+
+
     // is convertible
     template<typename SRC, typename DST, typename CONSTRAINT = default_type>  
     struct is_convertible : public false_type {};
     template<typename SRC, typename DST> 
     struct is_convertible<SRC,DST,decltype(bind_to<DST>(std::declval<SRC>()))> : public true_type {};
 
-    // is base of
+
+    // is base of (method 0)
     template<typename B, typename D, typename CONSTRAINT = default_type> 
     struct is_base_of : public false_type {}; 
     template<typename B, typename D> 
-    struct is_base_of<B,D,decltype(bind_to<B*>(std::declval<D*>()))> : public true_type {};
+    struct is_base_of<B,D,decltype(bind_to<B*>(static_cast<D*>(nullptr)))> : public true_type {};
 
-    // is base of (alternative approach, but cannot compile for private inheritance, due to ERROR in static_cast ???)
+
+    // is base of (method 1)
+    template<typename B, typename D, typename CONSTRAINT = default_type> 
+    struct is_base_of1 : public false_type {}; 
+    template<typename B, typename D> 
+    struct is_base_of1<B,D,decltype(bind_to<B*>(std::declval<D*>()))> : public true_type {};
+
+
+    // is base of (method 2 & 3)
     template <typename B> std::false_type is_ptr_convertible_to(const void*);
-    template <typename B> std::true_type  is_ptr_convertible_to(const B*);
+   template <typename B> std::true_type  is_ptr_convertible_to(const B*);
+
     template <typename B, typename D>
-    struct is_base_of2 : public decltype(is_ptr_convertible_to<B>(static_cast<D*>(nullptr)))
-    {
-    };
+    struct is_base_of2 : public decltype(is_ptr_convertible_to<B>(static_cast<D*>(nullptr))) {};
+    template <typename B, typename D>
+    struct is_base_of3 : public decltype(is_ptr_convertible_to<B>(std::declval<D*>()))       {};
+
 
     // shortcut
     template<typename T>                 constexpr bool is_incrementable_v = is_incrementable<T>::value;
     template<typename T>                 constexpr bool has_value_v        = has_value<T>::value;
     template<typename SRC, typename DST> constexpr bool is_convertible_v   = is_convertible<SRC,DST>::value;
     template<typename B,   typename D>   constexpr bool is_base_of_v       = is_base_of <B,D>::value;
+    template<typename B,   typename D>   constexpr bool is_base_of_v1      = is_base_of1<B,D>::value;
     template<typename B,   typename D>   constexpr bool is_base_of_v2      = is_base_of2<B,D>::value;
+    template<typename B,   typename D>   constexpr bool is_base_of_v3      = is_base_of3<B,D>::value;
 
 
     // ***************************************** //
@@ -452,6 +516,16 @@ namespace alg
     struct comparator_traits<std::less<T>> { using opposite_type = std::greater<T>; }; 
     template<typename T> 
     struct comparator_traits<std::greater<T>> { using opposite_type = std::less<T>; }; 
+
+
+    // *************************** //
+    // *** Final : Elegant way *** //
+    // *************************** //
+    template<typename T>
+    constexpr bool is_reference_wrapper_v = false;
+
+    template<typename T>
+    constexpr bool is_reference_wrapper_v<std::reference_wrapper<T>> = true;
 }
 
 

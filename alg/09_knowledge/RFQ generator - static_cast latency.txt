@@ -1,0 +1,41 @@
+The calculation of limit is done every cycle, so which of these implemnation is better
+
+
+// my original solution
+class order_checker
+{
+    void some_function()
+    {
+        double limt = num_order_per_sec * sec_elapsed; // both num_order_per_sec and sec_elapsed are double
+        if (static_cast<double>(counter) < limit) 
+        {
+            ++counter;
+            ... do_somthing
+        }
+    }
+    int counter;
+};
+
+
+// code review solution
+class order_checker
+{
+    void some_function()
+    {
+        double limt = num_order_per_sec * sec_elapsed; 
+        if (counter < limit) 
+        {
+            ++counter;
+            ... do_somthing
+        }
+    }
+    double counter;
+};
+
+
+
+
+Is "double-increment" + "double-comparison" faster than
+  "integer-increment" + "double-comparison" + "integer-to-double-conversion" ?
+
+Yes ... maybe.

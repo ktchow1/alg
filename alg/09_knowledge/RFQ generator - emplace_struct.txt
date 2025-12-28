@@ -1,0 +1,64 @@
+Pattern 1 : Getting reference to new push-back
+In ffwk, emplacing heavy struct is NOT done in this way :
+
+RFQ rfq;
+rfq.m_item0 = ...;
+rfq.m_item1 = ...;
+rfq.m_item2 = ...;
+list.emplace_back(std::move(rfq));
+
+It is done in opposite way :
+
+RFQ& rfq = list.emplace_back();
+rfq.m_item0 = ...;
+rfq.m_item1 = ...;
+rfq.m_item2 = ...;
+
+The latter is faster, as it is inplace, no copy, no move.
+
+
+
+
+
+Pattern 2 : Inline multi statement in initialization
+This is not about performance, I usually see the use of lambda like that : 
+
+
+// **************** //
+// *** Method 1 *** //
+// **************** //
+const Trader& trader = [&]()
+{
+    auto iter = trader_map.find(key);
+    if (iter != trader_map.end()) throw std::runtime_error("missing trader list");
+    
+    auto& traders = iter->second;
+    if (traders.empty()) throw std::runtime_error("empty trader list");
+
+    return traders[rand() % traders.size()];
+}();
+
+RFQ rfq;
+strncpy(rfq.m_trader, trader.c_str(), trader.size());
+
+
+// **************** //
+// *** Method 2 *** //
+// **************** //
+// Rather than this (without lambda), which looks more straight forward :
+
+auto iter = trader_map.find(key);
+if (iter != trader_map.end()) throw std::runtime_error("missing trader list");
+    
+auto& traders = iter->second;
+if (traders.empty()) throw std::runtime_error("empty trader list");
+const Trader& trader = traders[rand() % traders.size()];
+
+RFQ rfq;
+strncpy(rfq.m_trader, trader.c_str(), trader.size());
+
+
+Why lambda pattern?
+- multi statment in initialization
+- keeps temp variables in lambda scope
+- sometimes it is easier to declare "const" in lambda pattern

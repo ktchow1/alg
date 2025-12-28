@@ -3,123 +3,133 @@
 #include<string>
 #include<vector>
 #include<function.h>
+#include<function_test.h>
 #include<utility.h>
-
-std::uint32_t nullary_function_count = 0;
-std::uint32_t nullary_functor_count = 0;
-std::uint32_t nullary_lambda_count = 0;
-std::uint32_t N_ary_function_count = 0;
-std::uint32_t N_ary_functor_count = 0;
-std::uint32_t N_ary_lambda_count = 0;
+using namespace function_test;
 
 
-void nullary_function() 
-{ 
-    ++nullary_function_count;
-}
-
-struct nullary_functor
+// ************************************ //
+// *** Test of alg::simple_function *** // 
+// ************************************ //
+void test_alg_simple_function()
 {
-    void operator()() const 
-    {
-        ++nullary_functor_count;
-    }
-};
-
-std::string N_ary_function(int, int) 
-{
-    ++N_ary_function_count;
-    return "xxx"; 
-}
-
-struct N_ary_functor
-{
-    std::string operator()(int, int) const 
-    { 
-        ++N_ary_functor_count;
-        return "xxx"; 
-    }
-};
-
-// *******************************************//
-// Objective : function class that can wrap :
-// * function pointer
-// * functor
-// * lambda 
-// *******************************************//
-void test_simple_function()
-{
-    nullary_functor f;
+    count::instance().reset();
     std::vector<alg::simple_function> fs; 
+    nullary_functor f;
 
-    // using raw type
-    fs.push_back(&nullary_function);   // <--- cannot compile all these lines, if "explicit" is added to simple_function constructor
+
+
+    // Add unnamed callable
+    fs.push_back(&nullary_function);   // <--- cannot compile all these lines, if "explicit" is added to alg::simple_function constructor
     fs.push_back(nullary_functor{});
-    fs.push_back(f);                   // <--- cannot compile this line, if std::decay_t is removed
-    fs.push_back([]()
+    fs.push_back([]() 
     { 
-        ++nullary_lambda_count;
+        ++count::instance().nullary_lambda; 
     });
+    fs.push_back(nullary_std_function);
+    fs.push_back(std::bind(nullary_std_function));
+    fs.push_back(std::ref(f));
 
-    // using simple_function type
+
+
+    // Add named callable
     alg::simple_function f0(&nullary_function);
     alg::simple_function f1(nullary_functor{});
-    alg::simple_function f2(f);
-    alg::simple_function f3([]()
-    {
-        ++nullary_lambda_count;
+    alg::simple_function f2([]() 
+    { 
+        ++count::instance().nullary_lambda; 
     });
-    fs.push_back(f0);                  // <--- cannot compile all these lines, if unique_ptr is used instead of shared_ptr inside simple_function
+    alg::simple_function f3(nullary_std_function);
+    alg::simple_function f4(std::bind(nullary_std_function));
+    alg::simple_function f5(std::ref(f));
+
+    fs.push_back(f0);                  // <--- cannot compile all these lines, if std::unique_ptr is used instead of std::shared_ptr inside alg::simple_function
     fs.push_back(f1);                  //      std::unique_ptr makes simple_function non-copyable 
     fs.push_back(f2);                  //      std::shared_ptr makes simple_function     copyable 
     fs.push_back(f3);
+    fs.push_back(f4);
+    fs.push_back(f5);
 
+
+
+    // Invoke and check
     for(const auto& f:fs) f();    
-    assert(nullary_function_count == 2);
-    assert(nullary_functor_count == 4);
-    assert(nullary_lambda_count == 2);
-    print_summary("alg::simple_function - nullary returning void", "succeeded");
+    assert(count::instance().nullary_function     == 2);
+    assert(count::instance().nullary_functor      == 4);
+    assert(count::instance().nullary_lambda       == 2);
+    assert(count::instance().nullary_std_function == 4);
+    print_summary("alg::function - simple version", "succeeded");
 }
   
-void test_general_function()
-{
-    N_ary_functor f;
-    std::vector<alg::function<std::string,int,int>> fs; 
 
-    // using raw type
+
+// ***************************** //
+// *** Test of alg::function *** // 
+// ***************************** //
+void test_alg_function()
+{
+    count::instance().reset();
+    std::vector<alg::function<std::string,int,int>> fs; 
+    N_ary_functor f;
+
+
+
+    // Add unnamed callable
     fs.push_back(&N_ary_function);   
     fs.push_back(N_ary_functor{});
-    fs.push_back(f);           
     fs.push_back([](int,int) -> std::string
     {
-        ++N_ary_lambda_count;
-        return "xxx"; 
+        ++count::instance().N_ary_lambda;
+        return "uuu"; 
     });
+    fs.push_back(N_ary_std_function);
+    fs.push_back(std::bind(N_ary_std_function, std::placeholders::_1, std::placeholders::_2));
+    fs.push_back(std::ref(f));
 
-    // using simple_function type
+
+
+    // Add named callable
     alg::function<std::string,int,int> f0(&N_ary_function);
-    alg::function<std::string,int,int> f1(N_ary_functor{});
-    alg::function<std::string,int,int> f2(f);
-    alg::function<std::string,int,int> f3([](int,int) -> std::string
+    alg::function<std::string,int,int> f1(f);
+    alg::function<std::string,int,int> f2([](int,int) -> std::string
     {
-        ++N_ary_lambda_count;
-        return "xxx"; 
+        ++count::instance().N_ary_lambda;
+        return "vvv"; 
     });
+    alg::function<std::string,int,int> f3(N_ary_std_function);
+    alg::function<std::string,int,int> f4(std::bind(N_ary_std_function, std::placeholders::_1, std::placeholders::_2));
+    alg::function<std::string,int,int> f5(std::ref(f));
+
     fs.push_back(f0); 
     fs.push_back(f1);
     fs.push_back(f2);
     fs.push_back(f3);
+    fs.push_back(f4);
+    fs.push_back(f5);
 
+
+
+    // Invoke and check
     for(const auto& f:fs) f(123,123);    
-    assert(N_ary_function_count == 2);
-    assert(N_ary_functor_count == 4);
-    assert(N_ary_lambda_count == 2);
-    print_summary("alg::function - N-ary returning R", "succeeded");
+    assert(count::instance().N_ary_function     == 2);
+    assert(count::instance().N_ary_functor      == 4);
+    assert(count::instance().N_ary_lambda       == 2);
+    assert(count::instance().N_ary_std_function == 4);
+
+    assert(fs[0](123,123) == "xxx");
+    assert(fs[1](123,123) == "yyy");
+    assert(fs[2](123,123) == "uuu");
+    assert(fs[3](123,123) == "www");
+    assert(fs[4](123,123) == "www");
+    assert(fs[5](123,123) == "yyy");
+    print_summary("alg::function - genera version", "succeeded");
 }
+
+
 
 void test_function()
 {
-    test_simple_function();
-    test_general_function();
+    test_alg_simple_function();
+    test_alg_function();
 }
 

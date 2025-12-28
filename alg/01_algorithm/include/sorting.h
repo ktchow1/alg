@@ -9,8 +9,8 @@
 //  bubble          O(N)      O(N^2)    O(N^2)    yes      yes     bi-directional
 //  insert          O(N)      O(N^2)    O(N^2)    yes      yes     bi-directional
 //  quick           O(NlogN)  O(NlogN)  O(N^2)    yes      no      bi-directional
-//  merge           O(NlogN)  O(NlogN)  O(NlogN)  no       yes     random access
-//  heap            O(NlogN)  O(NlogN)  O(NlogN)  yes      no      random access
+//  merge           O(NlogN)  O(NlogN)  O(NlogN)  no       yes     random access     (recursive, early return for size = 0,1)
+//  heap            O(NlogN)  O(NlogN)  O(NlogN)  yes      no      random access     (recursive, early return for size = 0,1)
 //  pigeon          O(N)      O(N)      O(N)      no       yes     forward
 //  topological
 
@@ -156,14 +156,5 @@ namespace alg
         std::vector<typename std::iterator_traits<ITER>::value_type> vec;
         merge(begin, mid, mid, end, std::back_inserter(vec));
         std::copy(vec.begin(), vec.end(), begin);
-    }
-
-    template<typename ITER, typename CMP = std::less<typename std::iterator_traits<ITER>::value_type>>
-    void heap_sort(ITER begin, ITER end) // random access iterator
-    {
-        using T = typename std::iterator_traits<ITER>::value_type;
-        using C = typename alg::comparator_traits<CMP>::opposite_type;
-
-        alg::heap_inplace<T,C> temp(begin, end);
     }
 }

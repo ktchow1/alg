@@ -1,0 +1,80 @@
+For thread synchronization :
+* std::condition_variable + std::mutex             blocking (no-busy-waiting), complicated                   re-usable
+* std::promise<void> + std::future                 blocking (no-busy-waiting), set and get void data         one shot
+* std::latch                                       blocking (no-busy-waiting), support counter               one shot
+* std::atomic::wait/notify                         blocking (no-busy-waiting) <--- it is futex               re-usable
+* std::atomic_flag                                 busy waiting, lowest latency                              re-usable
+
+other synchronizations : 
+* std::semaphore                                   blocking (no-busy-waiting)                                re-usable
+* std::barrier <--- how to use this?               blocking (no-busy-waiting)                                re-usable
+
+
+
+
+// ****************** //
+// *** std::latch *** //
+// ****************** //
+void thread_functor(std::latch& latch)
+{
+    // do something
+    latch.count_down();
+}
+
+void test()
+{
+    std::uint32_t num_workers = 10;
+    std::latch latch(num_workers); // <--- one shot only, cannot be reused
+
+    std::vector<std::thread> threads;
+    for(std::uint32_t n=0; n!=num_workers; ++n)
+    {
+        threads.push_back(thread_functor, std::ref(latch));
+    }
+
+    // main thread wait
+    latch.wait();
+    for(auto& thread:threads) thread.join();
+}
+
+
+// ******************************** //
+// *** std::atomic::wait/notify *** //
+// ******************************** //
+Use the following atomic latch inplace of the above example.
+
+class atomic_latch
+{
+public:
+    explicit atomic_latch(int count) : counter(count)
+    {
+    }
+
+    void count_down()
+    {
+        int old = counter.fetch_sub(1, std::memory_order_acq_rel);
+        if (old == 1)
+        {
+            counter.notify_all();
+        }
+    }
+
+    void wait()
+    {
+        int expected = counter.load(std::memory_order_acquire);
+        while (expected != 0)
+        {
+            counter.wait(expected);
+            expected = counter.load(std::memory_order_acquire);
+        }
+    }
+
+    void reset(int count)
+    {
+        counter.store(count, std::memory_order_release);
+    }
+
+private:
+    std::atomic<int> counter;
+};
+

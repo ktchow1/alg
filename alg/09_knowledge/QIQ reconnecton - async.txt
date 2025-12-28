@@ -1,0 +1,35 @@
+Quantum provides only async interfact to connect. I see a pattern to convert the async interface to sync : 
+
+
+
+bool session::sync_connect(const auto& address) 
+{ 
+    std::promise<bool> promise; 
+    auto future = promise.get_future(); 
+
+    quantum_socket.async_connect
+    (
+        address, 
+        [&, this]() { promise.set_value(true);  }, // callback when async connect success 
+        [&, this]() { promise.set_value(false); }  // callback when async connect failed 
+    ) 
+
+    while(future.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready ) 
+    { 
+        async_engine.dispatch_asyn_tasks(); // <--- same role as boost::asio::io_service, the event loop driver
+    } 
+
+    retrun future.get();
+}
+
+
+[Remark 1]
+async_engine is actually an event-loop-driver, when we run async operation, 
+the task is registered with async_engine, and delay the computation until 
+async_engine.dispatch_asyn_tasks() is called either by current / new thread.
+
+
+[Remark 2]
+Since the same thread is calling async and calling dispatch_asyn_tasks, 
+there is only 1 thread in here, no thread synchronization is needed, 
+i.e. we can replace promise with any bool variable.

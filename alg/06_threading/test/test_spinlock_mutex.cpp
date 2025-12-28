@@ -25,6 +25,9 @@ void test_mutex(const std::string& test_name)
     {
         threads.push_back(std::thread
         {
+            // If we replace the following arg with auto, we need auto&&
+            // as std::ref convert to a temporary copy.
+            //
             [](std::uint32_t thread_id, std::uint32_t num_tasks, std::map<std::uint32_t, std::uint32_t>& map, MUTEX& mutex)
             {
                 for(std::uint32_t m=0; m!=num_tasks; ++m)

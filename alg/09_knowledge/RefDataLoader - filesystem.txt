@@ -1,0 +1,16 @@
+1. Wrong suggestion from ChatGPT : 
+   Cannot declare data member in class as auto, when they are initialized by "member initiailizer".
+   Cannot declare data member in class as auto, when they are initialized by "initiailizer list".
+   Why do we need this? Sometimes, we just dont know the type.
+
+   class RefDataLoader
+   {
+       auto m_dirIter = std::filesystem::directory_iterator(".") | std::views::filter(my_predicate{}); // compile error
+   };
+
+   No, the above does not work. We need decltype.
+
+
+
+
+

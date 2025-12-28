@@ -1,4 +1,5 @@
 #include<iostream>
+#include<cassert>
 #include<cstdint>
 #include<cmath>
 #include<vector>
@@ -56,7 +57,7 @@ namespace alg
 
         std::int32_t sub0 = 0;      // exclude the last element  
         std::int32_t sub1 = vec[0]; // include the last element  
-        std::int32_t ans  = sub1;    
+        std::int32_t ans  = sub1;
         for(std::uint32_t n=1; n!=vec.size(); ++n)
         {
             auto tmp0 = sub0;
@@ -91,10 +92,10 @@ namespace alg
     // Puzzle game (from SMarket)
     //
     // Given a vector of unsorted numbers :
-    // * 2 player in turn pick a number
+    // * 1 player pick numbers repeatedly
     // * all elements equal that number     are removed, add to player's score
     // * all elements equal that number+/-1 are removed
-    // * repeat until vector becomes empty, player with higher score win.
+    // * repeat until vector becomes empty, try maximise score
     // ************************************************************************** //
     std::int32_t max_puzzle_game(const std::vector<std::int32_t>& vec) 
     {
@@ -132,7 +133,7 @@ namespace alg
             else
             {
                 sub0 = std::max(tmp0, tmp1); 
-                sub1 = 0;
+                sub1 = std::max(tmp0 + 0, 0);
                 ans  = std::max(ans, sub1); // should be no change
             }
         }
@@ -142,9 +143,9 @@ namespace alg
 
 
 
-// *********************************************** //
-// *** Maximization - benchmark implementation *** //
-// *********************************************** //
+// ******************************** //
+// *** Maximization - benchmark *** //
+// ******************************** //
 namespace alg
 {
     std::int32_t max_subseq_sum_bmk(const std::vector<std::int32_t>& vec)
@@ -257,6 +258,178 @@ namespace alg
         return ans;
     }
 
+    template<bool INCLUDE_EQUAL>
+    std::uint32_t count_less_than_target_subseq_sum(const std::vector<std::uint32_t>& vec, std::uint32_t target) // vec[n] >= 0
+    {
+        std::map<std::uint32_t, std::int32_t> index; // unlike longest_target_subseq_sum, ordered map needed
+    //  index[0] = -1;                               // unlike longest_target_subseq_sum, this is NOT needed
+
+        std::uint32_t cum = 0;
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=vec.size(); ++n)
+        {
+            cum += vec[n]; 
+            if constexpr (INCLUDE_EQUAL)
+            {
+                if (cum <= target)
+                {
+                    ans += n+1;
+                }
+                else if (auto iter=index.lower_bound(cum-target); iter!=index.end()) 
+                {
+                    ans += n-iter->second;  
+                }
+            //  else implies : vec[n] > target (with single element)
+            }
+            else
+            {
+                if (cum < target)
+                {
+                    ans += n+1;
+                }
+                else if (auto iter=index.upper_bound(cum-target); iter!=index.end()) 
+                {
+                    ans += n-iter->second;  
+                }
+            //  else implies : vec[n] >= target (with single element)
+            }
+            if (index.find(cum)==index.end()) 
+            {
+                index[cum] = n; 
+            }
+        }
+        return ans;
+    }
+
+    template<bool INCLUDE_EQUAL>
+    std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target) // vec[n] > 0
+    {
+        std::map<std::uint64_t, std::int32_t> index;
+    //  index[0] = -1; 
+
+        std::uint64_t cum = 1; 
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=vec.size(); ++n)
+        {
+            cum *= vec[n];
+            if constexpr (INCLUDE_EQUAL)
+            {
+                if (cum <= target)
+                {
+                    ans += n+1;
+                }        
+                else if (auto iter=index.lower_bound(std::ceil((double)cum/target)); iter!=index.end()) // Amazing, why's that?
+                {
+                    ans += n-iter->second;
+                }
+            }
+            else
+            {
+                if (cum < target)
+                {
+                    ans += n+1;
+                }        
+                else if (auto iter=index.upper_bound(cum/target); iter!=index.end()) // implied std::floor 
+                {
+                    ans += n-iter->second;
+                }
+            }
+            if (index.find(cum)==index.end())
+            {
+                index[cum] = n; 
+            }
+        }
+        return ans;
+    }
+}
+
+
+
+// **************************** //
+// *** Counting - benchmark *** //
+// **************************** //
+namespace alg
+{
+    std::uint32_t count_target_subseq_sum_bmk(const std::vector<std::int32_t>& vec, std::int32_t target)
+    {
+        if (vec.size()==0) return 0;
+          
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=vec.size(); ++n) 
+        {
+            std::int32_t cum = 0;
+            for(std::uint32_t m=n; m!=vec.size(); ++m) 
+            {
+                cum += vec[m];
+                if (cum == target) ++ans;
+            }
+        }
+        return ans;
+    }
+
+    std::uint32_t count_target_divisible_subseq_sum_bmk(const std::vector<std::int32_t>& vec, std::uint32_t target)
+    {
+        if (vec.size()==0) return 0;
+          
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=vec.size(); ++n) 
+        {
+            std::int32_t cum = 0;
+            for(std::uint32_t m=n; m!=vec.size(); ++m) 
+            {
+                cum += vec[m];
+                if (cum % target == 0) ++ans;
+            }
+        }
+        return ans;
+    }
+
+    template<bool INCLUDE_EQUAL>
+    std::uint32_t count_less_than_target_subseq_sum_bmk(const std::vector<std::uint32_t>& vec, std::uint32_t target)
+    {
+        if (vec.size()==0) return 0;
+          
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=vec.size(); ++n) 
+        {
+            std::int32_t cum = 0;
+            for(std::uint32_t m=n; m!=vec.size(); ++m) 
+            {
+                cum += vec[m];
+                if constexpr (INCLUDE_EQUAL) { if (cum <= target) ++ans; }
+                else                         { if (cum <  target) ++ans; }
+            }
+        }
+        return ans;
+    }
+
+    template<bool INCLUDE_EQUAL>
+    std::uint32_t count_less_than_target_subseq_prd_bmk(const std::vector<std::uint32_t>& vec, std::uint64_t target)
+    {
+        if (vec.size()==0) return 0;
+          
+        std::uint32_t ans = 0;
+        for(std::uint32_t n=0; n!=vec.size(); ++n) 
+        {
+            std::uint64_t cum = 1; // initialized as 1 for product
+            for(std::uint32_t m=n; m!=vec.size(); ++m) 
+            {
+                cum *= vec[m];
+                if constexpr (INCLUDE_EQUAL) { if (cum <= target) ++ans; }
+                else                         { if (cum <  target) ++ans; }
+            }
+        }
+        return ans;
+    }
+}
+
+
+
+// *************** //
+// *** Longest *** //
+// *************** //
+namespace alg
+{
     std::uint32_t longest_target_subseq_sum(const std::vector<std::int32_t>& vec, std::int32_t target)
     {
         std::unordered_map<std::int32_t, std::int32_t> index; 
@@ -279,87 +452,6 @@ namespace alg
         return ans;
     }
 
-    // ************************************************ //
-    // 1. Only count less-than-target (use upper_bound)
-    //    Don't count equal-to-target (not lower_bound)
-    // 2. Input numbers are positive (can be zero).
-    // ************************************************ //
-    std::uint32_t count_less_than_target_subseq_sum(const std::vector<std::uint32_t>& vec, std::uint32_t target)
-    {
-        std::map<std::uint32_t, std::int32_t> index; // unlike prev, need ordered map here
-        index[0] = -1;                               
-
-        std::uint32_t cum = 0;
-        std::uint32_t ans = 0;
-        for(std::uint32_t n=0; n!=vec.size(); ++n)
-        {
-            cum += vec[n]; 
-            if (cum < target)
-            {
-                ans += n+1;
-            }
-        //  else if (auto iter=index.lower_bound(cum-target); iter!=index.end()) // for count_less_than_or_equal_target_subseq_sum
-            else if (auto iter=index.upper_bound(cum-target); iter!=index.end()) 
-            {
-                ans += n-iter->second;  
-            }
-            if (index.find(cum)==index.end()) 
-            {
-                index[cum] = n; 
-            }
-        //  else implies vec[n]==0, no need to update index
-        }
-        return ans;
-    }
-
-    // *************************************************************** //
-    // 1. Only count less-than-target (use upper_bound)
-    //    Don't count equal-to-target (not lower_bound)
-    // 2. Input numbers are strictly positive (cannot be zero).
-    //    We set cum = 1, unlike max_subseq_prd_bmk.
-    // *************************************************************** //
-    // Remark : Consider target = 10
-    //
-    // cum  | cum / target | min n in hist, such that cum / n < target 
-    // -----+--------------+-------------------------------------------
-    // 28   | 2.8          | 3     as 28 / 3 < 10
-    // 29   | 2.9          | 3     as 29 / 3 < 10
-    // 30   | 3.0          | 4     as 30 / 4 < 10
-    // 31   | 3.1          | 4     as 31 / 4 < 10
-    // 32   | 3.2          | 4     as 32 / 4 < 10
-    //
-    // hence we have : n = upper_bound(cum/target)
-    // *************************************************************** //
-    std::uint32_t count_less_than_target_subseq_prd(const std::vector<std::uint32_t>& vec, std::uint64_t target)
-    {
-        std::map<std::uint64_t, std::int32_t> index;
-        index[0] = -1; 
-
-        std::uint64_t cum = 1; 
-        std::uint32_t ans = 0;
-        for(std::uint32_t n=0; n!=vec.size(); ++n)
-        {
-            cum *= vec[n];
-            if (cum < target)
-            {
-                ans += n+1;
-            }        
-        //  else if (auto iter=index.lower_bound(std::ceil((double)cum/target)); iter!=index.end())  // <--- incorrect 
-        //  else if (auto iter=index.upper_bound(std::ceil((double)cum/target)); iter!=index.end())  // <--- incorrect
-        //  else if (auto iter=index.lower_bound(cum/target); iter!=index.end())                     // <--- incorrect 
-            else if (auto iter=index.upper_bound(cum/target); iter!=index.end())                     // <---   correct (why? see remark)
-            {
-                ans += n-iter->second;
-            }
-            if (index.find(cum)==index.end())
-            {
-                index[cum] = n; 
-            }
-        //  else implies vec[n]==1, no need to update index
-        }
-        return ans;
-    }
-
     // ************************************* //
     // *** Longest increasing subseq LIS *** //
     // ************************************* //
@@ -372,21 +464,23 @@ namespace alg
     std::uint32_t longest_non_contiguous_increasing_subseq(const std::vector<std::uint32_t>& vec)
     {
         std::vector<std::uint32_t> sub(vec.size(), 0); // sub[n] means the subproblem that must end with vec[n]
+        std::uint32_t ans = 0;
+
         for(std::uint32_t n=0; n!=vec.size(); ++n)
         {
-            sub[n] = 1; 
-            for(std::uint32_t m=0; m!=n; ++m) // consider all previous subprob m for next subprob n, where m < n
+            sub[n] = 1;                       // consider if we pick element n only
+            for(std::uint32_t m=0; m!=n; ++m) // consider if we can pick previous subprob m
             {
             //  if (vec[m] <= vec[n]) // <--- BUG1
                 if (vec[m] <  vec[n])
                 {
-                   if (sub[n] < sub[m]+1)
-                       sub[n] = sub[m]+1;
+                    sub[n] = std::max(sub[n], sub[m]+1);
                 }
             }
+            ans = std::max(ans, sub[n]);
+            
         }
-    //  return sub[sub.size()-1]; // <--- BUG2
-        return *std::max_element(sub.begin(), sub.end());
+        return ans;
     }
 
     // ************************************************************************************ //
@@ -441,45 +535,11 @@ namespace alg
 
 
 
-// ******************************************* //
-// *** Counting - benchmark implementation *** //
-// ******************************************* //
+// *************************** //
+// *** Longest - benchmark *** //
+// *************************** //
 namespace alg
 {
-    std::uint32_t count_target_subseq_sum_bmk(const std::vector<std::int32_t>& vec, std::int32_t target)
-    {
-        if (vec.size()==0) return 0;
-          
-        std::uint32_t ans = 0;
-        for(std::uint32_t n=0; n!=vec.size(); ++n) 
-        {
-            std::int32_t cum = 0;
-            for(std::uint32_t m=n; m!=vec.size(); ++m) 
-            {
-                cum += vec[m];
-                if (cum == target) ++ans;
-            }
-        }
-        return ans;
-    }
-
-    std::uint32_t count_target_divisible_subseq_sum_bmk(const std::vector<std::int32_t>& vec, std::uint32_t target)
-    {
-        if (vec.size()==0) return 0;
-          
-        std::uint32_t ans = 0;
-        for(std::uint32_t n=0; n!=vec.size(); ++n) 
-        {
-            std::int32_t cum = 0;
-            for(std::uint32_t m=n; m!=vec.size(); ++m) 
-            {
-                cum += vec[m];
-                if (cum % target == 0) ++ans;
-            }
-        }
-        return ans;
-    }
-
     std::uint32_t longest_target_subseq_sum_bmk(const std::vector<std::int32_t>& vec, std::int32_t target)
     {
         if (vec.size()==0) return 0;
@@ -492,40 +552,6 @@ namespace alg
             {
                 cum += vec[m];
                 if (cum == target && ans < m-n+1) ans = m-n+1;
-            }
-        }
-        return ans;
-    }
-
-    std::uint32_t count_less_than_target_subseq_sum_bmk(const std::vector<std::uint32_t>& vec, std::uint32_t target)
-    {
-        if (vec.size()==0) return 0;
-          
-        std::uint32_t ans = 0;
-        for(std::uint32_t n=0; n!=vec.size(); ++n) 
-        {
-            std::int32_t cum = 0;
-            for(std::uint32_t m=n; m!=vec.size(); ++m) 
-            {
-                cum += vec[m];
-                if (cum < target) ++ans;
-            }
-        }
-        return ans;
-    }
-
-    std::uint32_t count_less_than_target_subseq_prd_bmk(const std::vector<std::uint32_t>& vec, std::uint64_t target)
-    {
-        if (vec.size()==0) return 0;
-          
-        std::uint32_t ans = 0;
-        for(std::uint32_t n=0; n!=vec.size(); ++n) 
-        {
-            std::uint64_t cum = 1; // initialized as 1 for product
-            for(std::uint32_t m=n; m!=vec.size(); ++m) 
-            {
-                cum *= vec[m];
-                if (cum < target) ++ans;
             }
         }
         return ans;

@@ -69,104 +69,6 @@ namespace alg
     }
 }
 
-// ************************************************************************************************* //
-// [Concepts]
-//                   coin change        knapsack           job schedule       equal partition        
-// --------------------------------------------------------------------------------------------------
-//            x      coin value         obj weight         task workload      num  
-//            y      1                  obj value          task profit        num 
-//      param p      coin num           obj num            task done (0/1)    num picked (0/1)
-//  prob size N     #coin type         #obj type          #task type         #num
-// 
-//      state s      s[N-1] = sum(x[n], p[n], for n=[0,N-1])
-//      value v      v[N-1] = sum(y[n], p[n], for n=[0,N-1])
-// 
-//  coin change      min v under constraint  s[N-1] == target
-//     knapsack      max v under constraint  s[N-1] <= weight_limit
-// job schedule      max v under constraints s[n]   <= deadline[n] for all n=[0,N-1]
-// eq partition      max v under constraint  s = v  <= sum(num)/2
-//
-// ************************************************************************************************* //
-// Approaches 
-// 1. recursive in state_graph
-// 2. recursive in state_subproblem_matrix
-// 3. iterative in state_graph                implemented as region_growing
-// 4. iterative in state_subproblem_matrix    implemented as scanning
-//
-//
-// 1. Recursion in state_graph connects a vertex with its neighbours in the same problem size
-//
-//    f(coins, target) = min[ f(coins, target-coins[0]) + 1,
-//                            f(coins, target-coins[1]) + 1,
-//                            f(coins, target-coins[2]) + 1,
-//                            ... ] 
-//
-//
-// 2. Recursion in state_subproblem_matrix connects a cell with its neighbours in different problem size
-//
-//    f(coins, target) = min[ f(coins, target-coins[0]) + 1,
-//                            f(coins.exclude(coins[0]), target) ] 
-//
-//
-// 3. State_graph consisted of : 
-// *  vertices  = all possible states (i.e. 0, 1, 2, ..., target)
-// *  edges     = between any 2 states, whenever they can be connected by a coin
-// *  objective = minimize distance from state_0 to state_target
-// *  implement = region_growing (Dijkstra) on the state_graph, represented as unordered_map<state,value>
-//
-//
-// 4. State_subproblem_matrix is a 2D matrix of "states" vs "subproblem size" :
-// *  row[0] = subproblem with coins[0] only
-// *  row[1] = subproblem with coins[0] and coins[1]
-//    ...
-// *  col[0] = state 0 as target
-// *  col[1] = state 1 as target
-//    ...
-//    Todo : in fact, no need to store whole matrix, just cache this_row and prev_row
-//
-//
-// Speed
-// * iterative is much faster than recursive
-// * extend state_graph in time, it will become state_subproblem_matrix (subproblem size = time)
-//   (a) if links between rows in matrix is dense,  implies duplication in graph, so matrix is faster
-//   (b) if links between rows in matrix is sparse, implies redundancy in matrix, so graph is faster
-//
-// ************************************************************************************************* //
-// Remark 1. For min coin change : 
-// * all 4 implementations involve "std::numeric_limits<T>::max() + 1" 
-// * overflow will happen, which can be avoided by either :
-//   (a) $1 is always in the coin set 
-//   (b) using alg::inf<T>, alg::one<T> and alg::add(x,y)
-//
-// Remark 2. For knapsack :
-// * there is a change in constraint
-//   state == target       for coin change
-//   state <= weight_limit for knapsack 
-// * hence at the end of algo, we need to :
-//   (a) scan for optimum in state_graph            
-//   (b) scan for optimum in state_subproblem_matrix
-//  
-// Remark 3. For job schedule : 
-// * there are constraints on param
-//   (a) takes 0/1 only 
-//   (b) tasks[i] cannot be done after tasks[j], if i < j
-// * to handle these constraints 
-//   (a) state_graph             needs to add next_allowed_job as part of the state
-//   (b) state_subproblem_matrix needs to modify recursion eq, so that it depends on prev rows only
-//
-// Remark 4. For equal partition 
-// * it is a simiplified version of job schedule 
-//   (a) with same constraints on param
-//   (b) no constraint on state
-//   (c) with value = state 
-//
-// Remark 5. For box stacking 
-// * it is like job schedule, as param = {0,1}
-// * state is not a scaler (plus next_allowed_item)
-// * state is a 2D vector  (plus next_allowed_item) 
-//
-// ************************************************************************************************* //
-
 
 // *********************** //
 // *** Min coin change *** //
@@ -455,7 +357,7 @@ namespace alg
                 ans = mat(objects.size()-1, m);
         }
         return ans;
-    }// 
+    }
 }
 
 
@@ -476,13 +378,13 @@ namespace alg
 { 
     struct job_state
     {
-        std::uint32_t m_total_profit;
-        std::uint32_t m_next_allowed_job;
+        std::uint32_t m_total_workload;
+        std::uint32_t m_next_allowed_job; // need for graph-approach, no need for matrix-approach
     };
 
     bool operator==(const job_state& lhs, const job_state& rhs) // required by job_state_hash
     {
-        return lhs.m_total_profit == rhs.m_total_profit &&
+        return lhs.m_total_workload == rhs.m_total_workload &&
                lhs.m_next_allowed_job == rhs.m_next_allowed_job;
     }
 
@@ -490,7 +392,7 @@ namespace alg
     {
         size_t operator()(const job_state& state) const noexcept
         {
-            size_t h0 = std::hash<std::uint32_t>{}(state.m_total_profit);
+            size_t h0 = std::hash<std::uint32_t>{}(state.m_total_workload);
             size_t h1 = std::hash<std::uint32_t>{}(state.m_next_allowed_job);
             return (h0 << 16) ^ h1;
         }
@@ -516,9 +418,9 @@ namespace alg
             // for each neighbour (Remark 3. Ensure no duplicated task. Ensure task in sequence.)
             for(std::uint32_t n=s_prev.m_next_allowed_job; n!=tasks.size(); ++n)
             {
-                std::uint32_t s = s_prev.m_total_profit + std::get<0>(tasks[n]);
-                std::uint32_t v = v_prev                + std::get<1>(tasks[n]);
-                std::uint32_t deadline =                  std::get<2>(tasks[n]);
+                std::uint32_t s = s_prev.m_total_workload + std::get<0>(tasks[n]);
+                std::uint32_t v = v_prev                  + std::get<1>(tasks[n]);
+                std::uint32_t deadline =                    std::get<2>(tasks[n]);
                 
                 if (s <= deadline && euler_update<std::greater<std::uint32_t>>(graph, job_state{s,n+1}, v)) 
                 {
@@ -543,13 +445,14 @@ namespace alg
         matrix<std::uint32_t> mat(tasks.size(), hard_deadline+1, 0);
         
         // init 1st row (coz main iteration does not include 1st row)
+        for(std::uint32_t m=1; m<=hard_deadline; ++m)
         {
             std::uint32_t workload = std::get<0>(tasks[0]);
             std::uint32_t profit   = std::get<1>(tasks[0]);
             std::uint32_t deadline = std::get<2>(tasks[0]);
-            if (workload <= deadline)
+            if (m >= workload && m <= deadline)
             {
-                mat(0,workload) = profit; 
+                mat(0,m) = profit; 
             }
         }
         // init 1st col (redundant)
@@ -713,115 +616,52 @@ namespace alg
 //
 namespace alg
 { 
-    enum class orientation : std::uint8_t
+    auto get_height(const box& b, std::uint32_t ori)
     {
-        x_up,
-        y_up,
-        z_up
-    };
+         if      (ori == 0)  return b.m_x;
+         else if (ori == 1)  return b.m_y;
+         else                return b.m_z;
+    }
+
+    auto get_base(const box& b, std::uint32_t ori)
+    {
+         if      (ori == 0)  return std::make_pair(std::min(b.m_y, b.m_z), std::max(b.m_y, b.m_z));
+         else if (ori == 1)  return std::make_pair(std::min(b.m_x, b.m_z), std::max(b.m_x, b.m_z));
+         else                return std::make_pair(std::min(b.m_x, b.m_y), std::max(b.m_x, b.m_y));
+    }
 
     struct boxes_state
     {
-        std::uint32_t m_base_min;
-        std::uint32_t m_base_max;
-        std::uint32_t m_next_allowed_box; 
-
-        bool is_smaller_eq(const box& b, orientation b_ori) const noexcept // assuming each box has x <= y <= z
-        {
-            if (b_ori == orientation::x_up)
-            {
-                if (m_base_min > b.m_y) return false;
-                if (m_base_max > b.m_z) return false;
-            }
-            else if (b_ori == orientation::y_up)
-            {
-                if (m_base_min > b.m_x) return false;
-                if (m_base_max > b.m_z) return false;
-            }
-            else
-            {
-                if (m_base_min > b.m_x) return false;
-                if (m_base_max > b.m_y) return false;
-            }
-            return true;
-        }
-
-        void update(const box& b, orientation b_ori, std::uint32_t next_allowed_box) 
-        {
-            if (b_ori == orientation::x_up)
-            {
-                m_base_min = b.m_y;
-                m_base_max = b.m_z;
-            }
-            else if (b_ori == orientation::y_up)
-            {
-                m_base_min = b.m_x;
-                m_base_max = b.m_z;
-            }
-            else
-            {
-                m_base_min = b.m_x;
-                m_base_max = b.m_y;
-            }
-            m_next_allowed_box = next_allowed_box;
-        } 
+        std::uint32_t m_last_box;     // std::numeric_limits<std::uint32_t>::max for empty stack
+        std::uint32_t m_last_box_ori; // 0,1,2
     };
 
     bool operator==(const boxes_state& lhs, const boxes_state& rhs) // required by boxes_state_hash
     {
-        return lhs.m_base_min == rhs.m_base_min &&
-               lhs.m_base_max == rhs.m_base_max &&
-               lhs.m_next_allowed_box == rhs.m_next_allowed_box;
+        return lhs.m_last_box     == rhs.m_last_box &&
+               lhs.m_last_box_ori == rhs.m_last_box_ori;
     }
-
-    struct boxes_state_less // required by std::map
-    {
-        bool operator()(const boxes_state& lhs, const boxes_state& rhs) const noexcept
-        {
-            if      (lhs.m_base_min < rhs.m_base_min)                 return  true;
-            else if (lhs.m_base_min > rhs.m_base_min)                 return false;
-            else if (lhs.m_base_max < rhs.m_base_max)                 return  true;
-            else if (lhs.m_base_max > rhs.m_base_max)                 return false;
-            else if (lhs.m_next_allowed_box < rhs.m_next_allowed_box) return  true;
-            else if (lhs.m_next_allowed_box > rhs.m_next_allowed_box) return false;
-            else                                                      return false; 
-        }
-    };
 
     struct boxes_state_hash // required by std::unordered_map
     {
         size_t operator()(const boxes_state& state) const noexcept
         {
-            size_t h0 = std::hash<std::uint32_t>{}(state.m_base_min);
-            size_t h1 = std::hash<std::uint32_t>{}(state.m_base_max);
-            size_t h2 = std::hash<std::uint32_t>{}(state.m_next_allowed_box);
-            return (h0 << 16) ^ (h1 << 8) ^ h2;
+            size_t h0 = std::hash<std::uint32_t>{}(state.m_last_box);
+            size_t h1 = std::hash<std::uint32_t>{}(state.m_last_box_ori);
+            return (h0 << 16) ^ h1;
         }
     };
-
-    std::uint32_t max_box_side(const std::vector<box>& boxes)
-    {
-        std::uint32_t ans = 0;
-        for(const auto& b:boxes)
-        {
-            if (ans < b.m_x) ans = b.m_x;
-            if (ans < b.m_y) ans = b.m_y;
-            if (ans < b.m_z) ans = b.m_z;
-        }
-        return ans;
-    }
 }
 
 namespace alg
 { 
     std::uint32_t box_stacking_iterative_in_graph(const std::vector<box>& boxes) 
     {
-    //  std::map          <boxes_state, std::uint32_t, boxes_state_less> graph; // value = total height (slower)
-        std::unordered_map<boxes_state, std::uint32_t, boxes_state_hash> graph; // value = total height (faster)
-        graph[{0, inf<std::uint32_t>, inf<std::uint32_t>}] = 0;
+        std::unordered_map<boxes_state, std::uint32_t, boxes_state_hash> graph; 
+        graph[{std::numeric_limits<std::uint32_t>::max(), 0}] = 0;
 
         std::queue<boxes_state> queue; 
-        queue.push({0, 0, 0});
+        queue.push({std::numeric_limits<std::uint32_t>::max(), 0});
   
         while(!queue.empty())
         {
@@ -829,42 +669,26 @@ namespace alg
             auto v_prev = graph[queue.front()];
             queue.pop();
 
-            for(std::uint32_t n=s_prev.m_next_allowed_box; n!=boxes.size(); ++n)
+            for(std::uint32_t n=s_prev.m_last_box+1; n!=boxes.size(); ++n)
             {
-                // ********* //
-                // *** x *** //
-                // ********* //
-                if (s_prev.is_smaller_eq(boxes[n], orientation::x_up)) // current base is smaller next box 
+                std::uint32_t prev_base_min = 0;
+                std::uint32_t prev_base_max = 0;
+                if (s_prev.m_last_box != std::numeric_limits<std::uint32_t>::max())
                 {
-                    auto s = s_prev;
-                    auto v = v_prev + boxes[n].m_x; 
-                    s.update(boxes[n], orientation::x_up, n+1);
-
-                    if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s); // get a greater height
+                    std::tie(prev_base_min, prev_base_max) = get_base(boxes[s_prev.m_last_box], s_prev.m_last_box_ori);
                 }
 
-                // ********* //
-                // *** y *** //
-                // ********* //
-                if (s_prev.is_smaller_eq(boxes[n], orientation::y_up))
+                for(std::uint32_t m=0; m!=3; ++m)
                 {
-                    auto s = s_prev;
-                    auto v = v_prev + boxes[n].m_y; 
-                    s.update(boxes[n], orientation::y_up, n+1);
+                    auto [this_base_min, this_base_max] = get_base(boxes[n], m);
+                    if (this_base_min >= prev_base_min &&
+                        this_base_max >= prev_base_max)
+                    {
+                        auto s = boxes_state{n,m};
+                        auto v = v_prev + get_height(boxes[n], m);
 
-                    if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s);
-                }
-
-                // ********* //
-                // *** z *** //
-                // ********* //
-                if (s_prev.is_smaller_eq(boxes[n], orientation::z_up))
-                {
-                    auto s = s_prev;
-                    auto v = v_prev + boxes[n].m_z; 
-                    s.update(boxes[n], orientation::z_up, n+1);
-
-                    if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s);
+                        if (euler_update<std::greater<std::uint32_t>>(graph, s, v)) queue.push(s); 
+                    }
                 }
             }
         }
@@ -878,73 +702,60 @@ namespace alg
         return ans;
     } 
    
-    // ********************************************** // 
-    // Since state is 2D { base_min * base_max }
-    // need tensor for iterative implementation
-    // * tensor.n <---> subproblem size 
-    // * tensor.m <---> base_min
-    // * tensor.k <---> base_max 
+    // ********************************************************************************** //
+    // state matrix col 0 means using x as height, (y,z) as base
+    // state matrix col 1 means using y as height, (x,z) as base
+    // state matrix col 2 means using z as height, (x,y) as base
     //
-    // Dont confuse tensor (n,m,k) with boxes (z,y,x)
-    // ********************************************** // 
+    // state matrix does not need to include the current base size
+    // state is memoryless in this question, we can derive base size from current state
+    // ********************************************************************************** //
     std::uint32_t box_stacking_iterative_in_matrix(const std::vector<box>& boxes)
     {
-        std::uint32_t side = max_box_side(boxes);
-        tensor<std::uint32_t> ten(boxes.size(), side+1, side+1, 0); // value = max height achieved by base mxk
-        
-        // init 1st layer
-        ten(0,boxes[0].m_y,boxes[0].m_z) = std::max(ten(0,boxes[0].m_y,boxes[0].m_z), boxes[0].m_x);
-        ten(0,boxes[0].m_x,boxes[0].m_z) = std::max(ten(0,boxes[0].m_x,boxes[0].m_z), boxes[0].m_y);
-        ten(0,boxes[0].m_x,boxes[0].m_y) = std::max(ten(0,boxes[0].m_x,boxes[0].m_y), boxes[0].m_z);
-  
-        // main iteration
+        matrix<std::uint32_t> mat(boxes.size(), 3, 0);
+
+        // 1st row 
+        mat(0,0) = boxes[0].m_x; 
+        mat(0,1) = boxes[0].m_y;
+        mat(0,2) = boxes[0].m_z;
+
+        // min iteration
         for(std::uint32_t n=1; n!=boxes.size(); ++n)
         {
-            for(std::uint32_t m=0; m<=side; ++m)
+            for(std::uint32_t m=0; m!=3; ++m)
             {
-                for(std::uint32_t k=m; k<=side; ++k) // k >= m
+                // consider stack with one box only
+                auto [base_min, base_max] = get_base(boxes[n], m);
+                auto height = get_height(boxes[n], m); 
+                mat(n,m) = height;
+
+                // consider stack this box on all previous states
+                for(std::uint32_t n0=0; n0!=n; ++n0) 
                 {
-                    // no pick boxes[n]
-                    ten(n,m,k) = std::max(ten(n,m,k), ten(n-1,m,k)); 
-
-                    // pick boxes[n] in x_up 
-                    if (m <= boxes[n].m_y && k <= boxes[n].m_z)
+                    for(std::uint32_t m0=0; m0!=3; ++m0)
                     {
-                        std::uint32_t m0 = boxes[n].m_y;
-                        std::uint32_t k0 = boxes[n].m_z;
-                        ten(n,m0,k0) = std::max(ten(n,m0,k0), ten(n-1,m,k) + boxes[n].m_x);
-                    }
-
-                    // pick boxes[n] in y_up 
-                    if (m <= boxes[n].m_x && k <= boxes[n].m_z)
-                    {
-                        std::uint32_t m0 = boxes[n].m_x;
-                        std::uint32_t k0 = boxes[n].m_z;
-                        ten(n,m0,k0) = std::max(ten(n,m0,k0), ten(n-1,m,k) + boxes[n].m_y);
-                    }
-
-                    // pick boxes[n] in z_up 
-                    if (m <= boxes[n].m_x && k <= boxes[n].m_y)
-                    {
-                        std::uint32_t m0 = boxes[n].m_x;
-                        std::uint32_t k0 = boxes[n].m_y;
-                        ten(n,m0,k0) = std::max(ten(n,m0,k0), ten(n-1,m,k) + boxes[n].m_z);
+                        auto [base_min0, base_max0] = get_base(boxes[n0], m0);
+                        if (base_min >= base_min0 &&
+                            base_max >= base_max0)
+                        {
+                            mat(n,m) = std::max(mat(n,m), mat(n0,m0) + height);
+                        }
                     }
                 }
             }
         }
-  
+
+        // Again, since this is memoryless, need to scan whole matrix, instead of just last row
         std::uint32_t ans = 0;
-        for(std::uint32_t m=0; m<=side; ++m)
+        for(std::uint32_t n=0; n!=boxes.size(); ++n)
         {
-            for(std::uint32_t k=m; k<=side; ++k) 
+            for(std::uint32_t m=0; m!=3; ++m)
             {
-                if (ans < ten(boxes.size()-1, m, k))
-                    ans = ten(boxes.size()-1, m, k);
+                ans = std::max(ans, mat(n,m));
             }
         }
         return ans;
-    } 
+    }
 }
 
 // ******************* //

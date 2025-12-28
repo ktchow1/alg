@@ -22,15 +22,15 @@ namespace alg
         {
             if (auto iter=index.find(str[n]); iter!=index.end())
             {
-                if (iter->second < n-sub)
+                if (iter->second >= n-sub) // BUG : Dont miss this
                 {
-                    sub = sub + 1;
+                    sub = n - iter->second;
                     ans = std::max(ans, sub);
                     iter->second = n;
                 }
                 else
                 {
-                    sub = n - iter->second;
+                    sub = sub + 1;
                     ans = std::max(ans, sub);
                     iter->second = n;
                 }
@@ -45,96 +45,49 @@ namespace alg
         return ans;
     }
 
-
-    // ********************************************************************************************************* //
+    // ************************************************************** //
     // Even palindrome can be converted into odd palindrome by
     // * inserting char '_' in front of input string
     // * inserting char '_' at end of input string
     // * inserting char '_' in between any characters in input string
+    //
     // Now only consider odd palindrome-in-palindrome. 
+    // ************************************************************** //
+    // Remark 1 : Rollback of "n" is necessary
+    //            for continuing to detect RHS sub-palindrome 
+    //            after failing to grow parent-palindrome, like 
     //
-    // Given parent-palindrome-radius = 5, there are 3 cases :                       0123456789012
-    // case A1. when LHS sub-palindrome is completely inside parent-palindrome, like M*ABA.T.ABA*N
-    // case A2. when LHS sub-palindrome   barely lies inside parent-palindrome, like M.ABA.T.ABA.T 
-    // case A3. when LHS sub-palindrome     extrudes outside parent-palindrome, like T.ABA.T.ABA.N
-    //
-    // we can copy LHS-palindrome-radius to RHS-palindrome-radius for position [8-11] : 
-    //
-    // A1. M*ABA.T.ABA*N     when 9 + rad[3] < 6 + rad[6] 
-    //      001005~~x~~      x = rad[9]   = rad[3]   = 1        no further growing
-    //
-    // A2. M.ABA.T.ABA.T     when 9 + rad[3] = 6 + rad[6] 
-    //      002005~~y~~      y = rad[9]   = rad[3]   = 2      with further growing and become parent-palindrome
-    //
-    // A3. T.ABA.T.ABA.N     when 9 + rad[3] > 6 + rad[6] 
-    //      003005~~z~~      z = rad[9]   = 11 - 9   = 2        no further growing, N wont be T, or rad[6] = 6
-    //                       ~ = rad[6+n] = rad[6-n] = 0        no further growing, where n = 1,2,4,5
-    // ********************************************************************************************************* //
-    //
+    //            M***ABA...T...ABA***N
+    // ************************************************************** //
     std::uint32_t longest_odd_palindrome_substr(const std::string& str) 
     {
-        std::vector<uint32_t> radii(str.size(), 0);
-        std::uint32_t parent_centre = 0;
-        std::uint32_t parent_radius = 0;
+        std::uint32_t sub = 0;
+        std::uint32_t ans = 0;
 
-        for(std::uint32_t n=0; n!=str.size(); ++n) 
+        for(std::uint32_t n=0; n!=str.size(); ++n)
         {
-            std::uint32_t r;
-
-            // ************************************************ //
-            // *** case A : str[n] inside parent-palindrome *** //
-            // ************************************************ //
-            if (n <= parent_centre + parent_radius) 
+            if (n >= 2*(sub+1))
             {
-                std::uint32_t n_image = parent_centre - (n - parent_centre); // ensure n > parent_centre
-
-                // case A1  
-                if (n + radii[n_image] < parent_centre + parent_radius)
+                if (str[n] == str[n-2*(sub+1)])
                 {
-                    radii[n] = radii[n_image];
-                    continue;
+                    ++sub;
                 }
-                // case A2 
-                else if (n + radii[n_image] == parent_centre + parent_radius)
+                else 
                 {
-                    radii[n] = radii[n_image];
-                    r = radii[n];
-                }
-                // case A3 
-                else
-                {
-                    radii[n] = parent_centre + parent_radius - n; // i.e. RHS sub-palindrome cannot exceed parent-palindrome
-                    continue;
+                    n -= sub; // Remark 1 
+                    sub = 0;
                 }
             }
-            // ************************************************* //
-            // *** case B : str[n] outside parent-palindrome *** //
-            // ************************************************* //
-            else 
+            else
             {
-                r = 0; 
+                n -= sub; // Remark 1
+                sub = 0;
             }
 
-            // ************************************************ //
-            // *** Growing of radius for case A2 and case B *** //
-            // ************************************************ //
-            ++r;
-            for(; n>=r && n+r<str.size(); ++r)
-            {
-                if (str[n-r] == str[n+r])
-                {
-                    radii[n] = r;
-                }
-                else break;
-            }   
-
-            parent_centre = n;
-            parent_radius = radii[n];
+            ans = std::max(ans, sub);
         }
-       
-        auto iter = std::max_element(radii.begin(), radii.end()); 
-        return 2 * (*iter) + 1;
-    } 
+        return 2*ans+1;
+    }
 }
 
 
